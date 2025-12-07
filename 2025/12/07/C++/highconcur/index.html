@@ -247,7 +247,7 @@
         </div>
         <div class="recommendations">
             <h2>相关推荐</h2>
-            <ul><li><a href="/blog/2025/09/30/C++/async/">C++ 异步编程</a></li><li><a href="/blog/2025/10/07/C++/stl_iterator_traits/">深入探索 C++ STL 容器中的迭代器萃取机制</a></li><li><a href="/blog/2025/12/02/C++/virtual_memory/">现代 C++ 中的虚拟内存分布</a></li><li><a href="/blog/2025/08/15/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_string/">Redis C++ 客户端使用指南-String 篇</a></li><li><a href="/blog/2025/08/15/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_set/">Redis C++ 客户端使用指南-Set 篇</a></li><li><a href="/blog/2025/10/06/C++/constexpr/">现代 C++ 之 constexpr 编程</a></li></ul>
+            <ul><li><a href="/blog/2025/10/06/C++/constexpr/">现代 C++ 之 constexpr 编程</a></li><li><a href="/blog/2025/09/30/C++/async/">C++ 异步编程</a></li><li><a href="/blog/2025/10/07/C++/stl_iterator_traits/">深入探索 C++ STL 容器中的迭代器萃取机制</a></li><li><a href="/blog/2025/08/14/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_func/">Redis C++ 客户端使用指南-基础指令篇</a></li><li><a href="/blog/2025/08/16/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_zset/">Redis C++ 客户端使用指南-Zset 篇</a></li><li><a href="/blog/2025/08/15/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_set/">Redis C++ 客户端使用指南-Set 篇</a></li></ul>
         </div>
         <div class='main' style="
     background: transparent;
@@ -295,67 +295,42 @@
 </li>
 <li><a href="#%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95%E4%B8%8E%E6%80%A7%E8%83%BD%E8%AF%84%E4%BC%B0">压力测试与性能评估</a></li>
 </ul>
-<ul>
-<li>[<pre class="line-numbers language-powershell" data-language="powershell"><code class="language-powershell"><span class="token function">PS</span> D:\C+<span class="token operator">+</span>_Code\C+<span class="token operator">+</span>Project\HighConcurrencyMempool\High-concurrency-mempool\build> <span class="token punctuation">.</span><span class="token operator">/</span>Benchmark<span class="token punctuation">.</span>exe](#hexopostrendercodeblockpre-classline-numbers-language-powershell-data-languagepowershellcode-classlanguage-powershellspan-classtoken-functionpsspan-dcspan-classtoken-operatorspan_codecspan-classtoken-operatorspanprojecthighconcurrencymempoolhigh-concurrency-mempoolbuild-span-classtoken-punctuationspanspan-classtoken-operatorspanbenchmarkspan-classtoken-punctuationspanexe)
-
 <!-- tocstop -->
 
-## 项目简介
-
-内存的开辟和管理是高性能服务器开发中的一个重要环节。任何程序在需要分配内存时，传统的内存分配器在高并发场景下往往会成为性能瓶颈，导致系统响应变慢，且当遇到多线程环境时，频繁的锁竞争会严重影响性能。为了解决这个问题，我们设计并实现了一个简化版的高并发内存池，该项目借鉴了Google的tcmalloc的设计思想。
-
-项目源码如下：[GitHub - High Concurrency Memory Pool](https://github.com/LiuJiaxuan1024/High-concurrency-mempool)
-
-## 主要设计思想
-
-### 分层内存管理
-
-该项目处理内存分配的核心思想是分层内存管理：
-
-- 所有的内存都会从 `ThreadCache` 中分配，`ThreadCache` 是每个线程独有的内存缓存区，避免了多线程间的锁竞争。
-- 当 `ThreadCache` 中的内存不足时，`ThreadCache` 会从全局的 `CentralCache` 中获取内存块，`CentralCache` 负责管理不同大小的内存块，并将其分配给各个线程的 `ThreadCache`。
-- 当 `CentralCache` 中的内存也不足时，`CentralCache` 会从 `PageCache` 中获取更大的内存块，`PageCache` 直接与操作系统交互，向操作系统请求大块内存。
-
-### 尺寸分类与对齐
-
-- 内存分配的具体大小是多少以用户申请的实际大小为依据，为了实现**内存对齐**以及**避免内存分配的粒度太小以至于管理开销过大**，我们将内存分配的大小划分为多个等级（size class），每个等级对应一个固定大小的内存块。用户申请的内存会被对齐到最近的等级。该项目的内存对齐机制可以保证实际分配给用户的内存大小与用户申请的内存大小浪费不超过10%。**这种浪费是必要的，我们以极其小的内存浪费代价换了高效的内存管理和分配速度。**
-- 当用户申请的内存过大时（超过了规定的界限），会直接调用系统的内存分配原始接口来分配内存，避免了复杂的内存管理开销，且大块内存分配属于低频操作。
-
-### 线程本地化与批量操作
-
-- 每个线程都会维护自己的自由链表，避免了多线程间的锁竞争，提高了内存分配和释放的效率。大多数情况下，内存分配都可以直接从线程本地的缓存中获取，我们需要保证线程本地缓存的内存充足，具体实现参考后面的 `ThreadCache` 设计。
-- 当线程本地缓存中的内存不足时，会从 `CentralCache` 中批量获取内存块，减少了频繁的内存分配请求，提高了整体性能。
-
-### 中央与页级的全局协调
-
-- `CentralCache` 负责管理不同大小的内存块，并将其分配给各个线程的 `ThreadCache`。它维护了多个自由链表，每个链表对应一个内存大小等级。当 `ThreadCache` 请求内存时，`CentralCache` 会从对应的链表中分配内存块。
-- `PageCache` 直接与操作系统交互，向操作系统请求大块内存。它维护了一个三级基数树，用于跟踪哪些页框已经被分配，哪些页框是空闲的。当 `CentralCache` 请求内存时，`PageCache` 会从操作系统获取大块内存，并将其划分为多个页框，供 `CentralCache` 使用。
-
-### 映射与定位
-
-- 多级页表(PageMap)通过三级基数树结构实现虚拟地址到物理地址的映射，支持高效的内存分配和释放操作。内存分配只存在页的初始化和查询，不存在页的修改，因此不需要担心多线程并发修改页表带来的问题，即便是多个线程一起来初始化同一页，也不会影响正确性，避免了使用锁带来的性能损失。
-
-### 元数据与固定对象池
-
-- 该项目利用定长内存池 `FLMemPool<t>` 为内部固定大小结构体（如 `Span`、`Page` 等）分配内存，避免了频繁调用系统内存分配接口带来的性能开销。
-
-## 实现详解
-
-### 核心组件 `Object` / `FreeList`
-
-不管我们是实现比较复杂的高并发内存池，还是实现其中的定长内存池，都需要将一块块被申请和释放的内存块管理起来，当用户将资源释放时，我们并不需要着急地将资源归还给操作系统，而是将其放入内存池中，等待下一次的分配请求。因此，我们需要一个基础的组件来存储这些内存块，这个组件就是 `Object`。
-
-当我们用户将一块曾经从我们这里申请的内存块归还回来的时候，我们需要将这个资源存储起来，如何存储？数组吗？显然不合适，因为你无法保证用户按照内存块获取的顺序去归还内存块，所以我们需要一个更加灵活的数据结构来存储这些内存块，链表是一个不错的选择。于是我们设计了自由链表 `FreeList` 这个组件，它内部维护了一个单向链表，用于存储空闲的内存块。
-
-在讲解这两个核心组件之前，我们来讲解一下最基础的内存块管理方式：
-
-假设一个场景，我们当前已经有了一个**内存块链表**，此时用户又释放了一个内存块给我们，此时我们应该将这个内存块头插到这个**内存块链表**中，一般的链表会维护一个指针和一个数据，指针用于指向下一个节点，数据用于存储当前节点的数据。也就是将指针和数据分开处理，但用户归还的内存块中的数据是不会被我们使用的，因此我们可以将指针和数据合二为一，直接将指针存储在用户归还的内存块中，这样就节省了内存开销。
-
-假设用户归还的内存块叫做 `obj`，我们当前的自由链表叫做 `freeList`，此时我们可以将 `freeList` 的头节点指针存储在 `obj` 中，然后将 `freeList` 的头节点指针指向 `obj`，这样就完成了内存块的归还操作。一种最原始的实现方式如下：
-
-<hexopostrendercodeblock><pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token operator">*</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span>obj <span class="token operator">=</span> freeList<span class="token punctuation">;</span>
-freeList <span class="token operator">=</span> obj<span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></hexopostrendercodeblock></t></code></pre></li>
+<h2><span id="项目简介">项目简介</span></h2><p>内存的开辟和管理是高性能服务器开发中的一个重要环节。任何程序在需要分配内存时，传统的内存分配器在高并发场景下往往会成为性能瓶颈，导致系统响应变慢，且当遇到多线程环境时，频繁的锁竞争会严重影响性能。为了解决这个问题，我们设计并实现了一个简化版的高并发内存池，该项目借鉴了Google的tcmalloc的设计思想。</p>
+<p>项目源码如下：<a target="_blank" rel="noopener" href="https://github.com/LiuJiaxuan1024/High-concurrency-mempool">GitHub - High Concurrency Memory Pool</a></p>
+<h2><span id="主要设计思想">主要设计思想</span></h2><h3><span id="分层内存管理">分层内存管理</span></h3><p>该项目处理内存分配的核心思想是分层内存管理：</p>
+<ul>
+<li>所有的内存都会从 <code>ThreadCache</code> 中分配，<code>ThreadCache</code> 是每个线程独有的内存缓存区，避免了多线程间的锁竞争。</li>
+<li>当 <code>ThreadCache</code> 中的内存不足时，<code>ThreadCache</code> 会从全局的 <code>CentralCache</code> 中获取内存块，<code>CentralCache</code> 负责管理不同大小的内存块，并将其分配给各个线程的 <code>ThreadCache</code>。</li>
+<li>当 <code>CentralCache</code> 中的内存也不足时，<code>CentralCache</code> 会从 <code>PageCache</code> 中获取更大的内存块，<code>PageCache</code> 直接与操作系统交互，向操作系统请求大块内存。</li>
 </ul>
+<h3><span id="尺寸分类与对齐">尺寸分类与对齐</span></h3><ul>
+<li>内存分配的具体大小是多少以用户申请的实际大小为依据，为了实现<strong>内存对齐</strong>以及<strong>避免内存分配的粒度太小以至于管理开销过大</strong>，我们将内存分配的大小划分为多个等级（size class），每个等级对应一个固定大小的内存块。用户申请的内存会被对齐到最近的等级。该项目的内存对齐机制可以保证实际分配给用户的内存大小与用户申请的内存大小浪费不超过10%。<strong>这种浪费是必要的，我们以极其小的内存浪费代价换了高效的内存管理和分配速度。</strong></li>
+<li>当用户申请的内存过大时（超过了规定的界限），会直接调用系统的内存分配原始接口来分配内存，避免了复杂的内存管理开销，且大块内存分配属于低频操作。</li>
+</ul>
+<h3><span id="线程本地化与批量操作">线程本地化与批量操作</span></h3><ul>
+<li>每个线程都会维护自己的自由链表，避免了多线程间的锁竞争，提高了内存分配和释放的效率。大多数情况下，内存分配都可以直接从线程本地的缓存中获取，我们需要保证线程本地缓存的内存充足，具体实现参考后面的 <code>ThreadCache</code> 设计。</li>
+<li>当线程本地缓存中的内存不足时，会从 <code>CentralCache</code> 中批量获取内存块，减少了频繁的内存分配请求，提高了整体性能。</li>
+</ul>
+<h3><span id="中央与页级的全局协调">中央与页级的全局协调</span></h3><ul>
+<li><code>CentralCache</code> 负责管理不同大小的内存块，并将其分配给各个线程的 <code>ThreadCache</code>。它维护了多个自由链表，每个链表对应一个内存大小等级。当 <code>ThreadCache</code> 请求内存时，<code>CentralCache</code> 会从对应的链表中分配内存块。</li>
+<li><code>PageCache</code> 直接与操作系统交互，向操作系统请求大块内存。它维护了一个三级基数树，用于跟踪哪些页框已经被分配，哪些页框是空闲的。当 <code>CentralCache</code> 请求内存时，<code>PageCache</code> 会从操作系统获取大块内存，并将其划分为多个页框，供 <code>CentralCache</code> 使用。</li>
+</ul>
+<h3><span id="映射与定位">映射与定位</span></h3><ul>
+<li>多级页表(PageMap)通过三级基数树结构实现虚拟地址到物理地址的映射，支持高效的内存分配和释放操作。内存分配只存在页的初始化和查询，不存在页的修改，因此不需要担心多线程并发修改页表带来的问题，即便是多个线程一起来初始化同一页，也不会影响正确性，避免了使用锁带来的性能损失。</li>
+</ul>
+<h3><span id="元数据与固定对象池">元数据与固定对象池</span></h3><ul>
+<li>该项目利用定长内存池 <code>FLMemPool&lt;T&gt;</code> 为内部固定大小结构体（如 <code>Span</code>、<code>Page</code> 等）分配内存，避免了频繁调用系统内存分配接口带来的性能开销。</li>
+</ul>
+<h2><span id="实现详解">实现详解</span></h2><h3><span id="核心组件-object-x2f-freelist">核心组件 <code>Object</code> &#x2F; <code>FreeList</code></span></h3><p>不管我们是实现比较复杂的高并发内存池，还是实现其中的定长内存池，都需要将一块块被申请和释放的内存块管理起来，当用户将资源释放时，我们并不需要着急地将资源归还给操作系统，而是将其放入内存池中，等待下一次的分配请求。因此，我们需要一个基础的组件来存储这些内存块，这个组件就是 <code>Object</code>。</p>
+<p>当我们用户将一块曾经从我们这里申请的内存块归还回来的时候，我们需要将这个资源存储起来，如何存储？数组吗？显然不合适，因为你无法保证用户按照内存块获取的顺序去归还内存块，所以我们需要一个更加灵活的数据结构来存储这些内存块，链表是一个不错的选择。于是我们设计了自由链表 <code>FreeList</code> 这个组件，它内部维护了一个单向链表，用于存储空闲的内存块。</p>
+<p>在讲解这两个核心组件之前，我们来讲解一下最基础的内存块管理方式：</p>
+<p>假设一个场景，我们当前已经有了一个<strong>内存块链表</strong>，此时用户又释放了一个内存块给我们，此时我们应该将这个内存块头插到这个<strong>内存块链表</strong>中，一般的链表会维护一个指针和一个数据，指针用于指向下一个节点，数据用于存储当前节点的数据。也就是将指针和数据分开处理，但用户归还的内存块中的数据是不会被我们使用的，因此我们可以将指针和数据合二为一，直接将指针存储在用户归还的内存块中，这样就节省了内存开销。</p>
+<p>假设用户归还的内存块叫做 <code>obj</code>，我们当前的自由链表叫做 <code>freeList</code>，此时我们可以将 <code>freeList</code> 的头节点指针存储在 <code>obj</code> 中，然后将 <code>freeList</code> 的头节点指针指向 <code>obj</code>，这样就完成了内存块的归还操作。一种最原始的实现方式如下：</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token operator">*</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span>obj <span class="token operator">=</span> freeList<span class="token punctuation">;</span>
+freeList <span class="token operator">=</span> obj<span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
 <p>没错，这样就完成了自由链表的头插，我们将用户的 <code>obj</code> 看作成一个二级指针，然后将 <code>freeList</code> 的头节点指针存储在 <code>obj</code> 中，最后将 <code>freeList</code> 的头节点指针指向 <code>obj</code>。</p>
 <p><img src="/blog/img/C++/high_concur/obj.png" alt="obj"></p>
 <p>同理，当用户需要申请内存块时，我们只需要将 <code>freeList</code> 的头节点指针取出来，然后将 <code>freeList</code> 的头节点指针指向下一个节点即可，代码如下：</p>
@@ -1567,7 +1542,8 @@ freeList <span class="token operator">=</span> <span class="token operator">*</s
 <li>构建类型：Debug</li>
 </ul>
 <p>运行后结果如下：</p>
-<pre class="line-numbers language-powershell" data-language="powershell"><code class="language-powershell"><span class="token function">PS</span> D:\C+<span class="token operator">+</span>_Code\C+<span class="token operator">+</span>Project\HighConcurrencyMempool\High-concurrency-mempool\build> <span class="token punctuation">.</span><span class="token operator">/</span>Benchmark<span class="token punctuation">.</span>exe
+<pre class="line-numbers language-powershell" data-language="powershell"><code class="language-powershell">
+<span class="token function">PS</span> D:\C+<span class="token operator">+</span>_Code\C+<span class="token operator">+</span>Project\HighConcurrencyMempool\High-concurrency-mempool\build> <span class="token punctuation">.</span><span class="token operator">/</span>Benchmark<span class="token punctuation">.</span>exe
 ==========================================================
 4个线程并发执行1024轮次，每轮次concurrent alloc 1000次: 花费：37 ms
 4个线程并发执行1024轮次，每轮次concurrent dealloc 1000次: 花费：511 ms
@@ -1613,7 +1589,8 @@ Timer: 133815000 ns
 4个线程并发执行1024轮次，每轮次malloc 1000次: 花费：404 ms
 4个线程并发执行1024轮次，每轮次free 1000次: 花费：208 ms
 4个线程并发malloc&amp;free 4096000次，总计花费：612 ms
-==========================================================<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+==========================================================
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p>计算下来，平均结果如下：</p>
 <table>
