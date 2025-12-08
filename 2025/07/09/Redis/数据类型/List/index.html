@@ -91,13 +91,27 @@ Redis 阻塞列,"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <!-- Prism.js 官方主题 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
-    
-  <script src='https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js'></script>
-
 <meta name="generator" content="Hexo 7.3.0"></head>
 <script src="https://cdn.jsdelivr.net/npm/TagCloud@2.2.0/dist/TagCloud.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
+<!-- Mermaid.js -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+    // 由页面脚本在转换为 .mermaid 元素后再触发渲染
+    mermaid.initialize({ startOnLoad: false });
+    window.renderMermaidInContainer = async function(selector){
+        try {
+            if (window.mermaid && typeof mermaid.run === 'function') {
+                await mermaid.run({ querySelector: selector || '.mermaid' });
+            } else if (window.mermaid && typeof mermaid.init === 'function') {
+                mermaid.init(undefined, document.querySelectorAll(selector || '.mermaid'));
+            }
+        } catch (e) { /* 忽略渲染异常，避免影响页面 */ }
+    };
+</script>
+
+
 
 <body class="loading">
     <span id="config-title" style="display:none">刘家炫的博客</span>
@@ -247,7 +261,7 @@ Redis 阻塞列,"/>
                     </div>
                     <div>
                         <a href="/blog/archives" style="text-decoration: none; color: inherit;">
-                                <span style="font-weight:bold; font-size:20px;">75</span>
+                                <span style="font-weight:bold; font-size:20px;">76</span>
                                 <span style="font-size:20px;">文章</span>
                         </a>
                     </div>
@@ -256,7 +270,7 @@ Redis 阻塞列,"/>
         </div>
         <div class="recommendations">
             <h2>相关推荐</h2>
-            <ul><li><a href="/blog/2025/07/07/Redis/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/String/">Redis 常见数据类型-String 类型</a></li><li><a href="/blog/2025/08/15/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_list/">Redis C++ 客户端使用指南-List 篇</a></li><li><a href="/blog/2025/06/19/Redis/redis_single_thread_model/">关于 Redis 单线程模型的探讨</a></li><li><a href="/blog/2025/09/19/Redis/redis_sentinel/">Redis 哨兵机制</a></li><li><a href="/blog/2025/09/19/Redis/Redis_cache/">Redis 应用--缓存</a></li><li><a href="/blog/2025/08/20/Redis/redis_slave/">Redis 主从复制</a></li></ul>
+            <ul><li><a href="/blog/2025/07/08/Redis/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/Hash/">Redis 常见数据类型-Hash 类型</a></li><li><a href="/blog/2025/08/16/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_hash/">Redis C++ 客户端使用指南-Hash 篇</a></li><li><a href="/blog/2025/08/16/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_zset/">Redis C++ 客户端使用指南-Zset 篇</a></li><li><a href="/blog/2025/08/20/Redis/redis_slave/">Redis 主从复制</a></li><li><a href="/blog/2025/07/09/Redis/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/Set/">Redis 常见数据类型-Set 类型</a></li><li><a href="/blog/2025/09/19/Redis/Redis_dist_lock/">Redis 应用--分布式锁</a></li></ul>
         </div>
         <div class='main' style="
     background: transparent;
@@ -731,58 +745,58 @@ RPOP key<span aria-hidden="true" class="line-numbers-rows"><span></span><span></
 </li>
 </ol>
 <hr>
-<h3><span id="1-时序图客户端与-redis-的交互过程">1. 时序图：客户端与 Redis 的交互过程</span></h3><h4><span id="场景1列表不为空时">场景1：列表不为空时</span></h4><pre class="mermaid">sequenceDiagram
-    participant Client
-    participant Redis
-    Note over Redis: user:1:messages = [x, z, y]
-    Client->>Redis: LPOP user:1:messages
-    Redis-->>Client: x
-    Client->>Redis: BLPOP user:1:messages 5
-    Redis-->>Client: x
-    Note left of Redis: 有元素时行为完全一致</pre>
+<h3><span id="1-时序图客户端与-redis-的交互过程">1. 时序图：客户端与 Redis 的交互过程</span></h3><h4><span id="场景1列表不为空时">场景1：列表不为空时</span></h4><pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">sequenceDiagram</span>
+    <span class="token keyword">participant</span> Client
+    <span class="token keyword">participant</span> Redis
+    <span class="token keyword">Note over</span> Redis<span class="token operator">:</span> user<span class="token operator">:</span>1<span class="token operator">:</span>messages = <span class="token text string">[x, z, y]</span>
+    Client<span class="token arrow operator">->></span>Redis<span class="token operator">:</span> LPOP user<span class="token operator">:</span>1<span class="token operator">:</span>messages
+    Redis<span class="token arrow operator">-->></span>Client<span class="token operator">:</span> x
+    Client<span class="token arrow operator">->></span>Redis<span class="token operator">:</span> BLPOP user<span class="token operator">:</span>1<span class="token operator">:</span>messages 5
+    Redis<span class="token arrow operator">-->></span>Client<span class="token operator">:</span> x
+    <span class="token keyword">Note left of</span> Redis<span class="token operator">:</span> 有元素时行为完全一致<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h4><span id="场景2空列表且无新元素5秒超时">场景2：空列表且无新元素（5秒超时）</span></h4><pre class="mermaid">sequenceDiagram
-    participant Client
-    participant Redis
-    Note over Redis: user:1:messages = []
-    Client->>Redis: LPOP user:1:messages
-    Redis-->>Client: nil (立即)
-    Client->>Redis: BLPOP user:1:messages 5
-    loop 5秒检查
-        Redis->>Redis: 检查列表
-    end
-    Redis-->>Client: nil (5秒后)
-    Note left of Redis: 无元素时LPOP立即返回，<br>BLPOP阻塞等待</pre>
+<h4><span id="场景2空列表且无新元素5秒超时">场景2：空列表且无新元素（5秒超时）</span></h4><pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">sequenceDiagram</span>
+    <span class="token keyword">participant</span> Client
+    <span class="token keyword">participant</span> Redis
+    <span class="token keyword">Note over</span> Redis<span class="token operator">:</span> user<span class="token operator">:</span>1<span class="token operator">:</span>messages = []
+    Client<span class="token arrow operator">->></span>Redis<span class="token operator">:</span> LPOP user<span class="token operator">:</span>1<span class="token operator">:</span>messages
+    Redis<span class="token arrow operator">-->></span>Client<span class="token operator">:</span> nil <span class="token text string">(立即)</span>
+    Client<span class="token arrow operator">->></span>Redis<span class="token operator">:</span> BLPOP user<span class="token operator">:</span>1<span class="token operator">:</span>messages 5
+    <span class="token keyword">loop</span> 5秒检查
+        Redis<span class="token arrow operator">->></span>Redis<span class="token operator">:</span> 检查列表
+    <span class="token keyword">end</span>
+    Redis<span class="token arrow operator">-->></span>Client<span class="token operator">:</span> nil <span class="token text string">(5秒后)</span>
+    <span class="token keyword">Note left of</span> Redis<span class="token operator">:</span> 无元素时LPOP立即返回，&lt;br/>BLPOP阻塞等待<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h4><span id="场景3空列表但5秒内加入新元素">场景3：空列表但5秒内加入新元素</span></h4><pre class="mermaid">sequenceDiagram
-    participant ClientA
-    participant ClientB
-    participant Redis
-    Note over Redis: user:1:messages = []
-    ClientA->>Redis: LPOP user:1:messages
-    Redis-->>ClientA: nil (立即)
-    par 并行事件
-        ClientA->>Redis: BLPOP user:1:messages 5
-    and
-        ClientB->>Redis: LPUSH user:1:messages x
-        Redis-->>ClientA: x (中断等待)
-    end
-    Note right of ClientB: BLPOP在等待期间<br>捕获到新元素</pre>
+<h4><span id="场景3空列表但5秒内加入新元素">场景3：空列表但5秒内加入新元素</span></h4><pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">sequenceDiagram</span>
+    <span class="token keyword">participant</span> ClientA
+    <span class="token keyword">participant</span> ClientB
+    <span class="token keyword">participant</span> Redis
+    <span class="token keyword">Note over</span> Redis<span class="token operator">:</span> user<span class="token operator">:</span>1<span class="token operator">:</span>messages = []
+    ClientA<span class="token arrow operator">->></span>Redis<span class="token operator">:</span> LPOP user<span class="token operator">:</span>1<span class="token operator">:</span>messages
+    Redis<span class="token arrow operator">-->></span>ClientA<span class="token operator">:</span> nil <span class="token text string">(立即)</span>
+    <span class="token keyword">par</span> 并行事件
+        ClientA<span class="token arrow operator">->></span>Redis<span class="token operator">:</span> BLPOP user<span class="token operator">:</span>1<span class="token operator">:</span>messages 5
+    <span class="token keyword">and</span>
+        ClientB<span class="token arrow operator">->></span>Redis<span class="token operator">:</span> LPUSH user<span class="token operator">:</span>1<span class="token operator">:</span>messages x
+        Redis<span class="token arrow operator">-->></span>ClientA<span class="token operator">:</span> x <span class="token text string">(中断等待)</span>
+    <span class="token keyword">end</span>
+    <span class="token keyword">Note right of</span> ClientB<span class="token operator">:</span> BLPOP在等待期间&lt;br/>捕获到新元素<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <hr>
-<h3><span id="2-流程图操作逻辑对比">2. 流程图：操作逻辑对比</span></h3><pre class="mermaid">flowchart TD
-    A[开始] --> B{列表是否为空?}
-    B -- 否 --> C[LPOP/BLPOP弹出首元素]
-    B -- 是 --> D{操作类型}
-    D -- LPOP --> E[立即返回nil]
-    D -- BLPOP --> F[启动超时计时器]
-    F --> G{期间有新元素?}
-    G -- 是 --> H[立即返回新元素]
-    G -- 否 --> I[超时后返回nil]
-    style C fill:#d4edda,stroke:#28a745
-    style E fill:#f8d7da,stroke:#dc3545
-    style H fill:#d4edda,stroke:#28a745
-    style I fill:#fff3cd,stroke:#ffc107</pre>
+<h3><span id="2-流程图操作逻辑对比">2. 流程图：操作逻辑对比</span></h3><pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">flowchart</span> TD
+    A<span class="token text string">[开始]</span> <span class="token arrow operator">--></span> B<span class="token text string">&#123;列表是否为空?&#125;</span>
+    B <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">否</span> <span class="token arrow operator">--></span></span> C<span class="token text string">[LPOP/BLPOP弹出首元素]</span>
+    B <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">是</span> <span class="token arrow operator">--></span></span> D<span class="token text string">&#123;操作类型&#125;</span>
+    D <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">LPOP</span> <span class="token arrow operator">--></span></span> E<span class="token text string">[立即返回nil]</span>
+    D <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">BLPOP</span> <span class="token arrow operator">--></span></span> F<span class="token text string">[启动超时计时器]</span>
+    F <span class="token arrow operator">--></span> G<span class="token text string">&#123;期间有新元素?&#125;</span>
+    G <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">是</span> <span class="token arrow operator">--></span></span> H<span class="token text string">[立即返回新元素]</span>
+    G <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">否</span> <span class="token arrow operator">--></span></span> I<span class="token text string">[超时后返回nil]</span>
+    <span class="token keyword">style</span> C <span class="token style"><span class="token property">fill</span><span class="token operator">:</span>#d4edda<span class="token punctuation">,</span><span class="token property">stroke</span><span class="token operator">:</span>#28a745</span>
+    <span class="token keyword">style</span> E <span class="token style"><span class="token property">fill</span><span class="token operator">:</span>#f8d7da<span class="token punctuation">,</span><span class="token property">stroke</span><span class="token operator">:</span>#dc3545</span>
+    <span class="token keyword">style</span> H <span class="token style"><span class="token property">fill</span><span class="token operator">:</span>#d4edda<span class="token punctuation">,</span><span class="token property">stroke</span><span class="token operator">:</span>#28a745</span>
+    <span class="token keyword">style</span> I <span class="token style"><span class="token property">fill</span><span class="token operator">:</span>#fff3cd<span class="token punctuation">,</span><span class="token property">stroke</span><span class="token operator">:</span>#ffc107</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <hr>
 <h3><span id="关键结论">关键结论</span></h3><table>
@@ -949,12 +963,13 @@ OK
 </ol>
 <h2><span id="典型业务场景">典型业务场景</span></h2><h3><span id="缓存功能">缓存功能</span></h3><p>下面以学生列表为例展开说明：</p>
 <h4><span id="数据结构设计">数据结构设计</span></h4><p>使用 Redis List 存储班级学生信息，每个班级对应一个 List，学生ID&#x2F;姓名作为元素：</p>
-<pre class="mermaid">flowchart LR
-    classList["班级列表"] --> class1["class:1:students"]
-    classList --> class2["class:2:students"]
-    class1 -->|"元素"| stu1["stu_001"]
-    class1 -->|"元素"| stu2["stu_002"]
-    class1 -->|"..."| stun["stu_999"]</pre>
+<pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">flowchart</span> LR
+    classList<span class="token text string">["班级列表"]</span> <span class="token arrow operator">--></span> class1<span class="token text string">["class:1:students"]</span>
+    classList <span class="token arrow operator">--></span> class2<span class="token text string">["class:2:students"]</span>
+    class1 <span class="token arrow operator">--></span><span class="token label property">|"元素"|</span> stu1<span class="token text string">["stu_001"]</span>
+    class1 <span class="token arrow operator">--></span><span class="token label property">|"元素"|</span> stu2<span class="token text string">["stu_002"]</span>
+    class1 <span class="token arrow operator">--></span><span class="token label property">|"..."|</span> stun<span class="token text string">["stu_999"]</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <h4><span id="核心操作命令">核心操作命令</span></h4><h5><span id="1-初始化班级学生列表">1. 初始化班级学生列表</span></h5><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 添加学生到班级1（尾部插入）</span>
 RPUSH class:1:students stu_001 stu_002 stu_003
@@ -962,11 +977,11 @@ RPUSH class:1:students stu_001 stu_002 stu_003
 <span class="token comment"># 添加学生到班级2（头部插入）</span>
 LPUSH class:2:students stu_101 stu_102<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h5><span id="2-查询学生列表">2. 查询学生列表</span></h5><pre class="mermaid">sequenceDiagram
-    participant Client
-    participant Redis
-    Client->>Redis: LRANGE class:1:students 0 -1
-    Redis-->>Client: ["stu_001", "stu_002", "stu_003"]</pre>
+<h5><span id="2-查询学生列表">2. 查询学生列表</span></h5><pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">sequenceDiagram</span>
+    <span class="token keyword">participant</span> Client
+    <span class="token keyword">participant</span> Redis
+    Client<span class="token arrow operator">->></span>Redis<span class="token operator">:</span> LRANGE class<span class="token operator">:</span>1<span class="token operator">:</span>students 0 -1
+    Redis<span class="token arrow operator">-->></span>Client<span class="token operator">:</span> <span class="token text string">["stu_001", "stu_002", "stu_003"]</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 获取班级1全部学生（0表示起始索引，-1表示末尾）</span>
 LRANGE class:1:students <span class="token number">0</span> <span class="token parameter variable">-1</span>
@@ -974,12 +989,12 @@ LRANGE class:1:students <span class="token number">0</span> <span class="token p
 <span class="token comment"># 获取前5名学生</span>
 LRANGE class:1:students <span class="token number">0</span> <span class="token number">4</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h5><span id="3-学生变动操作">3. 学生变动操作</span></h5><pre class="mermaid">gantt
+<h5><span id="3-学生变动操作">3. 学生变动操作</span></h5><pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">gantt</span>
     title 学生名单变更流程
     dateFormat  YYYY-MM-DD
     section 班级1
-    新生入学      :2023-09-01, 1d
-    学生转出      :2023-09-05, 1d</pre>
+    新生入学      <span class="token operator">:</span>2023-09-01, 1d
+    学生转出      <span class="token operator">:</span>2023-09-05, 1d<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 学生转入（尾部添加）</span>
 RPUSH class:1:students stu_004
@@ -1019,20 +1034,20 @@ LREM class:1:students <span class="token number">1</span> stu_002<span aria-hidd
 <td><code>SADD class:1:set stu_001</code></td>
 </tr>
 </tbody></table>
-<h4><span id="完整示例流程">完整示例流程</span></h4><pre class="mermaid">sequenceDiagram
-    participant Teacher
-    participant Redis
-    Note over Teacher: 新学期开始
-    Teacher->>Redis: RPUSH class:2023:students Alice Bob Charlie
-    Redis-->>Teacher: (integer) 3
-    Teacher->>Redis: LRANGE class:2023:students 0 -1
-    Redis-->>Teacher: 1) "Alice" 2) "Bob" 3) "Charlie"
-    Note over Teacher: 学生David转入
-    Teacher->>Redis: RPUSH class:2023:students David
-    Redis-->>Teacher: (integer) 4
-    Note over Teacher: 学生Bob转出
-    Teacher->>Redis: LREM class:2023:students 1 Bob
-    Redis-->>Teacher: (integer) 1</pre>
+<h4><span id="完整示例流程">完整示例流程</span></h4><pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">sequenceDiagram</span>
+    <span class="token keyword">participant</span> Teacher
+    <span class="token keyword">participant</span> Redis
+    <span class="token keyword">Note over</span> Teacher<span class="token operator">:</span> 新学期开始
+    Teacher<span class="token arrow operator">->></span>Redis<span class="token operator">:</span> RPUSH class<span class="token operator">:</span>2023<span class="token operator">:</span>students Alice Bob Charlie
+    Redis<span class="token arrow operator">-->></span>Teacher<span class="token operator">:</span> <span class="token text string">(integer)</span> 3
+    Teacher<span class="token arrow operator">->></span>Redis<span class="token operator">:</span> LRANGE class<span class="token operator">:</span>2023<span class="token operator">:</span>students 0 -1
+    Redis<span class="token arrow operator">-->></span>Teacher<span class="token operator">:</span> 1<span class="token punctuation">)</span> <span class="token string">"Alice"</span> 2<span class="token punctuation">)</span> <span class="token string">"Bob"</span> 3<span class="token punctuation">)</span> <span class="token string">"Charlie"</span>
+    <span class="token keyword">Note over</span> Teacher<span class="token operator">:</span> 学生David转入
+    Teacher<span class="token arrow operator">->></span>Redis<span class="token operator">:</span> RPUSH class<span class="token operator">:</span>2023<span class="token operator">:</span>students David
+    Redis<span class="token arrow operator">-->></span>Teacher<span class="token operator">:</span> <span class="token text string">(integer)</span> 4
+    <span class="token keyword">Note over</span> Teacher<span class="token operator">:</span> 学生Bob转出
+    Teacher<span class="token arrow operator">->></span>Redis<span class="token operator">:</span> LREM class<span class="token operator">:</span>2023<span class="token operator">:</span>students 1 Bob
+    Redis<span class="token arrow operator">-->></span>Teacher<span class="token operator">:</span> <span class="token text string">(integer)</span> 1<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <h4><span id="注意事项">注意事项</span></h4><ol>
 <li>当学生数量 &gt; 512 或名字长度 &gt; 64字节时，Redis 会自动将 ziplist 转为 linkedlist</li>
@@ -1041,23 +1056,23 @@ LREM class:1:students <span class="token number">1</span> stu_002<span aria-hidd
 </ol>
 <pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">HMSET student:stu_001 name <span class="token string">"Alice"</span> age <span class="token number">12</span> gender F<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
-<h3><span id="消息队列">消息队列</span></h3><h4><span id="1-基础阻塞消息队列模型">1. 基础阻塞消息队列模型</span></h4><pre class="mermaid">sequenceDiagram
-    participant Producer
-    participant Redis as Redis Server
-    participant Consumer1
-    participant Consumer2
-    participant Consumer3
+<h3><span id="消息队列">消息队列</span></h3><h4><span id="1-基础阻塞消息队列模型">1. 基础阻塞消息队列模型</span></h4><pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">sequenceDiagram</span>
+    <span class="token keyword">participant</span> Producer
+    <span class="token keyword">participant</span> Redis as Redis Server
+    <span class="token keyword">participant</span> Consumer1
+    <span class="token keyword">participant</span> Consumer2
+    <span class="token keyword">participant</span> Consumer3
 
-    Note over Producer: 生产者客户端
-    Note over Consumer1,Consumer3: 消费者客户端集群
+    <span class="token keyword">Note over</span> Producer<span class="token operator">:</span> 生产者客户端
+    <span class="token keyword">Note over</span> Consumer1,Consumer3<span class="token operator">:</span> 消费者客户端集群
     
-    Producer->>Redis: LPUSH queue_msg "消息1"
-    loop BRPOP 阻塞等待
-        Consumer1->>Redis: BRPOP queue_msg 30
-        Consumer2->>Redis: BRPOP queue_msg 30
-        Consumer3->>Redis: BRPOP queue_msg 30
-    end
-    Redis-->>Consumer2: 返回"消息1" (只有一个消费者抢到)</pre>
+    Producer<span class="token arrow operator">->></span>Redis<span class="token operator">:</span> LPUSH queue_msg <span class="token string">"消息1"</span>
+    <span class="token keyword">loop</span> BRPOP 阻塞等待
+        Consumer1<span class="token arrow operator">->></span>Redis<span class="token operator">:</span> BRPOP queue_msg 30
+        Consumer2<span class="token arrow operator">->></span>Redis<span class="token operator">:</span> BRPOP queue_msg 30
+        Consumer3<span class="token arrow operator">->></span>Redis<span class="token operator">:</span> BRPOP queue_msg 30
+    <span class="token keyword">end</span>
+    Redis<span class="token arrow operator">-->></span>Consumer2<span class="token operator">:</span> 返回<span class="token string">"消息1"</span> <span class="token text string">(只有一个消费者抢到)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p><strong>实现方式</strong>：</p>
 <ul>
@@ -1070,23 +1085,23 @@ LREM class:1:students <span class="token number">1</span> stu_002<span aria-hidd
 </ul>
 </li>
 </ul>
-<h4><span id="2-分频道消息队列模型">2. 分频道消息队列模型</span></h4><pre class="mermaid">flowchart TB
-    subgraph Redis服务器
-        queue1[(queue:1)]
-        queue2[(queue:2)]
-        queue3[(queue:3)]
-    end
+<h4><span id="2-分频道消息队列模型">2. 分频道消息队列模型</span></h4><pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">flowchart</span> TB
+    <span class="token keyword">subgraph</span> Redis服务器
+        queue1<span class="token text string">[(queue:1)]</span>
+        queue2<span class="token text string">[(queue:2)]</span>
+        queue3<span class="token text string">[(queue:3)]</span>
+    <span class="token keyword">end</span>
 
-    Producer -->|LPUSH queue:1| queue1
-    Producer -->|LPUSH queue:2| queue2
-    Producer -->|LPUSH queue:3| queue3
+    Producer <span class="token arrow operator">--></span><span class="token label property">|LPUSH queue:1|</span> queue1
+    Producer <span class="token arrow operator">--></span><span class="token label property">|LPUSH queue:2|</span> queue2
+    Producer <span class="token arrow operator">--></span><span class="token label property">|LPUSH queue:3|</span> queue3
 
-    queue1 --> ConsumerA(ConsumerA:<br>BRPOP queue:1)
-    queue1 --> ConsumerB(ConsumerB:<br>BRPOP queue:1)
-    queue1 --> ConsumerC(ConsumerC:<br>BRPOP queue:1,queue:2)
-    queue2 --> ConsumerC
-    queue2 --> ConsumerD(ConsumerD:<br>BRPOP queue:2,queue:3)
-    queue3 --> ConsumerD</pre>
+    queue1 <span class="token arrow operator">--></span> ConsumerA<span class="token text string">(ConsumerA:&lt;br>BRPOP queue:1)</span>
+    queue1 <span class="token arrow operator">--></span> ConsumerB<span class="token text string">(ConsumerB:&lt;br>BRPOP queue:1)</span>
+    queue1 <span class="token arrow operator">--></span> ConsumerC<span class="token text string">(ConsumerC:&lt;br>BRPOP queue:1,queue:2)</span>
+    queue2 <span class="token arrow operator">--></span> ConsumerC
+    queue2 <span class="token arrow operator">--></span> ConsumerD<span class="token text string">(ConsumerD:&lt;br>BRPOP queue:2,queue:3)</span>
+    queue3 <span class="token arrow operator">--></span> ConsumerD<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p><strong>频道订阅模式</strong>：</p>
 <pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 生产者发布消息到不同频道</span>
@@ -1131,14 +1146,14 @@ BRPOP channel:news channel:alert <span class="token number">30</span>  <span cla
 <td>分频道并行处理</td>
 </tr>
 </tbody></table>
-<h3><span id="redis-实现微博-timeline-方案">Redis 实现微博 Timeline 方案</span></h3><h4><span id="数据结构设计">数据结构设计</span></h4><pre class="mermaid">flowchart LR
-    user1["user:1:mblogs"] --> mblog1["mblog:1"]
-    user1 --> mblog3["mblog:3"]
-    userk["user:k:mblogs"] --> mblog9["mblog:9"]
+<h3><span id="redis-实现微博-timeline-方案">Redis 实现微博 Timeline 方案</span></h3><h4><span id="数据结构设计">数据结构设计</span></h4><pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">flowchart</span> LR
+    user1<span class="token text string">["user:1:mblogs"]</span> <span class="token arrow operator">--></span> mblog1<span class="token text string">["mblog:1"]</span>
+    user1 <span class="token arrow operator">--></span> mblog3<span class="token text string">["mblog:3"]</span>
+    userk<span class="token text string">["user:k:mblogs"]</span> <span class="token arrow operator">--></span> mblog9<span class="token text string">["mblog:9"]</span>
     
-    mblog1 -->|HASH| content1["title: xx\ntimestamp: 1476536196\ncontent: xxxxx"]
-    mblog3 -->|HASH| content3["title: yy\ntimestamp: 1476536197\ncontent: yyyyy"]
-    mblog9 -->|HASH| content9["title: zz\ntimestamp: 1476536198\ncontent: zzzzz"]</pre>
+    mblog1 <span class="token arrow operator">--></span><span class="token label property">|HASH|</span> content1<span class="token text string">["title: xx\ntimestamp: 1476536196\ncontent: xxxxx"]</span>
+    mblog3 <span class="token arrow operator">--></span><span class="token label property">|HASH|</span> content3<span class="token text string">["title: yy\ntimestamp: 1476536197\ncontent: yyyyy"]</span>
+    mblog9 <span class="token arrow operator">--></span><span class="token label property">|HASH|</span> content9<span class="token text string">["title: zz\ntimestamp: 1476536198\ncontent: zzzzz"]</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <h4><span id="核心操作实现">核心操作实现</span></h4><h5><span id="1-微博存储hash结构">1. 微博存储（Hash结构）</span></h5><pre class="line-numbers language-redis" data-language="redis"><code class="language-redis"># 存储单篇微博
 HMSET mblog:1 title &quot;Redis实战&quot; timestamp 1476536196 content &quot;使用List实现Timeline...&quot;
@@ -1149,13 +1164,13 @@ HMSET mblog:2 title &quot;Redis优化&quot; timestamp 1476536197 content &quot;P
 HMSET mblog:3 title &quot;Mermaid教程&quot; timestamp 1476536198 content &quot;图表绘制指南&quot;
 EXEC<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h5><span id="2-timeline更新list操作">2. Timeline更新（List操作）</span></h5><pre class="mermaid">sequenceDiagram
-    participant 客户端
-    participant Redis
-    客户端->>Redis: LPUSH user:1:mblogs mblog:1 mblog:3
-    Redis-->>客户端: (integer) 2
-    客户端->>Redis: LPUSH user:1:mblogs mblog:9
-    Redis-->>客户端: (integer) 3</pre>
+<h5><span id="2-timeline更新list操作">2. Timeline更新（List操作）</span></h5><pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">sequenceDiagram</span>
+    <span class="token keyword">participant</span> 客户端
+    <span class="token keyword">participant</span> Redis
+    客户端<span class="token arrow operator">->></span>Redis<span class="token operator">:</span> LPUSH user<span class="token operator">:</span>1<span class="token operator">:</span>mblogs mblog<span class="token operator">:</span>1 mblog<span class="token operator">:</span>3
+    Redis<span class="token arrow operator">-->></span>客户端<span class="token operator">:</span> <span class="token text string">(integer)</span> 2
+    客户端<span class="token arrow operator">->></span>Redis<span class="token operator">:</span> LPUSH user<span class="token operator">:</span>1<span class="token operator">:</span>mblogs mblog<span class="token operator">:</span>9
+    Redis<span class="token arrow operator">-->></span>客户端<span class="token operator">:</span> <span class="token text string">(integer)</span> 3<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <h5><span id="3-分页查询方案">3. 分页查询方案</span></h5><pre class="line-numbers language-redis" data-language="redis"><code class="language-redis"># 获取第一页（10条）
 LRANGE user:1:mblogs 0 9
@@ -1187,13 +1202,13 @@ EXEC<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span
 <td>读取高效，但更新灵活性降低</td>
 </tr>
 </tbody></table>
-<h5><span id="问题2中间元素访问性能">问题2：中间元素访问性能</span></h5><pre class="mermaid">flowchart TB
-    subgraph 大列表拆分方案
-        original["user:1:mblogs (超大列表)"]
-        split1["user:1:mblogs:part1"]
-        split2["user:1:mblogs:part2"]
-        split3["user:1:mblogs:part3"]
-    end</pre>
+<h5><span id="问题2中间元素访问性能">问题2：中间元素访问性能</span></h5><pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">flowchart</span> TB
+    <span class="token keyword">subgraph</span> 大列表拆分方案
+        original<span class="token text string">["user:1:mblogs (超大列表)"]</span>
+        split1<span class="token text string">["user:1:mblogs:part1"]</span>
+        split2<span class="token text string">["user:1:mblogs:part2"]</span>
+        split3<span class="token text string">["user:1:mblogs:part3"]</span>
+    <span class="token keyword">end</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p><strong>拆分策略</strong>：</p>
 <ol>
@@ -2993,7 +3008,7 @@ INFO memory<span aria-hidden="true" class="line-numbers-rows"><span></span><span
     color: #444444 !important;
   }
 
-  .dark-mode *:not(table):not(table *):not(button):not(input):not(textarea):not(a):not(pre):not(pre *) {
+  .dark-mode *:not(table):not(table *):not(button):not(input):not(textarea):not(a):not(pre):not(pre *):not(.mermaid):not(.mermaid *) {
     color: #e0e0e0 !important;
     border-color: #444 !important;
   }
@@ -3084,9 +3099,16 @@ INFO memory<span aria-hidden="true" class="line-numbers-rows"><span></span><span
     border-radius: 5px;
   }
 
-  .mermaid path,
-  .mermaid line {
-    stroke: #f0f0f0 !important;
+  /* 仅亮色模式：加深箭头/连线颜色，提升可读性 */
+  html:not(.dark-mode) .mermaid path,
+  html:not(.dark-mode) .mermaid line {
+    stroke: #666666 !important; /* 比原来的#f0f0f0更深一些 */
+  }
+
+  /* 夜间模式：箭头/连线更接近白色，提高对比度 */
+  html.dark-mode .mermaid path,
+  html.dark-mode .mermaid line {
+    stroke: #f6f6f6 !important; /* 近白色，避免纯白刺眼 */
   }
 
   .mermaid rect path {
@@ -3096,6 +3118,45 @@ INFO memory<span aria-hidden="true" class="line-numbers-rows"><span></span><span
   .mermaid text {
     fill: #4a8ecd !important;
   }
+
+  /* Mermaid 点击放大覆盖层 */
+  #mermaid-zoom-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+    z-index: 10000;
+    display: none;
+  }
+  #mermaid-zoom-overlay.show { display: block; }
+  #mermaid-zoom-content {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 96vw; height: 92vh;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 10px 28px rgba(0,0,0,.25);
+    overflow: hidden;
+  }
+  html.dark-mode #mermaid-zoom-content { background: #1f2937; }
+  #mermaid-zoom-close {
+    position: absolute;
+    top: 8px; right: 10px;
+    background: rgba(0,0,0,.5);
+    color: #fff;
+    border: none; border-radius: 6px;
+    padding: 6px 10px; cursor: pointer;
+    z-index: 10001;
+  }
+  #mermaid-zoom-stage {
+    position: relative;
+    width: 100%; height: 100%;
+    transform-origin: 0 0;
+    cursor: grab;
+  }
+  #mermaid-zoom-stage.grabbing { cursor: grabbing; }
+  #post-content .mermaid svg { cursor: zoom-in; }
 
   /* 自定义确认弹窗样式 */
   .custom-confirm-mask {
@@ -3869,6 +3930,142 @@ INFO memory<span aria-hidden="true" class="line-numbers-rows"><span></span><span
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+    }
+  })();
+</script>
+
+<!-- 将 ```mermaid 代码块转换为 .mermaid 并渲染 -->
+<script>
+  (function(){
+    function convertMermaidBlocks(container){
+      if (!container) return 0;
+      var blocks = container.querySelectorAll('pre code.language-mermaid, code.language-mermaid');
+      var count = 0;
+      blocks.forEach(function(codeEl){
+        var diagram = codeEl.textContent || '';
+        var wrapper = document.createElement('div');
+        wrapper.className = 'mermaid';
+        // 直接填纯文本，Mermaid自行解析
+        wrapper.textContent = diagram;
+        var pre = codeEl.closest && codeEl.closest('pre');
+        if (pre) pre.replaceWith(wrapper); else codeEl.replaceWith(wrapper);
+        count++;
+      });
+      return count;
+    }
+
+    function render(container){
+      if (window.renderMermaidInContainer) {
+        window.renderMermaidInContainer('#post-content .mermaid');
+      } else if (window.mermaid) {
+        // 兜底：直接尝试 mermaid.run/init
+        try {
+          if (typeof mermaid.run === 'function') mermaid.run({ querySelector: '#post-content .mermaid' });
+          else if (typeof mermaid.init === 'function') mermaid.init(undefined, container.querySelectorAll('.mermaid'));
+        } catch(e) {}
+      }
+    }
+
+    // DOM 就绪后执行
+    document.addEventListener('DOMContentLoaded', function(){
+      var container = document.getElementById('post-content');
+      if (!container) return;
+      var n = convertMermaidBlocks(container);
+      if (n > 0) render(container);
+    });
+  })();
+  </script>
+
+<!-- Mermaid 放大查看覆盖层结构 -->
+<div id="mermaid-zoom-overlay" aria-modal="true" role="dialog" tabindex="-1">
+  <button id="mermaid-zoom-close" aria-label="关闭">关闭</button>
+  <div id="mermaid-zoom-content">
+    <div id="mermaid-zoom-stage"></div>
+  </div>
+</div>
+
+<script>
+  (function(){
+    function initMermaidZoom(){
+      var overlay = document.getElementById('mermaid-zoom-overlay');
+      var content = document.getElementById('mermaid-zoom-content');
+      var stage = document.getElementById('mermaid-zoom-stage');
+      var closeBtn = document.getElementById('mermaid-zoom-close');
+      if (!overlay || !content || !stage || !closeBtn) return;
+
+      var state = { scale: 1, minScale: 0.4, maxScale: 4, x: 0, y: 0 };
+      var dragging = false, lastPos = { x:0, y:0 };
+
+      function apply(){
+        stage.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
+      }
+
+      function fitInitial(svg){
+        var rect = content.getBoundingClientRect();
+        var bbox = null;
+        try { bbox = svg.getBBox(); } catch(e) { bbox = null; }
+        var vb = svg.getAttribute('viewBox');
+        var w=null,h=null,vx=0,vy=0;
+        if (bbox && bbox.width && bbox.height) { w=bbox.width; h=bbox.height; vx=bbox.x; vy=bbox.y; }
+        else if (vb) { var p=vb.split(/\s+/); vx=+p[0]; vy=+p[1]; w=+p[2]; h=+p[3]; }
+        else { w=+(svg.getAttribute('width')||0); h=+(svg.getAttribute('height')||0); }
+        svg.setAttribute('preserveAspectRatio','xMinYMin meet');
+        svg.removeAttribute('width'); svg.removeAttribute('height');
+        if (!vb && bbox && bbox.width && bbox.height) {
+          svg.setAttribute('viewBox', `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`);
+        }
+        var pad = 24;
+        if (w && h) {
+          var sx = (rect.width - pad)/w, sy=(rect.height - pad)/h;
+          state.scale = Math.max(state.minScale, Math.min(state.maxScale, Math.min(sx, sy)));
+          state.x = (rect.width - w*state.scale)/2 - vx*state.scale;
+          state.y = (rect.height - h*state.scale)/2 - vy*state.scale;
+        } else { state.scale=1; state.x=0; state.y=0; }
+        apply();
+      }
+
+      function openWith(svg){
+        stage.innerHTML = '';
+        var clone = svg.cloneNode(true);
+        clone.removeAttribute('style'); clone.style.display='block';
+        stage.appendChild(clone);
+        overlay.classList.add('show'); overlay.focus();
+        fitInitial(clone);
+      }
+
+      function close(){ overlay.classList.remove('show'); }
+      overlay.addEventListener('click', function(e){ if (e.target===overlay) close(); });
+      closeBtn.addEventListener('click', close);
+      document.addEventListener('keydown', function(e){ if (e.key==='Escape') close(); });
+
+      // 绑定点击放大
+      document.querySelectorAll('#post-content .mermaid svg').forEach(function(svg){
+        svg.addEventListener('click', function(){ openWith(svg); });
+      });
+
+      // 滑轮缩放（以鼠标为中心）
+      content.addEventListener('wheel', function(e){
+        e.preventDefault();
+        var prev = state.scale;
+        var factor = Math.sign(e.deltaY)>0 ? 0.9 : 1.1;
+        state.scale = Math.max(state.minScale, Math.min(state.maxScale, state.scale*factor));
+        var rect = content.getBoundingClientRect();
+        var mx = e.clientX - rect.left, my = e.clientY - rect.top;
+        var dx = (mx - state.x) * (1 - state.scale/prev);
+        var dy = (my - state.y) * (1 - state.scale/prev);
+        state.x += dx; state.y += dy; apply();
+      }, { passive: false });
+
+      // 拖拽平移
+      stage.addEventListener('mousedown', function(e){ dragging=true; stage.classList.add('grabbing'); lastPos.x=e.clientX; lastPos.y=e.clientY; });
+      window.addEventListener('mousemove', function(e){ if(!dragging) return; var dx=e.clientX-lastPos.x, dy=e.clientY-lastPos.y; state.x+=dx; state.y+=dy; lastPos.x=e.clientX; lastPos.y=e.clientY; apply(); });
+      window.addEventListener('mouseup', function(){ dragging=false; stage.classList.remove('grabbing'); });
+    }
+
+    document.addEventListener('DOMContentLoaded', function(){ initMermaidZoom(); });
+    if (typeof window.renderMermaidInContainer === 'function') {
+      var orig = window.renderMermaidInContainer;
+      window.renderMermaidInContainer = function(sel){ orig(sel); initMermaidZoom(); };
     }
   })();
 </script>

@@ -79,13 +79,27 @@ slaveof
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <!-- Prism.js 官方主题 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
-    
-  <script src='https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js'></script>
-
 <meta name="generator" content="Hexo 7.3.0"></head>
 <script src="https://cdn.jsdelivr.net/npm/TagCloud@2.2.0/dist/TagCloud.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
+<!-- Mermaid.js -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+    // 由页面脚本在转换为 .mermaid 元素后再触发渲染
+    mermaid.initialize({ startOnLoad: false });
+    window.renderMermaidInContainer = async function(selector){
+        try {
+            if (window.mermaid && typeof mermaid.run === 'function') {
+                await mermaid.run({ querySelector: selector || '.mermaid' });
+            } else if (window.mermaid && typeof mermaid.init === 'function') {
+                mermaid.init(undefined, document.querySelectorAll(selector || '.mermaid'));
+            }
+        } catch (e) { /* 忽略渲染异常，避免影响页面 */ }
+    };
+</script>
+
+
 
 <body class="loading">
     <span id="config-title" style="display:none">刘家炫的博客</span>
@@ -235,7 +249,7 @@ slaveof
                     </div>
                     <div>
                         <a href="/blog/archives" style="text-decoration: none; color: inherit;">
-                                <span style="font-weight:bold; font-size:20px;">75</span>
+                                <span style="font-weight:bold; font-size:20px;">76</span>
                                 <span style="font-size:20px;">文章</span>
                         </a>
                     </div>
@@ -244,7 +258,7 @@ slaveof
         </div>
         <div class="recommendations">
             <h2>相关推荐</h2>
-            <ul><li><a href="/blog/2025/07/10/Redis/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/Zset/">Redis 常见数据类型-Zset 类型</a></li><li><a href="/blog/2025/07/08/Redis/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/Hash/">Redis 常见数据类型-Hash 类型</a></li><li><a href="/blog/2025/07/09/Redis/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/List/">Redis 常见数据类型-List 类型</a></li><li><a href="/blog/2025/08/16/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_zset/">Redis C++ 客户端使用指南-Zset 篇</a></li><li><a href="/blog/2025/09/19/Redis/redis_sentinel/">Redis 哨兵机制</a></li><li><a href="/blog/2025/08/15/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_string/">Redis C++ 客户端使用指南-String 篇</a></li></ul>
+            <ul><li><a href="/blog/2025/07/09/Redis/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/Set/">Redis 常见数据类型-Set 类型</a></li><li><a href="/blog/2025/06/19/Redis/redis_single_thread_model/">关于 Redis 单线程模型的探讨</a></li><li><a href="/blog/2025/09/20/Redis/redis_cluster/">Redis 集群</a></li><li><a href="/blog/2025/08/14/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_func/">Redis C++ 客户端使用指南-基础指令篇</a></li><li><a href="/blog/2025/08/19/Redis/redis_rdb/">Redis 持久化</a></li><li><a href="/blog/2025/07/07/Redis/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/String/">Redis 常见数据类型-String 类型</a></li></ul>
         </div>
         <div class='main' style="
     background: transparent;
@@ -712,48 +726,49 @@ total 12K
 <p>这样一来，我们就让每个不同的节点的持久化文件存储在不同的目录下，避免了权限冲突的问题。</p>
 <p>同时，在生产环境中，建议所有 Redis 实例都统一用 redis 用户启动，避免 root 写入文件</p>
 <h2><span id="主从复制原理">主从复制原理</span></h2><h3><span id="redis-主从复制过程概要">Redis 主从复制过程概要</span></h3><p>Redis 主从复制是数据同步的核心机制，其建立过程主要包含以下六个关键步骤。下图清晰地展示了从节点启动后，与主节点建立连接并完成数据同步的完整流程：</p>
-<pre class="mermaid">flowchart TD
-    A[从节点配置 slaveof &ltmaster_ip&gt &ltmaster_port&gt] --> B
+<pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">flowchart</span> TD
+    A<span class="token text string">[从节点配置 slaveof &amp;ltmaster_ip&amp;gt &amp;ltmaster_port&amp;gt]</span> <span class="token arrow operator">--></span> B
 
-    subgraph B [第1步: 保存主节点信息]
-        B1[保存master_ip与master_port\nmaster_link_status:down]
-    end
+    <span class="token keyword">subgraph</span> B <span class="token text string">[第1步: 保存主节点信息]</span>
+        B1<span class="token text string">[保存master_ip与master_port\nmaster_link_status:down]</span>
+    <span class="token keyword">end</span>
 
-    B --> C
+    B <span class="token arrow operator">--></span> C
 
-    subgraph C [第2步: 建立TCP连接]
-        C1[从节点定时任务尝试连接主节点]
-        C2{连接成功?}
-        C2 -- 是 --> D[发送PING命令]
-        C2 -- 否 --> C3[等待重试]
-    end
+    <span class="token keyword">subgraph</span> C <span class="token text string">[第2步: 建立TCP连接]</span>
+        C1<span class="token text string">[从节点定时任务尝试连接主节点]</span>
+        C2<span class="token text string">&#123;连接成功?&#125;</span>
+        C2 <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">是</span> <span class="token arrow operator">--></span></span> D<span class="token text string">[发送PING命令]</span>
+        C2 <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">否</span> <span class="token arrow operator">--></span></span> C3<span class="token text string">[等待重试]</span>
+    <span class="token keyword">end</span>
 
-    D --> E{PONG响应正常?}
-    E -- 是 --> F
-    E -- 否 --> C3[断开连接, 等待重试]
+    D <span class="token arrow operator">--></span> E<span class="token text string">&#123;PONG响应正常?&#125;</span>
+    E <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">是</span> <span class="token arrow operator">--></span></span> F
+    E <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">否</span> <span class="token arrow operator">--></span></span> C3<span class="token text string">[断开连接, 等待重试]</span>
 
-    subgraph F [第3步: 权限验证]
-        F1[主节点要求密码?]
-        F1 -- 是 --> F2[从节点提供masterauth]
-        F2 --> F3{密码验证通过?}
-        F3 -- 是 --> G
-        F3 -- 否 --> H[复制过程停止]
-        F1 -- 否 --> G
-    end
+    <span class="token keyword">subgraph</span> F <span class="token text string">[第3步: 权限验证]</span>
+        F1<span class="token text string">[主节点要求密码?]</span>
+        F1 <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">是</span> <span class="token arrow operator">--></span></span> F2<span class="token text string">[从节点提供masterauth]</span>
+        F2 <span class="token arrow operator">--></span> F3<span class="token text string">&#123;密码验证通过?&#125;</span>
+        F3 <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">是</span> <span class="token arrow operator">--></span></span> G
+        F3 <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">否</span> <span class="token arrow operator">--></span></span> H<span class="token text string">[复制过程停止]</span>
+        F1 <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">否</span> <span class="token arrow operator">--></span></span> G
+    <span class="token keyword">end</span>
 
-    subgraph G [第4步: 同步数据集]
-        G1[首次复制?]
-        G1 -- 是 --> G2[进行全量同步]
-        G1 -- 否 --> G3[尝试部分同步]
-    end
+    <span class="token keyword">subgraph</span> G <span class="token text string">[第4步: 同步数据集]</span>
+        G1<span class="token text string">[首次复制?]</span>
+        G1 <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">是</span> <span class="token arrow operator">--></span></span> G2<span class="token text string">[进行全量同步]</span>
+        G1 <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">否</span> <span class="token arrow operator">--></span></span> G3<span class="token text string">[尝试部分同步]</span>
+    <span class="token keyword">end</span>
 
-    G --> I
+    G <span class="token arrow operator">--></span> I
 
-    subgraph I [第5步: 命令持续复制]
-        I1[主节点持续发送\n修改命令]
-        I2[从节点执行命令\n保持数据一致性]
-        I1 --> I2
-    end</pre>
+    <span class="token keyword">subgraph</span> I <span class="token text string">[第5步: 命令持续复制]</span>
+        I1<span class="token text string">[主节点持续发送\n修改命令]</span>
+        I2<span class="token text string">[从节点执行命令\n保持数据一致性]</span>
+        I1 <span class="token arrow operator">--></span> I2
+    <span class="token keyword">end</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <h4><span id="详细步骤说明">详细步骤说明</span></h4><p><strong>1. 保存主节点信息</strong></p>
 <ul>
@@ -847,14 +862,14 @@ total 12K
 </li>
 </ol>
 <h4><span id="三-psync-的工作流程">三、PSYNC 的工作流程</span></h4><p>其工作流程可以概括为以下几个步骤，如下图所示：</p>
-<pre class="mermaid">flowchart TD
-    A[从节点发送 PSYNC 请求] --> B{主节点判断}
-    B -- replid 不匹配<br>或 offset 不在积压缓冲区 --> C[回复 +FULLRESYNC<br>触发全量复制]
-    B -- replid 匹配且<br>offset 在积压缓冲区内 --> D[回复 +CONTINUE<br>触发部分复制]
-    C --> E[从节点接收RDB快照并加载]
-    D --> F[主节点发送积压缓冲区内<br>从offset之后的所有命令]
-    E --> G[进入命令传播阶段<br>主持续发送写命令]
-    F --> G</pre>
+<pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">flowchart</span> TD
+    A<span class="token text string">[从节点发送 PSYNC 请求]</span> <span class="token arrow operator">--></span> B<span class="token text string">&#123;主节点判断&#125;</span>
+    B <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">replid 不匹配&lt;br>或 offset 不在积压缓冲区</span> <span class="token arrow operator">--></span></span> C<span class="token text string">[回复 +FULLRESYNC&lt;br>触发全量复制]</span>
+    B <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">replid 匹配且&lt;br>offset 在积压缓冲区内</span> <span class="token arrow operator">--></span></span> D<span class="token text string">[回复 +CONTINUE&lt;br>触发部分复制]</span>
+    C <span class="token arrow operator">--></span> E<span class="token text string">[从节点接收RDB快照并加载]</span>
+    D <span class="token arrow operator">--></span> F<span class="token text string">[主节点发送积压缓冲区内&lt;br>从offset之后的所有命令]</span>
+    E <span class="token arrow operator">--></span> G<span class="token text string">[进入命令传播阶段&lt;br>主持续发送写命令]</span>
+    F <span class="token arrow operator">--></span> G<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <ol>
 <li><strong>从节点发送请求</strong>：从节点向主节点发送 <code>PSYNC ? -1</code>（请求全量复制）或 <code>PSYNC &lt;replid&gt; &lt;offset&gt;</code>（请求部分复制）。</li>
@@ -904,17 +919,17 @@ total 12K
 <p>“在较新版本的 Redis 中，它已被 PSYNC 取代”，这是官方文档的原话</p>
 <h3><span id="redis-全量复制">Redis 全量复制</span></h3><p>全量复制是 Redis 主从复制中最为基础和彻底的数据同步方式。它确保了从节点在初次建立复制或无法进行部分复制时，获得与主节点完全一致的数据副本。然而，这个过程成本高昂，理解其机制对于优化 Redis 架构至关重要。</p>
 <h4><span id="一-全量复制的核心流程">一、全量复制的核心流程</span></h4><p>全量复制的过程可以清晰地分为以下几个阶段，其完整流程如下图所示：</p>
-<pre class="mermaid">flowchart TD
-    A[从节点发送PSYNC ? -1] --> B[主节点回复+FULLRESYNC<br>并携带replid与offset]
-    B --> C[主节点执行bgsave<br>生成RDB快照]
-    C --> D[主节点将RDB文件发送给从节点]
-    D --> E[从节点将RDB文件保存至本地磁盘]
-    C -.-> F[主节点将bgsave期间的<br>写命令存入复制缓冲区]
-    E --> G[从节点清空自身旧数据]
-    G --> H[从节点加载RDB文件]
-    F --> I[主节点发送复制缓冲区中的命令]
-    I --> J[从节点执行这些命令<br>追平主节点最新状态]
-    H --> K[若开启AOF, 从节点执行<br>BGREWRITEAOF重写AOF文件]</pre>
+<pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">flowchart</span> TD
+    A<span class="token text string">[从节点发送PSYNC ? -1]</span> <span class="token arrow operator">--></span> B<span class="token text string">[主节点回复+FULLRESYNC&lt;br>并携带replid与offset]</span>
+    B <span class="token arrow operator">--></span> C<span class="token text string">[主节点执行bgsave&lt;br>生成RDB快照]</span>
+    C <span class="token arrow operator">--></span> D<span class="token text string">[主节点将RDB文件发送给从节点]</span>
+    D <span class="token arrow operator">--></span> E<span class="token text string">[从节点将RDB文件保存至本地磁盘]</span>
+    C <span class="token arrow operator">-.-></span> F<span class="token text string">[主节点将bgsave期间的&lt;br>写命令存入复制缓冲区]</span>
+    E <span class="token arrow operator">--></span> G<span class="token text string">[从节点清空自身旧数据]</span>
+    G <span class="token arrow operator">--></span> H<span class="token text string">[从节点加载RDB文件]</span>
+    F <span class="token arrow operator">--></span> I<span class="token text string">[主节点发送复制缓冲区中的命令]</span>
+    I <span class="token arrow operator">--></span> J<span class="token text string">[从节点执行这些命令&lt;br>追平主节点最新状态]</span>
+    H <span class="token arrow operator">--></span> K<span class="token text string">[若开启AOF, 从节点执行&lt;br>BGREWRITEAOF重写AOF文件]</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p><strong>阶段一：连接与协商</strong></p>
 <ol>
@@ -971,28 +986,28 @@ repl_backlog_histlen:1048576    <span class="token comment"># 当前缓冲区中
 </li>
 </ul>
 <h4><span id="二-部分复制的触发与流程">二、部分复制的触发与流程</span></h4><p>部分复制的核心思想是“缺啥补啥”，其完整流程如下图所示，通常在网络中断后重连时触发：</p>
-<pre class="mermaid">flowchart TD
-    A[主从连接因网络中断超时断开] --> B[中断期间: 主节点继续处理写命令<br>并将其存入复制积压缓冲区]
-    B --> C[网络恢复后, 从节点重连主节点]
-    C --> D[从节点发送PSYNC请求<br>携带之前的主节点replid与自身offset]
-    D --> E{主节点校验<br>从节点offset是否在<br>积压缓冲区范围内?}
+<pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">flowchart</span> TD
+    A<span class="token text string">[主从连接因网络中断超时断开]</span> <span class="token arrow operator">--></span> B<span class="token text string">[中断期间: 主节点继续处理写命令&lt;br>并将其存入复制积压缓冲区]</span>
+    B <span class="token arrow operator">--></span> C<span class="token text string">[网络恢复后, 从节点重连主节点]</span>
+    C <span class="token arrow operator">--></span> D<span class="token text string">[从节点发送PSYNC请求&lt;br>携带之前的主节点replid与自身offset]</span>
+    D <span class="token arrow operator">--></span> E<span class="token text string">&#123;主节点校验&lt;br>从节点offset是否在&lt;br>积压缓冲区范围内?&#125;</span>
 
-    E -- 是 --> F
-    subgraph F [部分复制流程]
-        F1[主节点回复 +CONTINUE]
-        F2[从节点接收响应, 准备接收数据]
-        F3[主节点从积压缓冲区中<br>查找并发送从offset之后的所有命令]
-        F4[从节点执行命令, 追平数据]
-    end
+    E <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">是</span> <span class="token arrow operator">--></span></span> F
+    <span class="token keyword">subgraph</span> F <span class="token text string">[部分复制流程]</span>
+        F1<span class="token text string">[主节点回复 +CONTINUE]</span>
+        F2<span class="token text string">[从节点接收响应, 准备接收数据]</span>
+        F3<span class="token text string">[主节点从积压缓冲区中&lt;br>查找并发送从offset之后的所有命令]</span>
+        F4<span class="token text string">[从节点执行命令, 追平数据]</span>
+    <span class="token keyword">end</span>
 
-    E -- 否 --> G
-    subgraph G [全量复制流程]
-        G1[主节点回复 +FULLRESYNC]
-        G2[触发完整的全量复制过程]
-    end
+    E <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">否</span> <span class="token arrow operator">--></span></span> G
+    <span class="token keyword">subgraph</span> G <span class="token text string">[全量复制流程]</span>
+        G1<span class="token text string">[主节点回复 +FULLRESYNC]</span>
+        G2<span class="token text string">[触发完整的全量复制过程]</span>
+    <span class="token keyword">end</span>
 
-    F --> H[同步完成, 进入命令持续传播阶段]
-    G --> H</pre>
+    F <span class="token arrow operator">--></span> H<span class="token text string">[同步完成, 进入命令持续传播阶段]</span>
+    G <span class="token arrow operator">--></span> H<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p><strong>流程阶段解析：</strong></p>
 <ol>
@@ -1046,22 +1061,22 @@ repl_backlog_histlen:1048576    <span class="token comment"># 当前缓冲区中
 <p>这个过程是<strong>异步</strong>的，意味着主节点不会等待从节点执行完毕后再返回结果给客户端，这保证了高性能，但也带来了极短的<strong>主从延迟</strong>。</p>
 <h4><span id="二-生命线心跳维护机制">二、生命线：心跳维护机制</span></h4><p>为了确保命令传播的 TCP 长连接稳定可用，并能及时发现失败的从节点，Redis 在主从节点之间实现了一套<strong>应用层的心跳检测机制</strong>。</p>
 <p>这套机制的核心作用是<strong>保活连接</strong>和<strong>监控状态</strong>，其工作原理如下图所示：</p>
-<pre class="mermaid">sequenceDiagram
-    participant M as 主节点
-    participant S as 从节点
+<pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">sequenceDiagram</span>
+    <span class="token keyword">participant</span> M as 主节点
+    <span class="token keyword">participant</span> S as 从节点
 
-    Note over M, S: 心跳检测机制
-    loop Every 10 Seconds
-        M->>S: PING
-        S-->>M: PONG (响应)
-    end
+    <span class="token keyword">Note over</span> M, S<span class="token operator">:</span> 心跳检测机制
+    <span class="token keyword">loop</span> Every 10 Seconds
+        M<span class="token arrow operator">->></span>S<span class="token operator">:</span> PING
+        S<span class="token arrow operator">-->></span>M<span class="token operator">:</span> PONG <span class="token text string">(响应)</span>
+    <span class="token keyword">end</span>
 
-    loop Every 1 Second
-        S->>M: REPLCONF ACK <offset>
-    end
+    <span class="token keyword">loop</span> Every 1 Second
+        S<span class="token arrow operator">->></span>M<span class="token operator">:</span> REPLCONF ACK &lt;offset>
+    <span class="token keyword">end</span>
 
-    Note over M: 监控超时
-    Note over M: 若超过repl-timeout(默认60s)<br>未收到从节点REPLCONF ACK，<br>则判定从节点下线，断开连接。</offset></pre>
+    <span class="token keyword">Note over</span> M<span class="token operator">:</span> 监控超时
+    <span class="token keyword">Note over</span> M<span class="token operator">:</span> 若超过repl-timeout<span class="token text string">(默认60s)</span>&lt;br<span class="token text string">>未收到从节点REPLCONF ACK，&lt;br></span>则判定从节点下线，断开连接。<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p><strong>1. 主节点 → 从节点：PING（健康检查）</strong></p>
 <ul>
@@ -2838,7 +2853,7 @@ repl_backlog_histlen:1048576    <span class="token comment"># 当前缓冲区中
     color: #444444 !important;
   }
 
-  .dark-mode *:not(table):not(table *):not(button):not(input):not(textarea):not(a):not(pre):not(pre *) {
+  .dark-mode *:not(table):not(table *):not(button):not(input):not(textarea):not(a):not(pre):not(pre *):not(.mermaid):not(.mermaid *) {
     color: #e0e0e0 !important;
     border-color: #444 !important;
   }
@@ -2929,9 +2944,16 @@ repl_backlog_histlen:1048576    <span class="token comment"># 当前缓冲区中
     border-radius: 5px;
   }
 
-  .mermaid path,
-  .mermaid line {
-    stroke: #f0f0f0 !important;
+  /* 仅亮色模式：加深箭头/连线颜色，提升可读性 */
+  html:not(.dark-mode) .mermaid path,
+  html:not(.dark-mode) .mermaid line {
+    stroke: #666666 !important; /* 比原来的#f0f0f0更深一些 */
+  }
+
+  /* 夜间模式：箭头/连线更接近白色，提高对比度 */
+  html.dark-mode .mermaid path,
+  html.dark-mode .mermaid line {
+    stroke: #f6f6f6 !important; /* 近白色，避免纯白刺眼 */
   }
 
   .mermaid rect path {
@@ -2941,6 +2963,45 @@ repl_backlog_histlen:1048576    <span class="token comment"># 当前缓冲区中
   .mermaid text {
     fill: #4a8ecd !important;
   }
+
+  /* Mermaid 点击放大覆盖层 */
+  #mermaid-zoom-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+    z-index: 10000;
+    display: none;
+  }
+  #mermaid-zoom-overlay.show { display: block; }
+  #mermaid-zoom-content {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 96vw; height: 92vh;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 10px 28px rgba(0,0,0,.25);
+    overflow: hidden;
+  }
+  html.dark-mode #mermaid-zoom-content { background: #1f2937; }
+  #mermaid-zoom-close {
+    position: absolute;
+    top: 8px; right: 10px;
+    background: rgba(0,0,0,.5);
+    color: #fff;
+    border: none; border-radius: 6px;
+    padding: 6px 10px; cursor: pointer;
+    z-index: 10001;
+  }
+  #mermaid-zoom-stage {
+    position: relative;
+    width: 100%; height: 100%;
+    transform-origin: 0 0;
+    cursor: grab;
+  }
+  #mermaid-zoom-stage.grabbing { cursor: grabbing; }
+  #post-content .mermaid svg { cursor: zoom-in; }
 
   /* 自定义确认弹窗样式 */
   .custom-confirm-mask {
@@ -3714,6 +3775,142 @@ repl_backlog_histlen:1048576    <span class="token comment"># 当前缓冲区中
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+    }
+  })();
+</script>
+
+<!-- 将 ```mermaid 代码块转换为 .mermaid 并渲染 -->
+<script>
+  (function(){
+    function convertMermaidBlocks(container){
+      if (!container) return 0;
+      var blocks = container.querySelectorAll('pre code.language-mermaid, code.language-mermaid');
+      var count = 0;
+      blocks.forEach(function(codeEl){
+        var diagram = codeEl.textContent || '';
+        var wrapper = document.createElement('div');
+        wrapper.className = 'mermaid';
+        // 直接填纯文本，Mermaid自行解析
+        wrapper.textContent = diagram;
+        var pre = codeEl.closest && codeEl.closest('pre');
+        if (pre) pre.replaceWith(wrapper); else codeEl.replaceWith(wrapper);
+        count++;
+      });
+      return count;
+    }
+
+    function render(container){
+      if (window.renderMermaidInContainer) {
+        window.renderMermaidInContainer('#post-content .mermaid');
+      } else if (window.mermaid) {
+        // 兜底：直接尝试 mermaid.run/init
+        try {
+          if (typeof mermaid.run === 'function') mermaid.run({ querySelector: '#post-content .mermaid' });
+          else if (typeof mermaid.init === 'function') mermaid.init(undefined, container.querySelectorAll('.mermaid'));
+        } catch(e) {}
+      }
+    }
+
+    // DOM 就绪后执行
+    document.addEventListener('DOMContentLoaded', function(){
+      var container = document.getElementById('post-content');
+      if (!container) return;
+      var n = convertMermaidBlocks(container);
+      if (n > 0) render(container);
+    });
+  })();
+  </script>
+
+<!-- Mermaid 放大查看覆盖层结构 -->
+<div id="mermaid-zoom-overlay" aria-modal="true" role="dialog" tabindex="-1">
+  <button id="mermaid-zoom-close" aria-label="关闭">关闭</button>
+  <div id="mermaid-zoom-content">
+    <div id="mermaid-zoom-stage"></div>
+  </div>
+</div>
+
+<script>
+  (function(){
+    function initMermaidZoom(){
+      var overlay = document.getElementById('mermaid-zoom-overlay');
+      var content = document.getElementById('mermaid-zoom-content');
+      var stage = document.getElementById('mermaid-zoom-stage');
+      var closeBtn = document.getElementById('mermaid-zoom-close');
+      if (!overlay || !content || !stage || !closeBtn) return;
+
+      var state = { scale: 1, minScale: 0.4, maxScale: 4, x: 0, y: 0 };
+      var dragging = false, lastPos = { x:0, y:0 };
+
+      function apply(){
+        stage.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
+      }
+
+      function fitInitial(svg){
+        var rect = content.getBoundingClientRect();
+        var bbox = null;
+        try { bbox = svg.getBBox(); } catch(e) { bbox = null; }
+        var vb = svg.getAttribute('viewBox');
+        var w=null,h=null,vx=0,vy=0;
+        if (bbox && bbox.width && bbox.height) { w=bbox.width; h=bbox.height; vx=bbox.x; vy=bbox.y; }
+        else if (vb) { var p=vb.split(/\s+/); vx=+p[0]; vy=+p[1]; w=+p[2]; h=+p[3]; }
+        else { w=+(svg.getAttribute('width')||0); h=+(svg.getAttribute('height')||0); }
+        svg.setAttribute('preserveAspectRatio','xMinYMin meet');
+        svg.removeAttribute('width'); svg.removeAttribute('height');
+        if (!vb && bbox && bbox.width && bbox.height) {
+          svg.setAttribute('viewBox', `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`);
+        }
+        var pad = 24;
+        if (w && h) {
+          var sx = (rect.width - pad)/w, sy=(rect.height - pad)/h;
+          state.scale = Math.max(state.minScale, Math.min(state.maxScale, Math.min(sx, sy)));
+          state.x = (rect.width - w*state.scale)/2 - vx*state.scale;
+          state.y = (rect.height - h*state.scale)/2 - vy*state.scale;
+        } else { state.scale=1; state.x=0; state.y=0; }
+        apply();
+      }
+
+      function openWith(svg){
+        stage.innerHTML = '';
+        var clone = svg.cloneNode(true);
+        clone.removeAttribute('style'); clone.style.display='block';
+        stage.appendChild(clone);
+        overlay.classList.add('show'); overlay.focus();
+        fitInitial(clone);
+      }
+
+      function close(){ overlay.classList.remove('show'); }
+      overlay.addEventListener('click', function(e){ if (e.target===overlay) close(); });
+      closeBtn.addEventListener('click', close);
+      document.addEventListener('keydown', function(e){ if (e.key==='Escape') close(); });
+
+      // 绑定点击放大
+      document.querySelectorAll('#post-content .mermaid svg').forEach(function(svg){
+        svg.addEventListener('click', function(){ openWith(svg); });
+      });
+
+      // 滑轮缩放（以鼠标为中心）
+      content.addEventListener('wheel', function(e){
+        e.preventDefault();
+        var prev = state.scale;
+        var factor = Math.sign(e.deltaY)>0 ? 0.9 : 1.1;
+        state.scale = Math.max(state.minScale, Math.min(state.maxScale, state.scale*factor));
+        var rect = content.getBoundingClientRect();
+        var mx = e.clientX - rect.left, my = e.clientY - rect.top;
+        var dx = (mx - state.x) * (1 - state.scale/prev);
+        var dy = (my - state.y) * (1 - state.scale/prev);
+        state.x += dx; state.y += dy; apply();
+      }, { passive: false });
+
+      // 拖拽平移
+      stage.addEventListener('mousedown', function(e){ dragging=true; stage.classList.add('grabbing'); lastPos.x=e.clientX; lastPos.y=e.clientY; });
+      window.addEventListener('mousemove', function(e){ if(!dragging) return; var dx=e.clientX-lastPos.x, dy=e.clientY-lastPos.y; state.x+=dx; state.y+=dy; lastPos.x=e.clientX; lastPos.y=e.clientY; apply(); });
+      window.addEventListener('mouseup', function(){ dragging=false; stage.classList.remove('grabbing'); });
+    }
+
+    document.addEventListener('DOMContentLoaded', function(){ initMermaidZoom(); });
+    if (typeof window.renderMermaidInContainer === 'function') {
+      var orig = window.renderMermaidInContainer;
+      window.renderMermaidInContainer = function(sel){ orig(sel); initMermaidZoom(); };
     }
   })();
 </script>

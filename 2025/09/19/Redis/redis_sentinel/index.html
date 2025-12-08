@@ -88,13 +88,27 @@ Redis ,"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <!-- Prism.js 官方主题 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
-    
-  <script src='https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js'></script>
-
 <meta name="generator" content="Hexo 7.3.0"></head>
 <script src="https://cdn.jsdelivr.net/npm/TagCloud@2.2.0/dist/TagCloud.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
+<!-- Mermaid.js -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+    // 由页面脚本在转换为 .mermaid 元素后再触发渲染
+    mermaid.initialize({ startOnLoad: false });
+    window.renderMermaidInContainer = async function(selector){
+        try {
+            if (window.mermaid && typeof mermaid.run === 'function') {
+                await mermaid.run({ querySelector: selector || '.mermaid' });
+            } else if (window.mermaid && typeof mermaid.init === 'function') {
+                mermaid.init(undefined, document.querySelectorAll(selector || '.mermaid'));
+            }
+        } catch (e) { /* 忽略渲染异常，避免影响页面 */ }
+    };
+</script>
+
+
 
 <body class="loading">
     <span id="config-title" style="display:none">刘家炫的博客</span>
@@ -244,7 +258,7 @@ Redis ,"/>
                     </div>
                     <div>
                         <a href="/blog/archives" style="text-decoration: none; color: inherit;">
-                                <span style="font-weight:bold; font-size:20px;">75</span>
+                                <span style="font-weight:bold; font-size:20px;">76</span>
                                 <span style="font-size:20px;">文章</span>
                         </a>
                     </div>
@@ -253,7 +267,7 @@ Redis ,"/>
         </div>
         <div class="recommendations">
             <h2>相关推荐</h2>
-            <ul><li><a href="/blog/2025/07/08/Redis/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/Hash/">Redis 常见数据类型-Hash 类型</a></li><li><a href="/blog/2025/08/15/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_list/">Redis C++ 客户端使用指南-List 篇</a></li><li><a href="/blog/2025/06/16/Redis/redis_command_line_user_guide/">Redis 命令行使用指南</a></li><li><a href="/blog/2025/08/20/Redis/redis_trans/">Redis 事务</a></li><li><a href="/blog/2025/08/15/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_set/">Redis C++ 客户端使用指南-Set 篇</a></li><li><a href="/blog/2025/09/19/Redis/Redis_cache/">Redis 应用--缓存</a></li></ul>
+            <ul><li><a href="/blog/2025/08/15/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_list/">Redis C++ 客户端使用指南-List 篇</a></li><li><a href="/blog/2025/08/16/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_zset/">Redis C++ 客户端使用指南-Zset 篇</a></li><li><a href="/blog/2025/07/09/Redis/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/List/">Redis 常见数据类型-List 类型</a></li><li><a href="/blog/2025/08/20/Redis/redis_slave/">Redis 主从复制</a></li><li><a href="/blog/2025/08/19/Redis/redis_rdb/">Redis 持久化</a></li><li><a href="/blog/2025/09/19/Redis/Redis_cache/">Redis 应用--缓存</a></li></ul>
         </div>
         <div class='main' style="
     background: transparent;
@@ -406,55 +420,55 @@ sentinel failover-timeout mymaster 10000<span aria-hidden="true" class="line-num
 <li>本实验设置为 2，表示需要至少 2 个 Sentinel 同意才能进行故障转移</li>
 </ul>
 <p>Redis Sentinel 集群拓扑图：</p>
-<pre class="mermaid">graph TB
-    %% 客户端层
-    Client1[客户端应用]
-    Client2[客户端应用]
-    Client3[客户端应用]
+<pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">graph</span> TB
+    <span class="token comment">%% 客户端层</span>
+    Client1<span class="token text string">[客户端应用]</span>
+    Client2<span class="token text string">[客户端应用]</span>
+    Client3<span class="token text string">[客户端应用]</span>
 
-    %% Sentinel层
-    subgraph "Sentinel 哨兵集群"
-        S1[Sentinel1<br>82.156.255.140:26379]
-        S2[Sentinel2<br>139.59.228.224:26379]
-        S3[Sentinel3<br>152.42.240.210:26379]
-    end
+    <span class="token comment">%% Sentinel层</span>
+    <span class="token keyword">subgraph</span> <span class="token string">"Sentinel 哨兵集群"</span>
+        S1<span class="token text string">[Sentinel1&lt;br/>82.156.255.140:26379]</span>
+        S2<span class="token text string">[Sentinel2&lt;br/>139.59.228.224:26379]</span>
+        S3<span class="token text string">[Sentinel3&lt;br/>152.42.240.210:26379]</span>
+    <span class="token keyword">end</span>
 
-    %% Redis实例层
-    subgraph "Redis 数据层"
-        Master[主节点<br>82.156.255.140:6390<br>角色: master]
-        Slave1[从节点1<br>139.59.228.224:6390<br>角色: slave]
-        Slave2[从节点2<br>152.42.240.210:6390<br>角色: slave]
-    end
+    <span class="token comment">%% Redis实例层</span>
+    <span class="token keyword">subgraph</span> <span class="token string">"Redis 数据层"</span>
+        Master<span class="token text string">[主节点&lt;br/>82.156.255.140:6390&lt;br/>角色: master]</span>
+        Slave1<span class="token text string">[从节点1&lt;br/>139.59.228.224:6390&lt;br/>角色: slave]</span>
+        Slave2<span class="token text string">[从节点2&lt;br/>152.42.240.210:6390&lt;br/>角色: slave]</span>
+    <span class="token keyword">end</span>
 
-    %% 监控关系
-    S1 -.-> Master
-    S2 -.-> Master
-    S3 -.-> Master
+    <span class="token comment">%% 监控关系</span>
+    S1 <span class="token arrow operator">-.-></span> Master
+    S2 <span class="token arrow operator">-.-></span> Master
+    S3 <span class="token arrow operator">-.-></span> Master
 
-    %% 复制关系
-    Slave1 -->|replicaof| Master
-    Slave2 -->|replicaof| Master
+    <span class="token comment">%% 复制关系</span>
+    Slave1 <span class="token arrow operator">--></span><span class="token label property">|replicaof|</span> Master
+    Slave2 <span class="token arrow operator">--></span><span class="token label property">|replicaof|</span> Master
 
-    %% 客户端连接
-    Client1 --> S1
-    Client2 --> S2
-    Client3 --> S3
+    <span class="token comment">%% 客户端连接</span>
+    Client1 <span class="token arrow operator">--></span> S1
+    Client2 <span class="token arrow operator">--></span> S2
+    Client3 <span class="token arrow operator">--></span> S3
 
-    %% Sentinel相互发现
-    S1 -- 相互发现<br>自动配置 --> S2
-    S2 -- 相互发现<br>自动配置 --> S3
-    S3 -- 相互发现<br>自动配置 --> S1
+    <span class="token comment">%% Sentinel相互发现</span>
+    S1 <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">相互发现&lt;br/>自动配置</span> <span class="token arrow operator">--></span></span> S2
+    S2 <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">相互发现&lt;br/>自动配置</span> <span class="token arrow operator">--></span></span> S3
+    S3 <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">相互发现&lt;br/>自动配置</span> <span class="token arrow operator">--></span></span> S1
 
-    %% 样式定义
-    classDef master fill:#ff9999,stroke:#333,stroke-width:2px
-    classDef slave fill:#99ccff,stroke:#333,stroke-width:1px
-    classDef sentinel fill:#ccffcc,stroke:#333,stroke-width:1px
-    classDef client fill:#ffcc99,stroke:#333,stroke-width:1px
+    <span class="token comment">%% 样式定义</span>
+    <span class="token keyword">classDef</span> master <span class="token style"><span class="token property">fill</span><span class="token operator">:</span>#ff9999<span class="token punctuation">,</span><span class="token property">stroke</span><span class="token operator">:</span>#333<span class="token punctuation">,</span><span class="token property">stroke-width</span><span class="token operator">:</span>2px</span>
+    <span class="token keyword">classDef</span> slave <span class="token style"><span class="token property">fill</span><span class="token operator">:</span>#99ccff<span class="token punctuation">,</span><span class="token property">stroke</span><span class="token operator">:</span>#333<span class="token punctuation">,</span><span class="token property">stroke-width</span><span class="token operator">:</span>1px</span>
+    <span class="token keyword">classDef</span> sentinel <span class="token style"><span class="token property">fill</span><span class="token operator">:</span>#ccffcc<span class="token punctuation">,</span><span class="token property">stroke</span><span class="token operator">:</span>#333<span class="token punctuation">,</span><span class="token property">stroke-width</span><span class="token operator">:</span>1px</span>
+    <span class="token keyword">classDef</span> client <span class="token style"><span class="token property">fill</span><span class="token operator">:</span>#ffcc99<span class="token punctuation">,</span><span class="token property">stroke</span><span class="token operator">:</span>#333<span class="token punctuation">,</span><span class="token property">stroke-width</span><span class="token operator">:</span>1px</span>
 
-    class Master master
-    class Slave1,Slave2 slave
-    class S1,S2,S3 sentinel
-    class Client1,Client2,Client3 client</pre>
+    <span class="token keyword">class</span> Master master
+    <span class="token keyword">class</span> Slave1,Slave2 slave
+    <span class="token keyword">class</span> S1,S2,S3 sentinel
+    <span class="token keyword">class</span> Client1,Client2,Client3 client<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <h3><span id="故障转移测试实验">故障转移测试实验</span></h3><h4><span id="初始状态监控">初始状态监控</span></h4><p>主节点 Sentinel 启动日志显示正常监控状态：</p>
 <pre class="line-numbers language-t" data-language="t"><code class="language-t"># +monitor master mymaster 82.156.255.140 6390 quorum 2<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
@@ -483,54 +497,54 @@ master_port:6390
 master_link_status:down<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p>Redis Sentinel 故障转移工作流程图：</p>
-<pre class="mermaid">flowchart TD
-    Start[主节点故障转移流程] --> DetectFailure
+<pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">flowchart</span> TD
+    Start<span class="token text string">[主节点故障转移流程]</span> <span class="token arrow operator">--></span> DetectFailure
 
-    subgraph A [阶段一: 故障检测]
-        DetectFailure[检测主节点故障] --> SD1[Sentinel1 检测到主节点无响应]
-        SD1 --> SD2[Sentinel2 确认主节点故障]
-        SD2 --> SD3[Sentinel3 确认主节点故障]
-        SD3 --> QuorumCheck[Quorum检查 ≥2/3]
-    end
+    <span class="token keyword">subgraph</span> A <span class="token text string">[阶段一: 故障检测]</span>
+        DetectFailure<span class="token text string">[检测主节点故障]</span> <span class="token arrow operator">--></span> SD1<span class="token text string">[Sentinel1 检测到主节点无响应]</span>
+        SD1 <span class="token arrow operator">--></span> SD2<span class="token text string">[Sentinel2 确认主节点故障]</span>
+        SD2 <span class="token arrow operator">--></span> SD3<span class="token text string">[Sentinel3 确认主节点故障]</span>
+        SD3 <span class="token arrow operator">--></span> QuorumCheck<span class="token text string">[Quorum检查 ≥2/3]</span>
+    <span class="token keyword">end</span>
 
-    QuorumCheck -->|通过| LeaderElection
-    QuorumCheck -->|不通过| Wait[等待更多确认]
+    QuorumCheck <span class="token arrow operator">--></span><span class="token label property">|通过|</span> LeaderElection
+    QuorumCheck <span class="token arrow operator">--></span><span class="token label property">|不通过|</span> Wait<span class="token text string">[等待更多确认]</span>
 
-    subgraph B [阶段二: 领导者选举]
-        LeaderElection[Sentinel领导者选举] --> Vote1[Sentinel1 投票]
-        Vote1 --> Vote2[Sentinel2 投票]
-        Vote2 --> Vote3[Sentinel3 投票]
-        Vote3 --> ElectLeader[选举出Leader Sentinel]
-    end
+    <span class="token keyword">subgraph</span> B <span class="token text string">[阶段二: 领导者选举]</span>
+        LeaderElection<span class="token text string">[Sentinel领导者选举]</span> <span class="token arrow operator">--></span> Vote1<span class="token text string">[Sentinel1 投票]</span>
+        Vote1 <span class="token arrow operator">--></span> Vote2<span class="token text string">[Sentinel2 投票]</span>
+        Vote2 <span class="token arrow operator">--></span> Vote3<span class="token text string">[Sentinel3 投票]</span>
+        Vote3 <span class="token arrow operator">--></span> ElectLeader<span class="token text string">[选举出Leader Sentinel]</span>
+    <span class="token keyword">end</span>
 
-    ElectLeader --> FailoverInit
+    ElectLeader <span class="token arrow operator">--></span> FailoverInit
 
-    subgraph C [阶段三: 故障转移执行]
-        FailoverInit[初始化故障转移] --> SelectSlave[选择最佳从节点]
-        SelectSlave --> Promote[提升从节点为新主节点]
-        Promote --> ReconfigSlaves[重新配置其他从节点]
-        ReconfigSlaves --> UpdateSentinels[更新所有Sentinel配置]
-    end
+    <span class="token keyword">subgraph</span> C <span class="token text string">[阶段三: 故障转移执行]</span>
+        FailoverInit<span class="token text string">[初始化故障转移]</span> <span class="token arrow operator">--></span> SelectSlave<span class="token text string">[选择最佳从节点]</span>
+        SelectSlave <span class="token arrow operator">--></span> Promote<span class="token text string">[提升从节点为新主节点]</span>
+        Promote <span class="token arrow operator">--></span> ReconfigSlaves<span class="token text string">[重新配置其他从节点]</span>
+        ReconfigSlaves <span class="token arrow operator">--></span> UpdateSentinels<span class="token text string">[更新所有Sentinel配置]</span>
+    <span class="token keyword">end</span>
 
-    UpdateSentinels --> NotifyClients
+    UpdateSentinels <span class="token arrow operator">--></span> NotifyClients
 
-    subgraph D [阶段四: 客户端通知]
-        NotifyClients[通知客户端主节点变更] --> ClientRediscover[客户端重新发现主节点]
-        ClientRediscover --> NewConnections[建立新连接]
-    end
+    <span class="token keyword">subgraph</span> D <span class="token text string">[阶段四: 客户端通知]</span>
+        NotifyClients<span class="token text string">[通知客户端主节点变更]</span> <span class="token arrow operator">--></span> ClientRediscover<span class="token text string">[客户端重新发现主节点]</span>
+        ClientRediscover <span class="token arrow operator">--></span> NewConnections<span class="token text string">[建立新连接]</span>
+    <span class="token keyword">end</span>
 
-    NewConnections --> End[故障转移完成]
+    NewConnections <span class="token arrow operator">--></span> End<span class="token text string">[故障转移完成]</span>
 
-    %% 样式定义
-    classDef phase1 fill:#ffe6e6,stroke:#ff9999
-    classDef phase2 fill:#e6f3ff,stroke:#99ccff
-    classDef phase3 fill:#e6ffe6,stroke:#99ff99
-    classDef phase4 fill:#fff0e6,stroke:#ffcc99
+    <span class="token comment">%% 样式定义</span>
+    <span class="token keyword">classDef</span> phase1 <span class="token style"><span class="token property">fill</span><span class="token operator">:</span>#ffe6e6<span class="token punctuation">,</span><span class="token property">stroke</span><span class="token operator">:</span>#ff9999</span>
+    <span class="token keyword">classDef</span> phase2 <span class="token style"><span class="token property">fill</span><span class="token operator">:</span>#e6f3ff<span class="token punctuation">,</span><span class="token property">stroke</span><span class="token operator">:</span>#99ccff</span>
+    <span class="token keyword">classDef</span> phase3 <span class="token style"><span class="token property">fill</span><span class="token operator">:</span>#e6ffe6<span class="token punctuation">,</span><span class="token property">stroke</span><span class="token operator">:</span>#99ff99</span>
+    <span class="token keyword">classDef</span> phase4 <span class="token style"><span class="token property">fill</span><span class="token operator">:</span>#fff0e6<span class="token punctuation">,</span><span class="token property">stroke</span><span class="token operator">:</span>#ffcc99</span>
 
-    class A phase1
-    class B phase2
-    class C phase3
-    class D phase4</pre>
+    <span class="token keyword">class</span> A phase1
+    <span class="token keyword">class</span> B phase2
+    <span class="token keyword">class</span> C phase3
+    <span class="token keyword">class</span> D phase4<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <h3><span id="实验结论与经验总结">实验结论与经验总结</span></h3><h4><span id="1-sentinel-自动管理能力">1. Sentinel 自动管理能力</span></h4><p>Redis Sentinel 成功实现了自动故障检测和转移：</p>
 <ul>
@@ -2296,7 +2310,7 @@ master_link_status:down<span aria-hidden="true" class="line-numbers-rows"><span>
     color: #444444 !important;
   }
 
-  .dark-mode *:not(table):not(table *):not(button):not(input):not(textarea):not(a):not(pre):not(pre *) {
+  .dark-mode *:not(table):not(table *):not(button):not(input):not(textarea):not(a):not(pre):not(pre *):not(.mermaid):not(.mermaid *) {
     color: #e0e0e0 !important;
     border-color: #444 !important;
   }
@@ -2387,9 +2401,16 @@ master_link_status:down<span aria-hidden="true" class="line-numbers-rows"><span>
     border-radius: 5px;
   }
 
-  .mermaid path,
-  .mermaid line {
-    stroke: #f0f0f0 !important;
+  /* 仅亮色模式：加深箭头/连线颜色，提升可读性 */
+  html:not(.dark-mode) .mermaid path,
+  html:not(.dark-mode) .mermaid line {
+    stroke: #666666 !important; /* 比原来的#f0f0f0更深一些 */
+  }
+
+  /* 夜间模式：箭头/连线更接近白色，提高对比度 */
+  html.dark-mode .mermaid path,
+  html.dark-mode .mermaid line {
+    stroke: #f6f6f6 !important; /* 近白色，避免纯白刺眼 */
   }
 
   .mermaid rect path {
@@ -2399,6 +2420,45 @@ master_link_status:down<span aria-hidden="true" class="line-numbers-rows"><span>
   .mermaid text {
     fill: #4a8ecd !important;
   }
+
+  /* Mermaid 点击放大覆盖层 */
+  #mermaid-zoom-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+    z-index: 10000;
+    display: none;
+  }
+  #mermaid-zoom-overlay.show { display: block; }
+  #mermaid-zoom-content {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 96vw; height: 92vh;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 10px 28px rgba(0,0,0,.25);
+    overflow: hidden;
+  }
+  html.dark-mode #mermaid-zoom-content { background: #1f2937; }
+  #mermaid-zoom-close {
+    position: absolute;
+    top: 8px; right: 10px;
+    background: rgba(0,0,0,.5);
+    color: #fff;
+    border: none; border-radius: 6px;
+    padding: 6px 10px; cursor: pointer;
+    z-index: 10001;
+  }
+  #mermaid-zoom-stage {
+    position: relative;
+    width: 100%; height: 100%;
+    transform-origin: 0 0;
+    cursor: grab;
+  }
+  #mermaid-zoom-stage.grabbing { cursor: grabbing; }
+  #post-content .mermaid svg { cursor: zoom-in; }
 
   /* 自定义确认弹窗样式 */
   .custom-confirm-mask {
@@ -3172,6 +3232,142 @@ master_link_status:down<span aria-hidden="true" class="line-numbers-rows"><span>
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+    }
+  })();
+</script>
+
+<!-- 将 ```mermaid 代码块转换为 .mermaid 并渲染 -->
+<script>
+  (function(){
+    function convertMermaidBlocks(container){
+      if (!container) return 0;
+      var blocks = container.querySelectorAll('pre code.language-mermaid, code.language-mermaid');
+      var count = 0;
+      blocks.forEach(function(codeEl){
+        var diagram = codeEl.textContent || '';
+        var wrapper = document.createElement('div');
+        wrapper.className = 'mermaid';
+        // 直接填纯文本，Mermaid自行解析
+        wrapper.textContent = diagram;
+        var pre = codeEl.closest && codeEl.closest('pre');
+        if (pre) pre.replaceWith(wrapper); else codeEl.replaceWith(wrapper);
+        count++;
+      });
+      return count;
+    }
+
+    function render(container){
+      if (window.renderMermaidInContainer) {
+        window.renderMermaidInContainer('#post-content .mermaid');
+      } else if (window.mermaid) {
+        // 兜底：直接尝试 mermaid.run/init
+        try {
+          if (typeof mermaid.run === 'function') mermaid.run({ querySelector: '#post-content .mermaid' });
+          else if (typeof mermaid.init === 'function') mermaid.init(undefined, container.querySelectorAll('.mermaid'));
+        } catch(e) {}
+      }
+    }
+
+    // DOM 就绪后执行
+    document.addEventListener('DOMContentLoaded', function(){
+      var container = document.getElementById('post-content');
+      if (!container) return;
+      var n = convertMermaidBlocks(container);
+      if (n > 0) render(container);
+    });
+  })();
+  </script>
+
+<!-- Mermaid 放大查看覆盖层结构 -->
+<div id="mermaid-zoom-overlay" aria-modal="true" role="dialog" tabindex="-1">
+  <button id="mermaid-zoom-close" aria-label="关闭">关闭</button>
+  <div id="mermaid-zoom-content">
+    <div id="mermaid-zoom-stage"></div>
+  </div>
+</div>
+
+<script>
+  (function(){
+    function initMermaidZoom(){
+      var overlay = document.getElementById('mermaid-zoom-overlay');
+      var content = document.getElementById('mermaid-zoom-content');
+      var stage = document.getElementById('mermaid-zoom-stage');
+      var closeBtn = document.getElementById('mermaid-zoom-close');
+      if (!overlay || !content || !stage || !closeBtn) return;
+
+      var state = { scale: 1, minScale: 0.4, maxScale: 4, x: 0, y: 0 };
+      var dragging = false, lastPos = { x:0, y:0 };
+
+      function apply(){
+        stage.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
+      }
+
+      function fitInitial(svg){
+        var rect = content.getBoundingClientRect();
+        var bbox = null;
+        try { bbox = svg.getBBox(); } catch(e) { bbox = null; }
+        var vb = svg.getAttribute('viewBox');
+        var w=null,h=null,vx=0,vy=0;
+        if (bbox && bbox.width && bbox.height) { w=bbox.width; h=bbox.height; vx=bbox.x; vy=bbox.y; }
+        else if (vb) { var p=vb.split(/\s+/); vx=+p[0]; vy=+p[1]; w=+p[2]; h=+p[3]; }
+        else { w=+(svg.getAttribute('width')||0); h=+(svg.getAttribute('height')||0); }
+        svg.setAttribute('preserveAspectRatio','xMinYMin meet');
+        svg.removeAttribute('width'); svg.removeAttribute('height');
+        if (!vb && bbox && bbox.width && bbox.height) {
+          svg.setAttribute('viewBox', `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`);
+        }
+        var pad = 24;
+        if (w && h) {
+          var sx = (rect.width - pad)/w, sy=(rect.height - pad)/h;
+          state.scale = Math.max(state.minScale, Math.min(state.maxScale, Math.min(sx, sy)));
+          state.x = (rect.width - w*state.scale)/2 - vx*state.scale;
+          state.y = (rect.height - h*state.scale)/2 - vy*state.scale;
+        } else { state.scale=1; state.x=0; state.y=0; }
+        apply();
+      }
+
+      function openWith(svg){
+        stage.innerHTML = '';
+        var clone = svg.cloneNode(true);
+        clone.removeAttribute('style'); clone.style.display='block';
+        stage.appendChild(clone);
+        overlay.classList.add('show'); overlay.focus();
+        fitInitial(clone);
+      }
+
+      function close(){ overlay.classList.remove('show'); }
+      overlay.addEventListener('click', function(e){ if (e.target===overlay) close(); });
+      closeBtn.addEventListener('click', close);
+      document.addEventListener('keydown', function(e){ if (e.key==='Escape') close(); });
+
+      // 绑定点击放大
+      document.querySelectorAll('#post-content .mermaid svg').forEach(function(svg){
+        svg.addEventListener('click', function(){ openWith(svg); });
+      });
+
+      // 滑轮缩放（以鼠标为中心）
+      content.addEventListener('wheel', function(e){
+        e.preventDefault();
+        var prev = state.scale;
+        var factor = Math.sign(e.deltaY)>0 ? 0.9 : 1.1;
+        state.scale = Math.max(state.minScale, Math.min(state.maxScale, state.scale*factor));
+        var rect = content.getBoundingClientRect();
+        var mx = e.clientX - rect.left, my = e.clientY - rect.top;
+        var dx = (mx - state.x) * (1 - state.scale/prev);
+        var dy = (my - state.y) * (1 - state.scale/prev);
+        state.x += dx; state.y += dy; apply();
+      }, { passive: false });
+
+      // 拖拽平移
+      stage.addEventListener('mousedown', function(e){ dragging=true; stage.classList.add('grabbing'); lastPos.x=e.clientX; lastPos.y=e.clientY; });
+      window.addEventListener('mousemove', function(e){ if(!dragging) return; var dx=e.clientX-lastPos.x, dy=e.clientY-lastPos.y; state.x+=dx; state.y+=dy; lastPos.x=e.clientX; lastPos.y=e.clientY; apply(); });
+      window.addEventListener('mouseup', function(){ dragging=false; stage.classList.remove('grabbing'); });
+    }
+
+    document.addEventListener('DOMContentLoaded', function(){ initMermaidZoom(); });
+    if (typeof window.renderMermaidInContainer === 'function') {
+      var orig = window.renderMermaidInContainer;
+      window.renderMermaidInContainer = function(sel){ orig(sel); initMermaidZoom(); };
     }
   })();
 </script>

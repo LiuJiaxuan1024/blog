@@ -40,13 +40,27 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <!-- Prism.js 官方主题 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
-    
-  <script src='https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js'></script>
-
 <meta name="generator" content="Hexo 7.3.0"></head>
 <script src="https://cdn.jsdelivr.net/npm/TagCloud@2.2.0/dist/TagCloud.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
+<!-- Mermaid.js -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+    // 由页面脚本在转换为 .mermaid 元素后再触发渲染
+    mermaid.initialize({ startOnLoad: false });
+    window.renderMermaidInContainer = async function(selector){
+        try {
+            if (window.mermaid && typeof mermaid.run === 'function') {
+                await mermaid.run({ querySelector: selector || '.mermaid' });
+            } else if (window.mermaid && typeof mermaid.init === 'function') {
+                mermaid.init(undefined, document.querySelectorAll(selector || '.mermaid'));
+            }
+        } catch (e) { /* 忽略渲染异常，避免影响页面 */ }
+    };
+</script>
+
+
 
 <body class="loading">
     <span id="config-title" style="display:none">刘家炫的博客</span>
@@ -164,7 +178,7 @@
   color: white;
   border-radius: 8px;
   box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-  background: linear-gradient(135deg, #45B7D1, #4ECDC4);
+  background: linear-gradient(135deg, #FFA07A, #98D8C8);
 }
 
 .tag-hero h1 {
@@ -197,8 +211,8 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #45B7D1;
-  box-shadow: 0 0 0 3px white, 0 0 0 6px #4ECDC4;
+  background: #FFA07A;
+  box-shadow: 0 0 0 3px white, 0 0 0 6px #FF6B6B;
 }
 
 .node-content {
@@ -368,7 +382,7 @@ Docker Image 介绍
       
         <a href="/blog/tags/C/" class="related-tag" 
            style="--tag-size: 40px">
-          C++ (12)
+          C++ (13)
         </a>
       
         <a href="/blog/tags/%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B/" class="related-tag" 

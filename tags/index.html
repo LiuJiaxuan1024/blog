@@ -40,13 +40,27 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <!-- Prism.js 官方主题 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
-    
-  <script src='https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js'></script>
-
 <meta name="generator" content="Hexo 7.3.0"></head>
 <script src="https://cdn.jsdelivr.net/npm/TagCloud@2.2.0/dist/TagCloud.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
+<!-- Mermaid.js -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+    // 由页面脚本在转换为 .mermaid 元素后再触发渲染
+    mermaid.initialize({ startOnLoad: false });
+    window.renderMermaidInContainer = async function(selector){
+        try {
+            if (window.mermaid && typeof mermaid.run === 'function') {
+                await mermaid.run({ querySelector: selector || '.mermaid' });
+            } else if (window.mermaid && typeof mermaid.init === 'function') {
+                mermaid.init(undefined, document.querySelectorAll(selector || '.mermaid'));
+            }
+        } catch (e) { /* 忽略渲染异常，避免影响页面 */ }
+    };
+</script>
+
+
 
 <body class="loading">
     <span id="config-title" style="display:none">刘家炫的博客</span>
@@ -306,7 +320,7 @@
         <a href="/blog/tags/C/" 
            class="tag-item"
            style="color: #FFA07A; border: 1px solid #FFA07A">
-          C++ (12)
+          C++ (13)
         </a>
       
         <a href="/blog/tags/CPU/" 
@@ -378,7 +392,7 @@
         <a href="/blog/tags/tcmalloc/" 
            class="tag-item"
            style="color: #FF6B6B; border: 1px solid #FF6B6B">
-          tcmalloc (1)
+          tcmalloc (2)
         </a>
       
         <a href="/blog/tags/uarp%E5%8D%8F%E8%AE%AE/" 
@@ -420,7 +434,7 @@
         <a href="/blog/tags/%E5%86%85%E5%AD%98%E6%B1%A0/" 
            class="tag-item"
            style="color: #FFA07A; border: 1px solid #FFA07A">
-          内存池 (1)
+          内存池 (2)
         </a>
       
         <a href="/blog/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" 
@@ -702,7 +716,7 @@
         <a href="/blog/tags/%E9%AB%98%E5%B9%B6%E5%8F%91/" 
            class="tag-item"
            style="color: #FFA07A; border: 1px solid #FFA07A">
-          高并发 (1)
+          高并发 (2)
         </a>
       
     </div>
@@ -733,8 +747,8 @@
     
       <a href="/blog/tags/C/" class="rank-item">
         <span class="rank-name" style="font-weight: 600;">C++</span>
-        <span class="rank-bar" style="--width: 0.6"></span>
-        <span class="rank-count" style="color: #666;">12篇</span>
+        <span class="rank-bar" style="--width: 0.65"></span>
+        <span class="rank-count" style="color: #666;">13篇</span>
       </a>
     
       <a href="/blog/tags/Docker/" class="rank-item">

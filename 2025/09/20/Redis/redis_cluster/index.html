@@ -76,13 +76,27 @@ Redis 集群的分片算法–哈希槽分区算法
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <!-- Prism.js 官方主题 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
-    
-  <script src='https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js'></script>
-
 <meta name="generator" content="Hexo 7.3.0"></head>
 <script src="https://cdn.jsdelivr.net/npm/TagCloud@2.2.0/dist/TagCloud.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
+<!-- Mermaid.js -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+    // 由页面脚本在转换为 .mermaid 元素后再触发渲染
+    mermaid.initialize({ startOnLoad: false });
+    window.renderMermaidInContainer = async function(selector){
+        try {
+            if (window.mermaid && typeof mermaid.run === 'function') {
+                await mermaid.run({ querySelector: selector || '.mermaid' });
+            } else if (window.mermaid && typeof mermaid.init === 'function') {
+                mermaid.init(undefined, document.querySelectorAll(selector || '.mermaid'));
+            }
+        } catch (e) { /* 忽略渲染异常，避免影响页面 */ }
+    };
+</script>
+
+
 
 <body class="loading">
     <span id="config-title" style="display:none">刘家炫的博客</span>
@@ -232,7 +246,7 @@ Redis 集群的分片算法–哈希槽分区算法
                     </div>
                     <div>
                         <a href="/blog/archives" style="text-decoration: none; color: inherit;">
-                                <span style="font-weight:bold; font-size:20px;">75</span>
+                                <span style="font-weight:bold; font-size:20px;">76</span>
                                 <span style="font-size:20px;">文章</span>
                         </a>
                     </div>
@@ -241,7 +255,7 @@ Redis 集群的分片算法–哈希槽分区算法
         </div>
         <div class="recommendations">
             <h2>相关推荐</h2>
-            <ul><li><a href="/blog/2025/07/09/Redis/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/List/">Redis 常见数据类型-List 类型</a></li><li><a href="/blog/2025/08/14/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_func/">Redis C++ 客户端使用指南-基础指令篇</a></li><li><a href="/blog/2025/08/20/Redis/redis_slave/">Redis 主从复制</a></li><li><a href="/blog/2025/09/19/Redis/Redis_dist_lock/">Redis 应用--分布式锁</a></li><li><a href="/blog/2025/08/15/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_set/">Redis C++ 客户端使用指南-Set 篇</a></li><li><a href="/blog/2025/08/20/Redis/redis_trans/">Redis 事务</a></li></ul>
+            <ul><li><a href="/blog/2025/08/15/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_set/">Redis C++ 客户端使用指南-Set 篇</a></li><li><a href="/blog/2025/08/19/Redis/redis_rdb/">Redis 持久化</a></li><li><a href="/blog/2025/09/12/Docker/docker_cluster/">Docker 集群化部署</a></li><li><a href="/blog/2025/08/15/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_list/">Redis C++ 客户端使用指南-List 篇</a></li><li><a href="/blog/2025/07/09/Redis/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/Set/">Redis 常见数据类型-Set 类型</a></li><li><a href="/blog/2025/06/19/Redis/redis_single_thread_model/">关于 Redis 单线程模型的探讨</a></li></ul>
         </div>
         <div class='main' style="
     background: transparent;
@@ -298,49 +312,49 @@ Redis 集群的分片算法–哈希槽分区算法
 <p>每个 Slave 都是对应 Master 的备份，当主节点挂了，Slave 会自动提升为 Master，保证数据的高可用性。<br>每个红框部分都可以成为是一个<strong>分片</strong>，每个分片都可以独立工作，互不影响。<br>如果全量数据进一步增大，可以通过增加分片的方式来扩展集群的存储能力。</p>
 <p>分片机制让每一个节点都承担了自己的一部分责任，这样使得即便有某一个集群组完全挂掉了，所影响到的也只是那一部分的数据，因此集群的健壮性比哨兵要强不少，而集群本身就包含了哨兵机制，所以在资源管理过于繁忙且服务器资源足够的情况下，更推荐通过 Redis 集群来作为生产环境的工具。</p>
 <p>下面是哨兵和集群的对比图：</p>
-<pre class="mermaid">graph TD
-    subgraph SentinelMode[哨兵模式]
-        S_Master[主节点<br>写入/读取]
-        S_Slave1[从节点1<br>读取/备份]
-        S_Slave2[从节点2<br>读取/备份]
+<pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">graph</span> TD
+    <span class="token keyword">subgraph</span> SentinelMode<span class="token text string">[哨兵模式]</span>
+        S_Master<span class="token text string">[主节点&lt;br/>写入/读取]</span>
+        S_Slave1<span class="token text string">[从节点1&lt;br/>读取/备份]</span>
+        S_Slave2<span class="token text string">[从节点2&lt;br/>读取/备份]</span>
 
-        S_Sentinel1[Sentinel1]
-        S_Sentinel2[Sentinel2]
-        S_Sentinel3[Sentinel3]
+        S_Sentinel1<span class="token text string">[Sentinel1]</span>
+        S_Sentinel2<span class="token text string">[Sentinel2]</span>
+        S_Sentinel3<span class="token text string">[Sentinel3]</span>
 
-        S_Master -.-> S_Slave1
-        S_Master -.-> S_Slave2
-        S_Sentinel1 -.监控.-> S_Master
-        S_Sentinel2 -.监控.-> S_Master
-        S_Sentinel3 -.监控.-> S_Master
-    end
+        S_Master <span class="token arrow operator">-.-></span> S_Slave1
+        S_Master <span class="token arrow operator">-.-></span> S_Slave2
+        S_Sentinel1 <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">-.</span><span class="token label property">监控</span><span class="token arrow operator">.-></span></span> S_Master
+        S_Sentinel2 <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">-.</span><span class="token label property">监控</span><span class="token arrow operator">.-></span></span> S_Master
+        S_Sentinel3 <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">-.</span><span class="token label property">监控</span><span class="token arrow operator">.-></span></span> S_Master
+    <span class="token keyword">end</span>
 
-    subgraph ClusterMode[集群模式]
-        C_Shard1[分片1<br>主节点]
-        C_Shard1_Slave[分片1从节点]
-        C_Shard2[分片2<br>主节点]
-        C_Shard2_Slave[分片2从节点]
-        C_Shard3[分片3<br>主节点]
-        C_Shard3_Slave[分片3从节点]
+    <span class="token keyword">subgraph</span> ClusterMode<span class="token text string">[集群模式]</span>
+        C_Shard1<span class="token text string">[分片1&lt;br/>主节点]</span>
+        C_Shard1_Slave<span class="token text string">[分片1从节点]</span>
+        C_Shard2<span class="token text string">[分片2&lt;br/>主节点]</span>
+        C_Shard2_Slave<span class="token text string">[分片2从节点]</span>
+        C_Shard3<span class="token text string">[分片3&lt;br/>主节点]</span>
+        C_Shard3_Slave<span class="token text string">[分片3从节点]</span>
 
-        C_Shard1 -.-> C_Shard1_Slave
-        C_Shard2 -.-> C_Shard2_Slave
-        C_Shard3 -.-> C_Shard3_Slave
+        C_Shard1 <span class="token arrow operator">-.-></span> C_Shard1_Slave
+        C_Shard2 <span class="token arrow operator">-.-></span> C_Shard2_Slave
+        C_Shard3 <span class="token arrow operator">-.-></span> C_Shard3_Slave
 
-        C_Shard1 -- 集群总线 --> C_Shard2
-        C_Shard2 -- 集群总线 --> C_Shard3
-        C_Shard3 -- 集群总线 --> C_Shard1
-    end
+        C_Shard1 <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">集群总线</span> <span class="token arrow operator">--></span></span> C_Shard2
+        C_Shard2 <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">集群总线</span> <span class="token arrow operator">--></span></span> C_Shard3
+        C_Shard3 <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">集群总线</span> <span class="token arrow operator">--></span></span> C_Shard1
+    <span class="token keyword">end</span>
 
-    classDef master fill:#ff9999,stroke:#333
-    classDef slave fill:#99ccff,stroke:#333
-    classDef sentinel fill:#ccffcc,stroke:#333
-    classDef shard fill:#ffcc99,stroke:#333
+    <span class="token keyword">classDef</span> master <span class="token style"><span class="token property">fill</span><span class="token operator">:</span>#ff9999<span class="token punctuation">,</span><span class="token property">stroke</span><span class="token operator">:</span>#333</span>
+    <span class="token keyword">classDef</span> slave <span class="token style"><span class="token property">fill</span><span class="token operator">:</span>#99ccff<span class="token punctuation">,</span><span class="token property">stroke</span><span class="token operator">:</span>#333</span>
+    <span class="token keyword">classDef</span> sentinel <span class="token style"><span class="token property">fill</span><span class="token operator">:</span>#ccffcc<span class="token punctuation">,</span><span class="token property">stroke</span><span class="token operator">:</span>#333</span>
+    <span class="token keyword">classDef</span> shard <span class="token style"><span class="token property">fill</span><span class="token operator">:</span>#ffcc99<span class="token punctuation">,</span><span class="token property">stroke</span><span class="token operator">:</span>#333</span>
 
-    class S_Master,S_Slave1,S_Slave2 master,slave
-    class S_Sentinel1,S_Sentinel2,S_Sentinel3 sentinel
-    class C_Shard1,C_Shard2,C_Shard3 shard
-    class C_Shard1_Slave,C_Shard2_Slave,C_Shard3_Slave slave</pre>
+    <span class="token keyword">class</span> S_Master,S_Slave1,S_Slave2 master,slave
+    <span class="token keyword">class</span> S_Sentinel1,S_Sentinel2,S_Sentinel3 sentinel
+    <span class="token keyword">class</span> C_Shard1,C_Shard2,C_Shard3 shard
+    <span class="token keyword">class</span> C_Shard1_Slave,C_Shard2_Slave,C_Shard3_Slave slave<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p>可以看到，集群虽然也用到了主从复制和哨兵机制，但它的核心在于数据的分片存储和节点间的通信，这使得集群在处理大规模数据和高并发请求时表现得更加出色。且哨兵机制的实现实际是让多个主节点互相监控，而不是单一主节点被多个哨兵监控。</p>
 <h2><span id="数据分片算法">数据分片算法</span></h2><p>在正式讲解 Redis 所采用的分片算法之前，我们先了解一下两个前置的分片算法：</p>
@@ -397,21 +411,21 @@ Redis 集群的分片算法–哈希槽分区算法
 <li>客户端根据哈希槽分配信息，将请求路由到正确的节点。</li>
 </ol>
 <p>而具体到分片的管辖上，分片在接收到任意一个请求后，都会先计算出该请求对应的哈希槽，然后查看自己是否负责该哈希槽，如果不是，该切片会自动将该请求重定向到负责该哈希槽的切片上。</p>
-<pre class="mermaid">flowchart TD
-    A[客户端发送请求] --> B[服务端接收请求]
-    B --> C[计算键的哈希槽]
-    C --> D{槽位是否属于当前节点?}
+<pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">flowchart</span> TD
+    A<span class="token text string">[客户端发送请求]</span> <span class="token arrow operator">--></span> B<span class="token text string">[服务端接收请求]</span>
+    B <span class="token arrow operator">--></span> C<span class="token text string">[计算键的哈希槽]</span>
+    C <span class="token arrow operator">--></span> D<span class="token text string">&#123;槽位是否属于当前节点?&#125;</span>
 
-    D -->|是| E[执行命令并返回结果]
-    D -->|否| F[返回MOVED错误<br>包含正确节点地址]
+    D <span class="token arrow operator">--></span><span class="token label property">|是|</span> E<span class="token text string">[执行命令并返回结果]</span>
+    D <span class="token arrow operator">--></span><span class="token label property">|否|</span> F<span class="token text string">[返回MOVED错误&lt;br/>包含正确节点地址]</span>
 
-    F --> G[客户端接收MOVED错误]
-    G --> H[客户端更新本地路由表缓存]
-    H --> I[客户端重新向正确节点发送请求]
-    I --> J[正确节点执行命令]
+    F <span class="token arrow operator">--></span> G<span class="token text string">[客户端接收MOVED错误]</span>
+    G <span class="token arrow operator">--></span> H<span class="token text string">[客户端更新本地路由表缓存]</span>
+    H <span class="token arrow operator">--></span> I<span class="token text string">[客户端重新向正确节点发送请求]</span>
+    I <span class="token arrow operator">--></span> J<span class="token text string">[正确节点执行命令]</span>
 
-    E --> K[请求完成]
-    J --> K</pre>
+    E <span class="token arrow operator">--></span> K<span class="token text string">[请求完成]</span>
+    J <span class="token arrow operator">--></span> K<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p>从而保证了分片映射信息不会被客户端缓存过久，导致请求发送错误，且如果直接将缓存信息发送给客户端，一方面增加了网络开销，另一方面也增加了客户端的复杂度，且这些信息本来就是分片的职责，不应该暴露给客户端。</p>
 <p>Redis 的作者建议分片数量不应该超过 1000 个，且每个分片负责的哈希槽数量不应该少于 50 个，这样可以保证数据的均匀分布和系统的高效运行。</p>
@@ -872,40 +886,40 @@ f3734a1c3bc5520977ea9ace9c8894dd55b6efd4 <span class="token number">172.30</span
 </ol>
 <hr>
 <p>流程时序图 (Mermaid)</p>
-<pre class="mermaid">sequenceDiagram
-    participant A as 节点A
-    participant B as 节点B
-    participant C as 节点C
-    participant D as 节点D
+<pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">sequenceDiagram</span>
+    <span class="token keyword">participant</span> A as 节点A
+    <span class="token keyword">participant</span> B as 节点B
+    <span class="token keyword">participant</span> C as 节点C
+    <span class="token keyword">participant</span> D as 节点D
 
-    Note over A, D: 1. 常规随机心跳检测
-    loop 每秒钟的随机PING
-        A->>B: PING (携带集群信息)
-        B-->>A: PONG
-    end
+    <span class="token keyword">Note over</span> A, D<span class="token operator">:</span> 1. 常规随机心跳检测
+    <span class="token keyword">loop</span> 每秒钟的随机PING
+        A<span class="token arrow operator">->></span>B<span class="token operator">:</span> PING <span class="token text string">(携带集群信息)</span>
+        B<span class="token arrow operator">-->></span>A<span class="token operator">:</span> PONG
+    <span class="token keyword">end</span>
 
-    Note over A, B: 2. 节点B无响应
-    A->>B: PING
-    Note right of B: 节点B故障/无响应
-    A->>B: 尝试重置TCP连接
-    Note right of B: 连接失败
+    <span class="token keyword">Note over</span> A, B<span class="token operator">:</span> 2. 节点B无响应
+    A<span class="token arrow operator">->></span>B<span class="token operator">:</span> PING
+    <span class="token keyword">Note right of</span> B<span class="token operator">:</span> 节点B故障/无响应
+    A<span class="token arrow operator">->></span>B<span class="token operator">:</span> 尝试重置TCP连接
+    <span class="token keyword">Note right of</span> B<span class="token operator">:</span> 连接失败
 
-    Note over A: 3. 节点A将节点B标记为 PFAIL (主观下线)
+    <span class="token keyword">Note over</span> A<span class="token operator">:</span> 3. 节点A将节点B标记为 PFAIL <span class="token text string">(主观下线)</span>
 
-    Note over A, D: 4. 通过Gossip协议传播并确认状态
-    A->>C: PING (消息体中包含：B is PFAIL)
-    A->>D: PING (消息体中包含：B is PFAIL)
-    C-->>A: PONG (消息体中包含：我也认为B is PFAIL)
-    D-->>A: PONG (消息体中包含：我也认为B is PFAIL)
+    <span class="token keyword">Note over</span> A, D<span class="token operator">:</span> 4. 通过Gossip协议传播并确认状态
+    A<span class="token arrow operator">->></span>C<span class="token operator">:</span> PING <span class="token text string">(消息体中包含：B is PFAIL)</span>
+    A<span class="token arrow operator">->></span>D<span class="token operator">:</span> PING <span class="token text string">(消息体中包含：B is PFAIL)</span>
+    C<span class="token arrow operator">-->></span>A<span class="token operator">:</span> PONG <span class="token text string">(消息体中包含：我也认为B is PFAIL)</span>
+    D<span class="token arrow operator">-->></span>A<span class="token operator">:</span> PONG <span class="token text string">(消息体中包含：我也认为B is PFAIL)</span>
 
-    Note over A: 5. 统计PFAIL投票
-    Note right of A: 认为B下线的节点数 > 集群半数
+    <span class="token keyword">Note over</span> A<span class="token operator">:</span> 5. 统计PFAIL投票
+    <span class="token keyword">Note right of</span> A<span class="token operator">:</span> 认为B下线的节点数 > 集群半数
 
-    Note over A: 6. 节点A将节点B标记为 FAIL (客观下线)
+    <span class="token keyword">Note over</span> A<span class="token operator">:</span> 6. 节点A将节点B标记为 FAIL <span class="token text string">(客观下线)</span>
 
-    Note over A, D: 7. 广播FAIL消息，达成集群共识
-    A->>C: 将B标记为FAIL
-    A->>D: 将B标记为FAIL</pre>
+    <span class="token keyword">Note over</span> A, D<span class="token operator">:</span> 7. 广播FAIL消息，达成集群共识
+    A<span class="token arrow operator">->></span>C<span class="token operator">:</span> 将B标记为FAIL
+    A<span class="token arrow operator">->></span>D<span class="token operator">:</span> 将B标记为FAIL<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <blockquote>
 <ul>
@@ -940,42 +954,42 @@ f3734a1c3bc5520977ea9ace9c8894dd55b6efd4 <span class="token number">172.30</span
 </ol>
 <p><strong>注</strong>：上述选举过程的核心思想来源于 <strong>Raft 算法</strong>。在随机休眠时间的机制下，<strong>数据最同步（offset 最大）的从节点通常会最先唤醒并赢得选举</strong>。</p>
 <hr>
-<h4><span id="故障迁移时序图-mermaid">故障迁移时序图 (Mermaid)</span></h4><pre class="mermaid">sequenceDiagram
-    participant A as 主节点A
-    participant B as 主节点B(FAIL)
-    participant C as 从节点C(B的副本)
-    participant D as 从节点D(B的副本)
-    participant E as 其他主节点
+<h4><span id="故障迁移时序图-mermaid">故障迁移时序图 (Mermaid)</span></h4><pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">sequenceDiagram</span>
+    <span class="token keyword">participant</span> A as 主节点A
+    <span class="token keyword">participant</span> B as 主节点B<span class="token text string">(FAIL)</span>
+    <span class="token keyword">participant</span> C as 从节点C<span class="token text string">(B的副本)</span>
+    <span class="token keyword">participant</span> D as 从节点D<span class="token text string">(B的副本)</span>
+    <span class="token keyword">participant</span> E as 其他主节点
 
-    Note over C, D: 1. 资格检查
-    Note right of C: 数据同步良好，有资格
-    Note right of D: 数据同步良好，有资格
+    <span class="token keyword">Note over</span> C, D<span class="token operator">:</span> 1. 资格检查
+    <span class="token keyword">Note right of</span> C<span class="token operator">:</span> 数据同步良好，有资格
+    <span class="token keyword">Note right of</span> D<span class="token operator">:</span> 数据同步良好，有资格
 
-    Note over C, D: 2. 计算休眠时间
-    Note right of C: Offset较大，排名靠前<br>休眠时间较短
-    Note right of D: Offset较小，排名靠后<br>休眠时间较长
+    <span class="token keyword">Note over</span> C, D<span class="token operator">:</span> 2. 计算休眠时间
+    <span class="token keyword">Note right of</span> C<span class="token operator">:</span> Offset较大，排名靠前&lt;br>休眠时间较短
+    <span class="token keyword">Note right of</span> D<span class="token operator">:</span> Offset较小，排名靠后&lt;br>休眠时间较长
 
-    Note over C: 3. C的休眠时间先到
-    C->>A: 请求投票
-    C->>E: 请求投票(广播给所有主节点)
+    <span class="token keyword">Note over</span> C<span class="token operator">:</span> 3. C的休眠时间先到
+    C<span class="token arrow operator">->></span>A<span class="token operator">:</span> 请求投票
+    C<span class="token arrow operator">->></span>E<span class="token operator">:</span> 请求投票<span class="token text string">(广播给所有主节点)</span>
 
-    Note over A, E: 4. 投票
-    A-->>C: 投票给C
-    E-->>C: 投票给C
-    Note right of C: 收集到超过半数的票
+    <span class="token keyword">Note over</span> A, E<span class="token operator">:</span> 4. 投票
+    A<span class="token arrow operator">-->></span>C<span class="token operator">:</span> 投票给C
+    E<span class="token arrow operator">-->></span>C<span class="token operator">:</span> 投票给C
+    <span class="token keyword">Note right of</span> C<span class="token operator">:</span> 收集到超过半数的票
 
-    Note over C: 5. 选举成功，自我晋升
-    C->>C: slaveof no one
-    C->>D: SLAVEOF (命令D复制自己)
+    <span class="token keyword">Note over</span> C<span class="token operator">:</span> 5. 选举成功，自我晋升
+    C<span class="token arrow operator">->></span>C<span class="token operator">:</span> slaveof no one
+    C<span class="token arrow operator">->></span>D<span class="token operator">:</span> SLAVEOF <span class="token text string">(命令D复制自己)</span>
 
-    Note over C: 6. 广播新配置
-    C->>A: 通知B:FAIL, 新主为C
-    C->>E: 通知B:FAIL, 新主为C
-    C->>D: 通知B:FAIL, 新主为C
+    <span class="token keyword">Note over</span> C<span class="token operator">:</span> 6. 广播新配置
+    C<span class="token arrow operator">->></span>A<span class="token operator">:</span> 通知B<span class="token operator">:</span>FAIL, 新主为C
+    C<span class="token arrow operator">->></span>E<span class="token operator">:</span> 通知B<span class="token operator">:</span>FAIL, 新主为C
+    C<span class="token arrow operator">->></span>D<span class="token operator">:</span> 通知B<span class="token operator">:</span>FAIL, 新主为C
 
-    Note over All: 集群状态达成一致
-    Note over C: 新任主节点
-    Note over D: 成为C的从节点</pre>
+    <span class="token keyword">Note over</span> All<span class="token operator">:</span> 集群状态达成一致
+    <span class="token keyword">Note over</span> C<span class="token operator">:</span> 新任主节点
+    <span class="token keyword">Note over</span> D<span class="token operator">:</span> 成为C的从节点<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <h4><span id="图中的关键点说明">图中的关键点说明</span></h4><ul>
 <li><strong>资格与延迟</strong>：展示了从节点根据自身数据新旧程度（排名）获得不同的竞选优势（休眠时间长短）。</li>
@@ -2888,7 +2902,7 @@ Waiting <span class="token keyword">for</span> the cluster to <span class="token
     color: #444444 !important;
   }
 
-  .dark-mode *:not(table):not(table *):not(button):not(input):not(textarea):not(a):not(pre):not(pre *) {
+  .dark-mode *:not(table):not(table *):not(button):not(input):not(textarea):not(a):not(pre):not(pre *):not(.mermaid):not(.mermaid *) {
     color: #e0e0e0 !important;
     border-color: #444 !important;
   }
@@ -2979,9 +2993,16 @@ Waiting <span class="token keyword">for</span> the cluster to <span class="token
     border-radius: 5px;
   }
 
-  .mermaid path,
-  .mermaid line {
-    stroke: #f0f0f0 !important;
+  /* 仅亮色模式：加深箭头/连线颜色，提升可读性 */
+  html:not(.dark-mode) .mermaid path,
+  html:not(.dark-mode) .mermaid line {
+    stroke: #666666 !important; /* 比原来的#f0f0f0更深一些 */
+  }
+
+  /* 夜间模式：箭头/连线更接近白色，提高对比度 */
+  html.dark-mode .mermaid path,
+  html.dark-mode .mermaid line {
+    stroke: #f6f6f6 !important; /* 近白色，避免纯白刺眼 */
   }
 
   .mermaid rect path {
@@ -2991,6 +3012,45 @@ Waiting <span class="token keyword">for</span> the cluster to <span class="token
   .mermaid text {
     fill: #4a8ecd !important;
   }
+
+  /* Mermaid 点击放大覆盖层 */
+  #mermaid-zoom-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+    z-index: 10000;
+    display: none;
+  }
+  #mermaid-zoom-overlay.show { display: block; }
+  #mermaid-zoom-content {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 96vw; height: 92vh;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 10px 28px rgba(0,0,0,.25);
+    overflow: hidden;
+  }
+  html.dark-mode #mermaid-zoom-content { background: #1f2937; }
+  #mermaid-zoom-close {
+    position: absolute;
+    top: 8px; right: 10px;
+    background: rgba(0,0,0,.5);
+    color: #fff;
+    border: none; border-radius: 6px;
+    padding: 6px 10px; cursor: pointer;
+    z-index: 10001;
+  }
+  #mermaid-zoom-stage {
+    position: relative;
+    width: 100%; height: 100%;
+    transform-origin: 0 0;
+    cursor: grab;
+  }
+  #mermaid-zoom-stage.grabbing { cursor: grabbing; }
+  #post-content .mermaid svg { cursor: zoom-in; }
 
   /* 自定义确认弹窗样式 */
   .custom-confirm-mask {
@@ -3764,6 +3824,142 @@ Waiting <span class="token keyword">for</span> the cluster to <span class="token
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+    }
+  })();
+</script>
+
+<!-- 将 ```mermaid 代码块转换为 .mermaid 并渲染 -->
+<script>
+  (function(){
+    function convertMermaidBlocks(container){
+      if (!container) return 0;
+      var blocks = container.querySelectorAll('pre code.language-mermaid, code.language-mermaid');
+      var count = 0;
+      blocks.forEach(function(codeEl){
+        var diagram = codeEl.textContent || '';
+        var wrapper = document.createElement('div');
+        wrapper.className = 'mermaid';
+        // 直接填纯文本，Mermaid自行解析
+        wrapper.textContent = diagram;
+        var pre = codeEl.closest && codeEl.closest('pre');
+        if (pre) pre.replaceWith(wrapper); else codeEl.replaceWith(wrapper);
+        count++;
+      });
+      return count;
+    }
+
+    function render(container){
+      if (window.renderMermaidInContainer) {
+        window.renderMermaidInContainer('#post-content .mermaid');
+      } else if (window.mermaid) {
+        // 兜底：直接尝试 mermaid.run/init
+        try {
+          if (typeof mermaid.run === 'function') mermaid.run({ querySelector: '#post-content .mermaid' });
+          else if (typeof mermaid.init === 'function') mermaid.init(undefined, container.querySelectorAll('.mermaid'));
+        } catch(e) {}
+      }
+    }
+
+    // DOM 就绪后执行
+    document.addEventListener('DOMContentLoaded', function(){
+      var container = document.getElementById('post-content');
+      if (!container) return;
+      var n = convertMermaidBlocks(container);
+      if (n > 0) render(container);
+    });
+  })();
+  </script>
+
+<!-- Mermaid 放大查看覆盖层结构 -->
+<div id="mermaid-zoom-overlay" aria-modal="true" role="dialog" tabindex="-1">
+  <button id="mermaid-zoom-close" aria-label="关闭">关闭</button>
+  <div id="mermaid-zoom-content">
+    <div id="mermaid-zoom-stage"></div>
+  </div>
+</div>
+
+<script>
+  (function(){
+    function initMermaidZoom(){
+      var overlay = document.getElementById('mermaid-zoom-overlay');
+      var content = document.getElementById('mermaid-zoom-content');
+      var stage = document.getElementById('mermaid-zoom-stage');
+      var closeBtn = document.getElementById('mermaid-zoom-close');
+      if (!overlay || !content || !stage || !closeBtn) return;
+
+      var state = { scale: 1, minScale: 0.4, maxScale: 4, x: 0, y: 0 };
+      var dragging = false, lastPos = { x:0, y:0 };
+
+      function apply(){
+        stage.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
+      }
+
+      function fitInitial(svg){
+        var rect = content.getBoundingClientRect();
+        var bbox = null;
+        try { bbox = svg.getBBox(); } catch(e) { bbox = null; }
+        var vb = svg.getAttribute('viewBox');
+        var w=null,h=null,vx=0,vy=0;
+        if (bbox && bbox.width && bbox.height) { w=bbox.width; h=bbox.height; vx=bbox.x; vy=bbox.y; }
+        else if (vb) { var p=vb.split(/\s+/); vx=+p[0]; vy=+p[1]; w=+p[2]; h=+p[3]; }
+        else { w=+(svg.getAttribute('width')||0); h=+(svg.getAttribute('height')||0); }
+        svg.setAttribute('preserveAspectRatio','xMinYMin meet');
+        svg.removeAttribute('width'); svg.removeAttribute('height');
+        if (!vb && bbox && bbox.width && bbox.height) {
+          svg.setAttribute('viewBox', `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`);
+        }
+        var pad = 24;
+        if (w && h) {
+          var sx = (rect.width - pad)/w, sy=(rect.height - pad)/h;
+          state.scale = Math.max(state.minScale, Math.min(state.maxScale, Math.min(sx, sy)));
+          state.x = (rect.width - w*state.scale)/2 - vx*state.scale;
+          state.y = (rect.height - h*state.scale)/2 - vy*state.scale;
+        } else { state.scale=1; state.x=0; state.y=0; }
+        apply();
+      }
+
+      function openWith(svg){
+        stage.innerHTML = '';
+        var clone = svg.cloneNode(true);
+        clone.removeAttribute('style'); clone.style.display='block';
+        stage.appendChild(clone);
+        overlay.classList.add('show'); overlay.focus();
+        fitInitial(clone);
+      }
+
+      function close(){ overlay.classList.remove('show'); }
+      overlay.addEventListener('click', function(e){ if (e.target===overlay) close(); });
+      closeBtn.addEventListener('click', close);
+      document.addEventListener('keydown', function(e){ if (e.key==='Escape') close(); });
+
+      // 绑定点击放大
+      document.querySelectorAll('#post-content .mermaid svg').forEach(function(svg){
+        svg.addEventListener('click', function(){ openWith(svg); });
+      });
+
+      // 滑轮缩放（以鼠标为中心）
+      content.addEventListener('wheel', function(e){
+        e.preventDefault();
+        var prev = state.scale;
+        var factor = Math.sign(e.deltaY)>0 ? 0.9 : 1.1;
+        state.scale = Math.max(state.minScale, Math.min(state.maxScale, state.scale*factor));
+        var rect = content.getBoundingClientRect();
+        var mx = e.clientX - rect.left, my = e.clientY - rect.top;
+        var dx = (mx - state.x) * (1 - state.scale/prev);
+        var dy = (my - state.y) * (1 - state.scale/prev);
+        state.x += dx; state.y += dy; apply();
+      }, { passive: false });
+
+      // 拖拽平移
+      stage.addEventListener('mousedown', function(e){ dragging=true; stage.classList.add('grabbing'); lastPos.x=e.clientX; lastPos.y=e.clientY; });
+      window.addEventListener('mousemove', function(e){ if(!dragging) return; var dx=e.clientX-lastPos.x, dy=e.clientY-lastPos.y; state.x+=dx; state.y+=dy; lastPos.x=e.clientX; lastPos.y=e.clientY; apply(); });
+      window.addEventListener('mouseup', function(){ dragging=false; stage.classList.remove('grabbing'); });
+    }
+
+    document.addEventListener('DOMContentLoaded', function(){ initMermaidZoom(); });
+    if (typeof window.renderMermaidInContainer === 'function') {
+      var orig = window.renderMermaidInContainer;
+      window.renderMermaidInContainer = function(sel){ orig(sel); initMermaidZoom(); };
     }
   })();
 </script>

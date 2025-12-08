@@ -40,13 +40,27 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <!-- Prism.js 官方主题 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
-    
-  <script src='https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js'></script>
-
 <meta name="generator" content="Hexo 7.3.0"></head>
 <script src="https://cdn.jsdelivr.net/npm/TagCloud@2.2.0/dist/TagCloud.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
+<!-- Mermaid.js -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+    // 由页面脚本在转换为 .mermaid 元素后再触发渲染
+    mermaid.initialize({ startOnLoad: false });
+    window.renderMermaidInContainer = async function(selector){
+        try {
+            if (window.mermaid && typeof mermaid.run === 'function') {
+                await mermaid.run({ querySelector: selector || '.mermaid' });
+            } else if (window.mermaid && typeof mermaid.init === 'function') {
+                mermaid.init(undefined, document.querySelectorAll(selector || '.mermaid'));
+            }
+        } catch (e) { /* 忽略渲染异常，避免影响页面 */ }
+    };
+</script>
+
+
 
 <body class="loading">
     <span id="config-title" style="display:none">刘家炫的博客</span>
@@ -164,7 +178,7 @@
   color: white;
   border-radius: 8px;
   box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-  background: linear-gradient(135deg, #FF6B6B, #45B7D1);
+  background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
 }
 
 .tag-hero h1 {
@@ -197,7 +211,7 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #FFA07A;
+  background: #98D8C8;
   box-shadow: 0 0 0 3px white, 0 0 0 6px #45B7D1;
 }
 
@@ -308,14 +322,48 @@
   <div class="tag-hero" style="background: linear-gradient(135deg, getRandomColor(), getRandomColor())">
     <h1>#高并发</h1>
     <div class="tag-meta">
-      <span>1 篇探索记录</span>
+      <span>2 篇探索记录</span>
       <span>·</span>
-      <span>最后更新：2025-12-07</span>
+      <span>最后更新：2025-12-08</span>
     </div>
   </div>
 
   <!-- 时间轴式文章列表 -->
   <div class="tag-timeline">
+    
+      <div class="timeline-node">
+        <div class="node-dot"></div>
+        <div class="node-content">
+          <time>2025/12/08</time>
+          <h3><a href="/blog/2025/12/08/C++/log_system/">同步异步日志系统设计与实现</a></h3>
+          <div class="post-excerpt">
+
+
+项目简介
+设计目标
+系统架构 – 原型剖析
+日志器构造
+日志记录 – 等级划分
+日志写入 – 同步与异步
+架构总览
+
+
+项目实现
+基础工具类
+日志格...</div>
+          
+            <div class="post-cats">
+              
+                <a href="/blog/categories/C/" class="cat-badge">📁 C++</a>
+              
+                <a href="/blog/categories/C/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" class="cat-badge">📁 内存管理</a>
+              
+                <a href="/blog/categories/C/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/%E9%A1%B9%E7%9B%AE/" class="cat-badge">📁 项目</a>
+              
+            </div>
+          
+        </div>
+      </div>
     
       <div class="timeline-node">
         <div class="node-dot"></div>
@@ -373,7 +421,7 @@
       
         <a href="/blog/tags/C/" class="related-tag" 
            style="--tag-size: 40px">
-          C++ (12)
+          C++ (13)
         </a>
       
         <a href="/blog/tags/%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B/" class="related-tag" 

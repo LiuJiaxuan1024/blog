@@ -40,13 +40,27 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <!-- Prism.js 官方主题 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
-    
-  <script src='https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js'></script>
-
 <meta name="generator" content="Hexo 7.3.0"></head>
 <script src="https://cdn.jsdelivr.net/npm/TagCloud@2.2.0/dist/TagCloud.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
+<!-- Mermaid.js -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+    // 由页面脚本在转换为 .mermaid 元素后再触发渲染
+    mermaid.initialize({ startOnLoad: false });
+    window.renderMermaidInContainer = async function(selector){
+        try {
+            if (window.mermaid && typeof mermaid.run === 'function') {
+                await mermaid.run({ querySelector: selector || '.mermaid' });
+            } else if (window.mermaid && typeof mermaid.init === 'function') {
+                mermaid.init(undefined, document.querySelectorAll(selector || '.mermaid'));
+            }
+        } catch (e) { /* 忽略渲染异常，避免影响页面 */ }
+    };
+</script>
+
+
 
 <body class="loading">
     <span id="config-title" style="display:none">刘家炫的博客</span>
@@ -194,7 +208,7 @@
         
         <div class="category-item">
           <a href="/blog/categories/C/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" class="category-link">
-            内存管理 <span class="category-count">(1)</span>
+            内存管理 <span class="category-count">(2)</span>
           </a>
         </div>
         
@@ -206,7 +220,7 @@
         
         <div class="category-item">
           <a href="/blog/categories/C/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/%E9%A1%B9%E7%9B%AE/" class="category-link">
-            项目 <span class="category-count">(1)</span>
+            项目 <span class="category-count">(2)</span>
           </a>
         </div>
         
@@ -218,7 +232,7 @@
         
         <div class="category-item">
           <a href="/blog/categories/C/" class="category-link">
-            C++ <span class="category-count">(6)</span>
+            C++ <span class="category-count">(7)</span>
           </a>
         </div>
         

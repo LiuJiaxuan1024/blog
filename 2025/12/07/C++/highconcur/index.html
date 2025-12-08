@@ -82,13 +82,27 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <!-- Prism.js 官方主题 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
-    
-  <script src='https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js'></script>
-
 <meta name="generator" content="Hexo 7.3.0"></head>
 <script src="https://cdn.jsdelivr.net/npm/TagCloud@2.2.0/dist/TagCloud.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
+<!-- Mermaid.js -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+    // 由页面脚本在转换为 .mermaid 元素后再触发渲染
+    mermaid.initialize({ startOnLoad: false });
+    window.renderMermaidInContainer = async function(selector){
+        try {
+            if (window.mermaid && typeof mermaid.run === 'function') {
+                await mermaid.run({ querySelector: selector || '.mermaid' });
+            } else if (window.mermaid && typeof mermaid.init === 'function') {
+                mermaid.init(undefined, document.querySelectorAll(selector || '.mermaid'));
+            }
+        } catch (e) { /* 忽略渲染异常，避免影响页面 */ }
+    };
+</script>
+
+
 
 <body class="loading">
     <span id="config-title" style="display:none">刘家炫的博客</span>
@@ -238,7 +252,7 @@
                     </div>
                     <div>
                         <a href="/blog/archives" style="text-decoration: none; color: inherit;">
-                                <span style="font-weight:bold; font-size:20px;">75</span>
+                                <span style="font-weight:bold; font-size:20px;">76</span>
                                 <span style="font-size:20px;">文章</span>
                         </a>
                     </div>
@@ -247,7 +261,7 @@
         </div>
         <div class="recommendations">
             <h2>相关推荐</h2>
-            <ul><li><a href="/blog/2025/10/06/C++/constexpr/">现代 C++ 之 constexpr 编程</a></li><li><a href="/blog/2025/09/30/C++/async/">C++ 异步编程</a></li><li><a href="/blog/2025/10/07/C++/stl_iterator_traits/">深入探索 C++ STL 容器中的迭代器萃取机制</a></li><li><a href="/blog/2025/08/14/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_func/">Redis C++ 客户端使用指南-基础指令篇</a></li><li><a href="/blog/2025/08/16/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_zset/">Redis C++ 客户端使用指南-Zset 篇</a></li><li><a href="/blog/2025/08/15/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_set/">Redis C++ 客户端使用指南-Set 篇</a></li></ul>
+            <ul><li><a href="/blog/2025/08/15/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_set/">Redis C++ 客户端使用指南-Set 篇</a></li><li><a href="/blog/2025/10/06/C++/constexpr/">现代 C++ 之 constexpr 编程</a></li><li><a href="/blog/2025/08/16/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_hash/">Redis C++ 客户端使用指南-Hash 篇</a></li><li><a href="/blog/2025/12/02/C++/virtual_memory/">现代 C++ 中的虚拟内存分布</a></li><li><a href="/blog/2025/10/07/C++/template/">C++ 中的模版元编程</a></li><li><a href="/blog/2025/08/16/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_zset/">Redis C++ 客户端使用指南-Zset 篇</a></li></ul>
         </div>
         <div class='main' style="
     background: transparent;
@@ -686,40 +700,40 @@ freeList <span class="token operator">=</span> <span class="token operator">*</s
 <li>最后，我们将获取到的内存块中除第一个内存块外的剩余内存块插入到对应的自由链表中，并返回第一个内存块给用户。</li>
 </ul>
 <p>下面这个流程图总结了 <code>ThreadCache</code> 层的内存申请逻辑：</p>
-<pre class="mermaid">graph TD
-    %% 样式优化（可选，让流程图更美观）
-    classDef keyNode fill:#f9f,stroke:#333,stroke-width:2px;
-    classDef decisionNode fill:#9ff,stroke:#333,stroke-width:2px;
+<pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">graph</span> TD
+    <span class="token comment">%% 样式优化（可选，让流程图更美观）</span>
+    <span class="token keyword">classDef</span> keyNode <span class="token style"><span class="token property">fill</span><span class="token operator">:</span>#f9f<span class="token punctuation">,</span><span class="token property">stroke</span><span class="token operator">:</span>#333<span class="token punctuation">,</span><span class="token property">stroke-width</span><span class="token operator">:</span>2px</span><span class="token punctuation">;</span>
+    <span class="token keyword">classDef</span> decisionNode <span class="token style"><span class="token property">fill</span><span class="token operator">:</span>#9ff<span class="token punctuation">,</span><span class="token property">stroke</span><span class="token operator">:</span>#333<span class="token punctuation">,</span><span class="token property">stroke-width</span><span class="token operator">:</span>2px</span><span class="token punctuation">;</span>
     
-    %% 核心流程
-    A["用户发起内存申请<br>(size: 待申请字节数)"]:::keyNode --> B{"size ≤ ThreadCache最大阈值?"}:::decisionNode
+    <span class="token comment">%% 核心流程</span>
+    A<span class="token text string">["用户发起内存申请&lt;br/>(size: 待申请字节数)"]</span><span class="token operator">:::</span>keyNode <span class="token arrow operator">--></span> B<span class="token text string">&#123;"size ≤ ThreadCache最大阈值?"&#125;</span><span class="token operator">:::</span>decisionNode
     
-    %% 小内存申请分支（核心逻辑）
-    B -- 是 --> C["计算对齐后内存大小<br>mem_len = SizeClass::RoundUp(size)"]
-    C --> D["计算对应自由链表索引<br>index = SizeClass::Index(size)"]
-    D --> E{"ThreadCache._freelists[index] 非空?"}:::decisionNode
+    <span class="token comment">%% 小内存申请分支（核心逻辑）</span>
+    B <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">是</span> <span class="token arrow operator">--></span></span> C<span class="token text string">["计算对齐后内存大小&lt;br/>mem_len = SizeClass::RoundUp(size)"]</span>
+    C <span class="token arrow operator">--></span> D<span class="token text string">["计算对应自由链表索引&lt;br/>index = SizeClass::Index(size)"]</span>
+    D <span class="token arrow operator">--></span> E<span class="token text string">&#123;"ThreadCache._freelists[index] 非空?"&#125;</span><span class="token operator">:::</span>decisionNode
     
-    %% 自由链表有可用内存
-    E -- 是 --> F["从_freelists[index]弹出一个内存块"]
-    F --> G["返回内存块给用户"] --> H["内存申请完成"]
+    <span class="token comment">%% 自由链表有可用内存</span>
+    E <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">是</span> <span class="token arrow operator">--></span></span> F<span class="token text string">["从_freelists[index]弹出一个内存块"]</span>
+    F <span class="token arrow operator">--></span> G<span class="token text string">["返回内存块给用户"]</span> <span class="token arrow operator">--></span> H<span class="token text string">["内存申请完成"]</span>
     
-    %% 自由链表为空，向CentralCache申请
-    E -- 否 --> I["计算批量申请数量batch_num<br>(取SizeClass预设值 & 慢启动上限最小值)"]
-    I --> J["调用CentralCache::FetchRangeObj<br>批量获取batch_num个内存块"]
-    J --> K{"实际获取到actual_num > 0?"}:::decisionNode
+    <span class="token comment">%% 自由链表为空，向CentralCache申请</span>
+    E <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">否</span> <span class="token arrow operator">--></span></span> I<span class="token text string">["计算批量申请数量batch_num&lt;br/>(取SizeClass预设值 &amp; 慢启动上限最小值)"]</span>
+    I <span class="token arrow operator">--></span> J<span class="token text string">["调用CentralCache::FetchRangeObj&lt;br/>批量获取batch_num个内存块"]</span>
+    J <span class="token arrow operator">--></span> K<span class="token text string">&#123;"实际获取到actual_num > 0?"&#125;</span><span class="token operator">:::</span>decisionNode
     
-    K -- 是 --> L["将1个内存块返回给用户"]
-    L --> M["剩余(actual_num-1)个内存块<br>插入ThreadCache._freelists[index]"] --> H
+    K <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">是</span> <span class="token arrow operator">--></span></span> L<span class="token text string">["将1个内存块返回给用户"]</span>
+    L <span class="token arrow operator">--></span> M<span class="token text string">["剩余(actual_num-1)个内存块&lt;br/>插入ThreadCache._freelists[index]"]</span> <span class="token arrow operator">--></span> H
     
     
     
-    %% 大内存申请分支（跳过ThreadCache）
-    B -- 否 --> O["直接调用系统接口分配大块内存"] --> H
+    <span class="token comment">%% 大内存申请分支（跳过ThreadCache）</span>
+    B <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">否</span> <span class="token arrow operator">--></span></span> O<span class="token text string">["直接调用系统接口分配大块内存"]</span> <span class="token arrow operator">--></span> H
 
-    %% 备注说明（可选，补充关键细节）
-    note["📌 关键细节：<br>1. SizeClass：内存大小对齐规则，避免内存碎片<br>2. 慢启动：动态调整batch_num，平衡性能与内存占用<br>3. ThreadCache：每个线程私有，无锁访问"]
-    linkStyle 0 stroke:#666,stroke-width:1px;
-    linkStyle 10 stroke:#f66,stroke-width:1.5px,color:red;</pre>
+    <span class="token comment">%% 备注说明（可选，补充关键细节）</span>
+    note<span class="token text string">["📌 关键细节：&lt;br/>1. SizeClass：内存大小对齐规则，避免内存碎片&lt;br/>2. 慢启动：动态调整batch_num，平衡性能与内存占用&lt;br/>3. ThreadCache：每个线程私有，无锁访问"]</span>
+    <span class="token keyword">linkStyle</span> 0 <span class="token style"><span class="token property">stroke</span><span class="token operator">:</span>#666<span class="token punctuation">,</span><span class="token property">stroke-width</span><span class="token operator">:</span>1px</span><span class="token punctuation">;</span>
+    <span class="token keyword">linkStyle</span> 10 <span class="token style"><span class="token property">stroke</span><span class="token operator">:</span>#f66<span class="token punctuation">,</span><span class="token property">stroke-width</span><span class="token operator">:</span>1.5px<span class="token punctuation">,</span><span class="token property">color</span><span class="token operator">:</span>red</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <h3><span id="centralcache-层内存申请讲解"><code>CentralCache</code> 层（内存申请讲解）</span></h3><p><code>CentralCache</code> 组件是高并发内存池项目中的另一个重要组成部分，它负责管理不同大小等级的内存块，并将其分配给各个线程的 <code>ThreadCache</code>。<code>CentralCache</code> 主要通过维护多个自由链表来管理不同大小等级的内存块，当 <code>ThreadCache</code> 请求内存时，<code>CentralCache</code> 会从对应的链表中分配内存块。</p>
 <p><strong>如果说我们的这个内存申请架构有三层：<code>ThreadCache</code>、<code>CentralCache</code> 和 <code>PageCache</code>，那么 <code>CentralCache</code> 就是中间层，负责协调 <code>ThreadCache</code> 和 <code>PageCache</code> 之间的内存分配请求。因此，并不是因为为了提高性能才设计了 <code>CentralCache</code>，而是为了更好地协调内存分配请求，提升整体内存管理的效率。所以说，<code>CentralCache</code> 的内存申请逻辑与 <code>ThreadCache</code> 有些类似，但是它需要处理更多的细节，往上他需要协调 <code>PageCache</code> 的内存分配请求，往下他需要满足多个线程的内存分配请求，需要考虑线程安全问题。</strong></p>
@@ -925,39 +939,39 @@ freeList <span class="token operator">=</span> <span class="token operator">*</s
 <p>代码很简单，我们首先通过 <code>NumMoveSize(byte)</code> 方法计算出用户实际申请的内存大小对应的内存块数量 num，然后计算出总的内存大小 total_byte，最后通过右移 PAGE_SHIFT 位来计算出对应的页框数量 page_num。为了保证至少申请一个页框，我们返回 <code>std::max((size_t)1, page_num)</code>。之所以选择向下取整，是为了避免内存浪费，因为页框的大小通常比较大，如果我们向上取整，可能会导致申请过多的内存，浪费系统资源。</p>
 <p>通过 <code>CentralCache</code>，我们可以高效地管理不同大小等级的内存块，协调 <code>ThreadCache</code> 和 <code>PageCache</code> 之间的内存分配请求，提升整体内存管理的效率，满足高并发场景下的内存管理需求。</p>
 <p>同样的，我们用一张流程图来总结 <code>CentralCache</code> 层的内存申请逻辑：</p>
-<pre class="mermaid">graph TD
-    %% 样式定义
-    classDef keyNode fill:#f9f,stroke:#333,stroke-width:2px;
-    classDef decisionNode fill:#9ff,stroke:#333,stroke-width:2px;
-    classDef lockNode fill:#ff9,stroke:#333,stroke-width:2px;
+<pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">graph</span> TD
+    <span class="token comment">%% 样式定义</span>
+    <span class="token keyword">classDef</span> keyNode <span class="token style"><span class="token property">fill</span><span class="token operator">:</span>#f9f<span class="token punctuation">,</span><span class="token property">stroke</span><span class="token operator">:</span>#333<span class="token punctuation">,</span><span class="token property">stroke-width</span><span class="token operator">:</span>2px</span><span class="token punctuation">;</span>
+    <span class="token keyword">classDef</span> decisionNode <span class="token style"><span class="token property">fill</span><span class="token operator">:</span>#9ff<span class="token punctuation">,</span><span class="token property">stroke</span><span class="token operator">:</span>#333<span class="token punctuation">,</span><span class="token property">stroke-width</span><span class="token operator">:</span>2px</span><span class="token punctuation">;</span>
+    <span class="token keyword">classDef</span> lockNode <span class="token style"><span class="token property">fill</span><span class="token operator">:</span>#ff9<span class="token punctuation">,</span><span class="token property">stroke</span><span class="token operator">:</span>#333<span class="token punctuation">,</span><span class="token property">stroke-width</span><span class="token operator">:</span>2px</span><span class="token punctuation">;</span>
     
-    %% 核心流程
-    A["ThreadCache请求批量内存块<br>(batch_num个byte大小块)"]:::keyNode --> B["计算对应SpanList索引<br>index = SizeClass::Index(byte)"]
-    B --> C["对spanLists[index]加锁<br>(保证线程安全)"]:::lockNode
-    C --> D["遍历spanLists[index]查找<br>有可用内存的Span"]
-    D --> E{"找到可用Span?"}:::decisionNode
+    <span class="token comment">%% 核心流程</span>
+    A<span class="token text string">["ThreadCache请求批量内存块&lt;br/>(batch_num个byte大小块)"]</span><span class="token operator">:::</span>keyNode <span class="token arrow operator">--></span> B<span class="token text string">["计算对应SpanList索引&lt;br/>index = SizeClass::Index(byte)"]</span>
+    B <span class="token arrow operator">--></span> C<span class="token text string">["对spanLists[index]加锁&lt;br/>(保证线程安全)"]</span><span class="token operator">:::</span>lockNode
+    C <span class="token arrow operator">--></span> D<span class="token text string">["遍历spanLists[index]查找&lt;br/>有可用内存的Span"]</span>
+    D <span class="token arrow operator">--></span> E<span class="token text string">&#123;"找到可用Span?"&#125;</span><span class="token operator">:::</span>decisionNode
     
-    %% 找到可用Span分支
-    E -- 是 --> F["从该Span的freelist中<br>获取actual_num个内存块<br>(最多batch_num个)"]
-    F --> G["更新Span的freelist（保留剩余块）"]
-    G --> H["增加Span的useCount（引用计数）"]
-    H --> I["对spanLists[index]解锁"]:::lockNode
-    I --> J["返回获取到的内存块链<br>(start~end)及actual_num"] --> K["CentralCache内存分配完成"]
+    <span class="token comment">%% 找到可用Span分支</span>
+    E <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">是</span> <span class="token arrow operator">--></span></span> F<span class="token text string">["从该Span的freelist中&lt;br/>获取actual_num个内存块&lt;br/>(最多batch_num个)"]</span>
+    F <span class="token arrow operator">--></span> G<span class="token text string">["更新Span的freelist（保留剩余块）"]</span>
+    G <span class="token arrow operator">--></span> H<span class="token text string">["增加Span的useCount（引用计数）"]</span>
+    H <span class="token arrow operator">--></span> I<span class="token text string">["对spanLists[index]解锁"]</span><span class="token operator">:::</span>lockNode
+    I <span class="token arrow operator">--></span> J<span class="token text string">["返回获取到的内存块链&lt;br/>(start~end)及actual_num"]</span> <span class="token arrow operator">--></span> K<span class="token text string">["CentralCache内存分配完成"]</span>
     
-    %% 未找到可用Span分支
-    E -- 否 --> L["先对spanLists[index]解锁"]:::lockNode
-    L --> M["计算需要向PageCache申请的页数<br>page_num = SizeClass::NumMovePage(byte)"]
-    M --> N["对PageCache加锁"]:::lockNode
-    N --> O["调用PageCache::NewSpan(page_num)<br>获取新的内存页块"]
-    O --> P["对新Span标记isusing=true<br>并设置objSize=byte"]
-    P --> Q["对PageCache解锁"]:::lockNode
-    Q --> R["将新申请的内存页切分成<br>多个byte大小的内存块<br>(构建成freelist)"]
-    R --> S["重新对spanLists[index]加锁"]:::lockNode
-    S --> T["将新Span插入spanLists[index]头部"]
-    T --> F
+    <span class="token comment">%% 未找到可用Span分支</span>
+    E <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">否</span> <span class="token arrow operator">--></span></span> L<span class="token text string">["先对spanLists[index]解锁"]</span><span class="token operator">:::</span>lockNode
+    L <span class="token arrow operator">--></span> M<span class="token text string">["计算需要向PageCache申请的页数&lt;br/>page_num = SizeClass::NumMovePage(byte)"]</span>
+    M <span class="token arrow operator">--></span> N<span class="token text string">["对PageCache加锁"]</span><span class="token operator">:::</span>lockNode
+    N <span class="token arrow operator">--></span> O<span class="token text string">["调用PageCache::NewSpan(page_num)&lt;br/>获取新的内存页块"]</span>
+    O <span class="token arrow operator">--></span> P<span class="token text string">["对新Span标记isusing=true&lt;br/>并设置objSize=byte"]</span>
+    P <span class="token arrow operator">--></span> Q<span class="token text string">["对PageCache解锁"]</span><span class="token operator">:::</span>lockNode
+    Q <span class="token arrow operator">--></span> R<span class="token text string">["将新申请的内存页切分成&lt;br/>多个byte大小的内存块&lt;br/>(构建成freelist)"]</span>
+    R <span class="token arrow operator">--></span> S<span class="token text string">["重新对spanLists[index]加锁"]</span><span class="token operator">:::</span>lockNode
+    S <span class="token arrow operator">--></span> T<span class="token text string">["将新Span插入spanLists[index]头部"]</span>
+    T <span class="token arrow operator">--></span> F
     
-    %% 备注说明
-    note["📌 关键细节：<br>1. 加锁粒度：仅锁定当前size等级的SpanList，减少锁竞争<br>2. Span管理：每个Span对应一批同大小内存块，通过useCount跟踪使用情况<br>3. 内存切片：从PageCache获取的大块内存需切分成小块后再分配"]</pre>
+    <span class="token comment">%% 备注说明</span>
+    note<span class="token text string">["📌 关键细节：&lt;br/>1. 加锁粒度：仅锁定当前size等级的SpanList，减少锁竞争&lt;br/>2. Span管理：每个Span对应一批同大小内存块，通过useCount跟踪使用情况&lt;br/>3. 内存切片：从PageCache获取的大块内存需切分成小块后再分配"]</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <h3><span id="pagecache-层内存申请讲解"><code>PageCache</code> 层（内存申请讲解）</span></h3><p>当 <code>CentralCache</code> 发现自己的自由链表 <code>SpanList</code> 中没有可用的 <code>Span</code> 对象时，它就会向上层的 <code>PageCache</code> 请求一批新的内存页。<code>PageCache</code> 组件负责管理系统内存页的分配和回收，它通过直接调用操作系统的内存分配接口来获取大块的内存页，然后将其划分为多个 <code>Span</code> 对象，供 <code>CentralCache</code> 使用。</p>
 <p>在讲解 <code>PageCache</code> 的核心方法之前，我们先来看一下 <code>PageCache</code> 组件的定义：</p>
@@ -1109,25 +1123,25 @@ freeList <span class="token operator">=</span> <span class="token operator">*</s
 <p>不论是分割还是新申请内存，我们都需要在 <code>PageIdToSpan</code> 映射表中建立页编号到 <code>Span</code> 对象的映射关系，方便后续进行内存回收。</p>
 <p>通过 <code>PageCache</code>，我们可以高效地管理系统内存页的分配和回收，满足 <code>CentralCache</code> 对内存页的分配请求，提升整体内存管理的效率，满足高并发场景下的内存管理需求。</p>
 <p>同样，我们用一张流程图来总结 <code>PageCache</code> 层的内存申请逻辑：</p>
-<pre class="mermaid">graph TD
-    classDef keyNode fill:#f9f,stroke:#333,stroke-width:2px;
-    classDef decisionNode fill:#9ff,stroke:#333,stroke-width:2px;
+<pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">graph</span> TD
+    <span class="token keyword">classDef</span> keyNode <span class="token style"><span class="token property">fill</span><span class="token operator">:</span>#f9f<span class="token punctuation">,</span><span class="token property">stroke</span><span class="token operator">:</span>#333<span class="token punctuation">,</span><span class="token property">stroke-width</span><span class="token operator">:</span>2px</span><span class="token punctuation">;</span>
+    <span class="token keyword">classDef</span> decisionNode <span class="token style"><span class="token property">fill</span><span class="token operator">:</span>#9ff<span class="token punctuation">,</span><span class="token property">stroke</span><span class="token operator">:</span>#333<span class="token punctuation">,</span><span class="token property">stroke-width</span><span class="token operator">:</span>2px</span><span class="token punctuation">;</span>
     
-    A["CentralCache请求内存页<br>(需求: 按NumMovePage计算的页数)"]:::keyNode --> B["PageCache加锁"]
+    A<span class="token text string">["CentralCache请求内存页&lt;br/>(需求: 按NumMovePage计算的页数)"]</span><span class="token operator">:::</span>keyNode <span class="token arrow operator">--></span> B<span class="token text string">["PageCache加锁"]</span>
     
-    B --> C{"对应页大小的SpanList有可用Span?"}:::decisionNode
-    C -- 是 --> D["取出该Span并标记为使用中"]
-    D --> E["解锁PageCache"] --> F["返回Span给CentralCache"] --> G["流程结束"]
+    B <span class="token arrow operator">--></span> C<span class="token text string">&#123;"对应页大小的SpanList有可用Span?"&#125;</span><span class="token operator">:::</span>decisionNode
+    C <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">是</span> <span class="token arrow operator">--></span></span> D<span class="token text string">["取出该Span并标记为使用中"]</span>
+    D <span class="token arrow operator">--></span> E<span class="token text string">["解锁PageCache"]</span> <span class="token arrow operator">--></span> F<span class="token text string">["返回Span给CentralCache"]</span> <span class="token arrow operator">--></span> G<span class="token text string">["流程结束"]</span>
     
-    C -- 否 --> H{"更大页大小的SpanList有可用Span?"}:::decisionNode
-    H -- 是 --> I["取出大Span并分裂为所需大小的小Span"]
-    I --> J["剩余部分重新插入对应SpanList"] --> D
+    C <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">否</span> <span class="token arrow operator">--></span></span> H<span class="token text string">&#123;"更大页大小的SpanList有可用Span?"&#125;</span><span class="token operator">:::</span>decisionNode
+    H <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">是</span> <span class="token arrow operator">--></span></span> I<span class="token text string">["取出大Span并分裂为所需大小的小Span"]</span>
+    I <span class="token arrow operator">--></span> J<span class="token text string">["剩余部分重新插入对应SpanList"]</span> <span class="token arrow operator">--></span> D
     
-    H -- 否 --> K["向操作系统申请连续物理页<br>(VirtualAlloc)"]
-    K --> L["创建新Span管理这些页<br>(设置pageId、页数n等)"]
-    L --> M["将新Span插入对应SpanList"] --> D
+    H <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">否</span> <span class="token arrow operator">--></span></span> K<span class="token text string">["向操作系统申请连续物理页&lt;br/>(VirtualAlloc)"]</span>
+    K <span class="token arrow operator">--></span> L<span class="token text string">["创建新Span管理这些页&lt;br/>(设置pageId、页数n等)"]</span>
+    L <span class="token arrow operator">--></span> M<span class="token text string">["将新Span插入对应SpanList"]</span> <span class="token arrow operator">--></span> D
 
-    note["📌 关键细节：<br>1. 三级基数树：管理页映射关系，支持高效查询<br>2. 页分裂：大Span按需拆分为小Span，减少内存浪费<br>3. 全局锁：PageCache是全局唯一，操作需加锁保证线程安全<br>4. 直接系统调用：当无可用Span时，直接向OS申请大块内存"]</pre>
+    note<span class="token text string">["📌 关键细节：&lt;br/>1. 三级基数树：管理页映射关系，支持高效查询&lt;br/>2. 页分裂：大Span按需拆分为小Span，减少内存浪费&lt;br/>3. 全局锁：PageCache是全局唯一，操作需加锁保证线程安全&lt;br/>4. 直接系统调用：当无可用Span时，直接向OS申请大块内存"]</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p>这样一来，我们就完整地讲解了高并发内存池项目中三层内存申请架构的设计与实现，包括 <code>ThreadCache</code>、<code>CentralCache</code> 和 <code>PageCache</code> 三个组件的内存申请逻辑。通过这种分层设计，我们不仅提升了内存分配的效率，还有效地降低了内存碎片化的问题，满足了高并发场景下的内存管理需求。</p>
 <p>上面有一些地方我提到过会在内存释放部分进行讲解，所以接下来我们会继续深入探讨高并发内存池项目中的内存释放机制，了解如何高效地回收和管理内存资源。</p>
@@ -1304,32 +1318,32 @@ freeList <span class="token operator">=</span> <span class="token operator">*</s
 <p><strong>为什么我们要给 <code>PageCache</code> 也维护一个 <code>SpanList</code>？想必到这里大家就彻底明白了，首先 <code>PageCache</code> 在分配 <code>Span</code> 对象时，如果发现没有合适的 <code>Span</code> 对象可用，它会尝试从更大大小等级的 <code>SpanList</code> 中分割出一个合适大小的 <code>Span</code> 对象；其次，在释放 <code>Span</code> 对象时，<code>PageCache</code> 也会尝试将相邻的空闲 <code>Span</code> 对象进行合并，以减少内存碎片化，提高内存利用率。再说根本一些，<code>PageCache</code> 维护 <code>SpanList</code> 是为了更高效地管理和复用内存页资源，提升整体内存管理的效率，避免频繁地向操作系统申请和释放内存页。</strong></p>
 <p>通过 <code>PageCache</code>，我们可以高效地管理系统内存页的分配和回收，满足 <code>CentralCache</code> 对内存页的释放请求，提升整体内存管理的效率，满足高并发场景下的内存管理需求。这样一来，所有被用户申请的内存都会有可能且最终被释放回操作系统，避免内存泄漏以及内存碎片化的问题。</p>
 <p>这里，我们利用一个流程图来总结该内存释放的整体逻辑：</p>
-<pre class="mermaid">graph TD
-    A["用户释放内存块"]:::keyNode --> B{"判断内存块大小"}:::decisionNode
+<pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">graph</span> TD
+    A<span class="token text string">["用户释放内存块"]</span><span class="token operator">:::</span>keyNode <span class="token arrow operator">--></span> B<span class="token text string">&#123;"判断内存块大小"&#125;</span><span class="token operator">:::</span>decisionNode
     
-    B -- 大内存(>256KB) --> C["直接归还给操作系统"] --> D["释放完成"]
+    B <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">大内存(>256KB)</span> <span class="token arrow operator">--></span></span> C<span class="token text string">["直接归还给操作系统"]</span> <span class="token arrow operator">--></span> D<span class="token text string">["释放完成"]</span>
     
-    B -- 小内存(≤256KB) --> E["计算对齐后大小及索引"]
-    E --> F["归还到ThreadCache对应自由链表"]
-    F --> G{"链表大小是否超过阈值?"}:::decisionNode
+    B <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">小内存(≤256KB)</span> <span class="token arrow operator">--></span></span> E<span class="token text string">["计算对齐后大小及索引"]</span>
+    E <span class="token arrow operator">--></span> F<span class="token text string">["归还到ThreadCache对应自由链表"]</span>
+    F <span class="token arrow operator">--></span> G<span class="token text string">&#123;"链表大小是否超过阈值?"&#125;</span><span class="token operator">:::</span>decisionNode
     
-    G -- 是 --> H["批量回收至CentralCache"]
-    H --> I["获取对应SpanList并加锁"]
-    I --> J["更新Span的useCount"]
-    J --> K{"useCount是否为0?"}:::decisionNode
+    G <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">是</span> <span class="token arrow operator">--></span></span> H<span class="token text string">["批量回收至CentralCache"]</span>
+    H <span class="token arrow operator">--></span> I<span class="token text string">["获取对应SpanList并加锁"]</span>
+    I <span class="token arrow operator">--></span> J<span class="token text string">["更新Span的useCount"]</span>
+    J <span class="token arrow operator">--></span> K<span class="token text string">&#123;"useCount是否为0?"&#125;</span><span class="token operator">:::</span>decisionNode
     
-    K -- 是 --> L["从CentralCache移除Span"]
-    L --> M["加锁PageCache"]
-    M --> N["合并相邻空闲Span"]
-    N --> O["归还合并后的Span至PageCache"]
-    O --> P["解锁PageCache"] --> D
+    K <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">是</span> <span class="token arrow operator">--></span></span> L<span class="token text string">["从CentralCache移除Span"]</span>
+    L <span class="token arrow operator">--></span> M<span class="token text string">["加锁PageCache"]</span>
+    M <span class="token arrow operator">--></span> N<span class="token text string">["合并相邻空闲Span"]</span>
+    N <span class="token arrow operator">--></span> O<span class="token text string">["归还合并后的Span至PageCache"]</span>
+    O <span class="token arrow operator">--></span> P<span class="token text string">["解锁PageCache"]</span> <span class="token arrow operator">--></span> D
     
-    K -- 否 --> Q["解锁SpanList"] --> D
+    K <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">否</span> <span class="token arrow operator">--></span></span> Q<span class="token text string">["解锁SpanList"]</span> <span class="token arrow operator">--></span> D
     
-    G -- 否 --> R["保留在ThreadCache"] --> D
+    G <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">否</span> <span class="token arrow operator">--></span></span> R<span class="token text string">["保留在ThreadCache"]</span> <span class="token arrow operator">--></span> D
 
-    classDef keyNode fill:#f9f,stroke:#333,stroke-width:2px;
-    classDef decisionNode fill:#9ff,stroke:#333,stroke-width:2px;</pre>
+    <span class="token keyword">classDef</span> keyNode <span class="token style"><span class="token property">fill</span><span class="token operator">:</span>#f9f<span class="token punctuation">,</span><span class="token property">stroke</span><span class="token operator">:</span>#333<span class="token punctuation">,</span><span class="token property">stroke-width</span><span class="token operator">:</span>2px</span><span class="token punctuation">;</span>
+    <span class="token keyword">classDef</span> decisionNode <span class="token style"><span class="token property">fill</span><span class="token operator">:</span>#9ff<span class="token punctuation">,</span><span class="token property">stroke</span><span class="token operator">:</span>#333<span class="token punctuation">,</span><span class="token property">stroke-width</span><span class="token operator">:</span>2px</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p>这样一来，我们就完整地讲解了高并发内存池项目中三层内存释放架构的设计与实现，包括 <code>ThreadCache</code>、<code>CentralCache</code> 和 <code>PageCache</code> 三个组件的内存释放逻辑。通过这种分层设计，我们不仅提升了内存回收的效率，还有效地降低了内存碎片化的问题，满足了高并发场景下的内存管理需求。当然，我们的确将该项目的核心逻辑完成了，但同时我们也需要对该项目提供面向用户的接口，使得用户能够方便地使用该内存池进行内存分配和释放操作。接下来，我们将讲解如何设计和实现这些用户接口。</p>
 <h3><span id="用户接口设计与实现">用户接口设计与实现</span></h3><p>下面是我们为该高并发内存池项目设计的用户接口，包括 <code>ConcurrentAlloc</code> 和 <code>ConcurrentFree</code> 两个函数，分别用于内存分配和释放操作：</p>
@@ -3377,7 +3391,7 @@ Timer: 133815000 ns
     color: #444444 !important;
   }
 
-  .dark-mode *:not(table):not(table *):not(button):not(input):not(textarea):not(a):not(pre):not(pre *) {
+  .dark-mode *:not(table):not(table *):not(button):not(input):not(textarea):not(a):not(pre):not(pre *):not(.mermaid):not(.mermaid *) {
     color: #e0e0e0 !important;
     border-color: #444 !important;
   }
@@ -3468,9 +3482,16 @@ Timer: 133815000 ns
     border-radius: 5px;
   }
 
-  .mermaid path,
-  .mermaid line {
-    stroke: #f0f0f0 !important;
+  /* 仅亮色模式：加深箭头/连线颜色，提升可读性 */
+  html:not(.dark-mode) .mermaid path,
+  html:not(.dark-mode) .mermaid line {
+    stroke: #666666 !important; /* 比原来的#f0f0f0更深一些 */
+  }
+
+  /* 夜间模式：箭头/连线更接近白色，提高对比度 */
+  html.dark-mode .mermaid path,
+  html.dark-mode .mermaid line {
+    stroke: #f6f6f6 !important; /* 近白色，避免纯白刺眼 */
   }
 
   .mermaid rect path {
@@ -3480,6 +3501,45 @@ Timer: 133815000 ns
   .mermaid text {
     fill: #4a8ecd !important;
   }
+
+  /* Mermaid 点击放大覆盖层 */
+  #mermaid-zoom-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+    z-index: 10000;
+    display: none;
+  }
+  #mermaid-zoom-overlay.show { display: block; }
+  #mermaid-zoom-content {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 96vw; height: 92vh;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 10px 28px rgba(0,0,0,.25);
+    overflow: hidden;
+  }
+  html.dark-mode #mermaid-zoom-content { background: #1f2937; }
+  #mermaid-zoom-close {
+    position: absolute;
+    top: 8px; right: 10px;
+    background: rgba(0,0,0,.5);
+    color: #fff;
+    border: none; border-radius: 6px;
+    padding: 6px 10px; cursor: pointer;
+    z-index: 10001;
+  }
+  #mermaid-zoom-stage {
+    position: relative;
+    width: 100%; height: 100%;
+    transform-origin: 0 0;
+    cursor: grab;
+  }
+  #mermaid-zoom-stage.grabbing { cursor: grabbing; }
+  #post-content .mermaid svg { cursor: zoom-in; }
 
   /* 自定义确认弹窗样式 */
   .custom-confirm-mask {
@@ -4253,6 +4313,142 @@ Timer: 133815000 ns
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+    }
+  })();
+</script>
+
+<!-- 将 ```mermaid 代码块转换为 .mermaid 并渲染 -->
+<script>
+  (function(){
+    function convertMermaidBlocks(container){
+      if (!container) return 0;
+      var blocks = container.querySelectorAll('pre code.language-mermaid, code.language-mermaid');
+      var count = 0;
+      blocks.forEach(function(codeEl){
+        var diagram = codeEl.textContent || '';
+        var wrapper = document.createElement('div');
+        wrapper.className = 'mermaid';
+        // 直接填纯文本，Mermaid自行解析
+        wrapper.textContent = diagram;
+        var pre = codeEl.closest && codeEl.closest('pre');
+        if (pre) pre.replaceWith(wrapper); else codeEl.replaceWith(wrapper);
+        count++;
+      });
+      return count;
+    }
+
+    function render(container){
+      if (window.renderMermaidInContainer) {
+        window.renderMermaidInContainer('#post-content .mermaid');
+      } else if (window.mermaid) {
+        // 兜底：直接尝试 mermaid.run/init
+        try {
+          if (typeof mermaid.run === 'function') mermaid.run({ querySelector: '#post-content .mermaid' });
+          else if (typeof mermaid.init === 'function') mermaid.init(undefined, container.querySelectorAll('.mermaid'));
+        } catch(e) {}
+      }
+    }
+
+    // DOM 就绪后执行
+    document.addEventListener('DOMContentLoaded', function(){
+      var container = document.getElementById('post-content');
+      if (!container) return;
+      var n = convertMermaidBlocks(container);
+      if (n > 0) render(container);
+    });
+  })();
+  </script>
+
+<!-- Mermaid 放大查看覆盖层结构 -->
+<div id="mermaid-zoom-overlay" aria-modal="true" role="dialog" tabindex="-1">
+  <button id="mermaid-zoom-close" aria-label="关闭">关闭</button>
+  <div id="mermaid-zoom-content">
+    <div id="mermaid-zoom-stage"></div>
+  </div>
+</div>
+
+<script>
+  (function(){
+    function initMermaidZoom(){
+      var overlay = document.getElementById('mermaid-zoom-overlay');
+      var content = document.getElementById('mermaid-zoom-content');
+      var stage = document.getElementById('mermaid-zoom-stage');
+      var closeBtn = document.getElementById('mermaid-zoom-close');
+      if (!overlay || !content || !stage || !closeBtn) return;
+
+      var state = { scale: 1, minScale: 0.4, maxScale: 4, x: 0, y: 0 };
+      var dragging = false, lastPos = { x:0, y:0 };
+
+      function apply(){
+        stage.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
+      }
+
+      function fitInitial(svg){
+        var rect = content.getBoundingClientRect();
+        var bbox = null;
+        try { bbox = svg.getBBox(); } catch(e) { bbox = null; }
+        var vb = svg.getAttribute('viewBox');
+        var w=null,h=null,vx=0,vy=0;
+        if (bbox && bbox.width && bbox.height) { w=bbox.width; h=bbox.height; vx=bbox.x; vy=bbox.y; }
+        else if (vb) { var p=vb.split(/\s+/); vx=+p[0]; vy=+p[1]; w=+p[2]; h=+p[3]; }
+        else { w=+(svg.getAttribute('width')||0); h=+(svg.getAttribute('height')||0); }
+        svg.setAttribute('preserveAspectRatio','xMinYMin meet');
+        svg.removeAttribute('width'); svg.removeAttribute('height');
+        if (!vb && bbox && bbox.width && bbox.height) {
+          svg.setAttribute('viewBox', `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`);
+        }
+        var pad = 24;
+        if (w && h) {
+          var sx = (rect.width - pad)/w, sy=(rect.height - pad)/h;
+          state.scale = Math.max(state.minScale, Math.min(state.maxScale, Math.min(sx, sy)));
+          state.x = (rect.width - w*state.scale)/2 - vx*state.scale;
+          state.y = (rect.height - h*state.scale)/2 - vy*state.scale;
+        } else { state.scale=1; state.x=0; state.y=0; }
+        apply();
+      }
+
+      function openWith(svg){
+        stage.innerHTML = '';
+        var clone = svg.cloneNode(true);
+        clone.removeAttribute('style'); clone.style.display='block';
+        stage.appendChild(clone);
+        overlay.classList.add('show'); overlay.focus();
+        fitInitial(clone);
+      }
+
+      function close(){ overlay.classList.remove('show'); }
+      overlay.addEventListener('click', function(e){ if (e.target===overlay) close(); });
+      closeBtn.addEventListener('click', close);
+      document.addEventListener('keydown', function(e){ if (e.key==='Escape') close(); });
+
+      // 绑定点击放大
+      document.querySelectorAll('#post-content .mermaid svg').forEach(function(svg){
+        svg.addEventListener('click', function(){ openWith(svg); });
+      });
+
+      // 滑轮缩放（以鼠标为中心）
+      content.addEventListener('wheel', function(e){
+        e.preventDefault();
+        var prev = state.scale;
+        var factor = Math.sign(e.deltaY)>0 ? 0.9 : 1.1;
+        state.scale = Math.max(state.minScale, Math.min(state.maxScale, state.scale*factor));
+        var rect = content.getBoundingClientRect();
+        var mx = e.clientX - rect.left, my = e.clientY - rect.top;
+        var dx = (mx - state.x) * (1 - state.scale/prev);
+        var dy = (my - state.y) * (1 - state.scale/prev);
+        state.x += dx; state.y += dy; apply();
+      }, { passive: false });
+
+      // 拖拽平移
+      stage.addEventListener('mousedown', function(e){ dragging=true; stage.classList.add('grabbing'); lastPos.x=e.clientX; lastPos.y=e.clientY; });
+      window.addEventListener('mousemove', function(e){ if(!dragging) return; var dx=e.clientX-lastPos.x, dy=e.clientY-lastPos.y; state.x+=dx; state.y+=dy; lastPos.x=e.clientX; lastPos.y=e.clientY; apply(); });
+      window.addEventListener('mouseup', function(){ dragging=false; stage.classList.remove('grabbing'); });
+    }
+
+    document.addEventListener('DOMContentLoaded', function(){ initMermaidZoom(); });
+    if (typeof window.renderMermaidInContainer === 'function') {
+      var orig = window.renderMermaidInContainer;
+      window.renderMermaidInContainer = function(sel){ orig(sel); initMermaidZoom(); };
     }
   })();
 </script>
