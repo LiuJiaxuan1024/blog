@@ -273,7 +273,7 @@
         </div>
         <div class="recommendations">
             <h2>相关推荐</h2>
-            <ul><li><a href="/blog/2025/08/16/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_hash/">Redis C++ 客户端使用指南-Hash 篇</a></li><li><a href="/blog/2025/10/07/C++/template/">C++ 中的模版元编程</a></li><li><a href="/blog/2025/08/16/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_zset/">Redis C++ 客户端使用指南-Zset 篇</a></li><li><a href="/blog/2025/12/07/C++/highconcur/">高并发内存池项目（简化版tcmalloc）</a></li><li><a href="/blog/2025/08/15/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_list/">Redis C++ 客户端使用指南-List 篇</a></li><li><a href="/blog/2025/10/06/C++/constexpr/">现代 C++ 之 constexpr 编程</a></li></ul>
+            <ul><li><a href="/blog/2025/10/07/C++/template/">C++ 中的模版元编程</a></li><li><a href="/blog/2025/08/16/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_hash/">Redis C++ 客户端使用指南-Hash 篇</a></li><li><a href="/blog/2025/12/07/C++/highconcur/">高并发内存池项目（简化版tcmalloc）</a></li><li><a href="/blog/2025/08/16/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_zset/">Redis C++ 客户端使用指南-Zset 篇</a></li><li><a href="/blog/2025/08/15/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_set/">Redis C++ 客户端使用指南-Set 篇</a></li><li><a href="/blog/2025/08/15/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_list/">Redis C++ 客户端使用指南-List 篇</a></li></ul>
         </div>
         <div class='main' style="
     background: transparent;
@@ -2082,156 +2082,190 @@ v<span class="token punctuation">.</span><span class="token function">push_back<
 <h3><span id="同步异步日志器总结">同步异步日志器总结</span></h3><p>通过上述实现，我们成功地构建了一个功能完善且易于使用的日志记录系统。同步日志器 <code>SyncLogger</code> 和异步日志器 <code>AsyncLogger</code> 分别满足了不同的使用场景需求，用户可以根据自己的需求选择合适的日志器类型。异步日志器通过异步循环器 <code>AsyncLooper</code> 实现了高效的日志消息处理，适用于高并发场景下的日志记录需求。</p>
 <p>下面用一个类图来总结同步日志器和异步日志器的实现结构：</p>
 <pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">classDiagram</span>
-    <span class="token comment">%% --- 辅助/基础类 ---</span>
-    <span class="token keyword">class</span> Date <span class="token punctuation">&#123;</span>
-        +static time_t now<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> time_t
+    <span class="token keyword">direction</span> TB
+    <span class="token comment">%% 优化连线样式，避免交叉混乱</span>
+    skinparam linetype ortho
+
+    <span class="token comment">%% ===================== 基础工具模块 =====================</span>
+    namespace 基础工具模块 <span class="token punctuation">&#123;</span>
+        <span class="token keyword">class</span> Date <span class="token punctuation">&#123;</span>
+            + now<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> time_t
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">class</span> File <span class="token punctuation">&#123;</span>
+            + exists<span class="token text string">(pathname: string)</span> <span class="token operator">:</span> bool
+            + getPath<span class="token text string">(pathname: string)</span> <span class="token operator">:</span> string
+            + createDirectory<span class="token text string">(pathname: string)</span> <span class="token operator">:</span> void
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">class</span> Level <span class="token punctuation">&#123;</span>
+            <span class="token annotation important">&lt;&lt;enumeration>></span>
+            UNKNOW
+            DEBUG
+            INFO
+            WARNING
+            ERROR
+            FATAL
+            OFF
+            + toString<span class="token text string">(level: Level)</span> <span class="token operator">:</span> const char*
+        <span class="token punctuation">&#125;</span>
     <span class="token punctuation">&#125;</span>
 
-    <span class="token keyword">class</span> File <span class="token punctuation">&#123;</span>
-        +static bool exists<span class="token text string">(pathname : std::string)</span> <span class="token operator">:</span> bool
-        +static std<span class="token operator">:</span><span class="token operator">:</span>string getPath<span class="token text string">(pathname : std::string)</span> <span class="token operator">:</span> std<span class="token operator">:</span><span class="token operator">:</span>string
-        +static void createDirectory<span class="token text string">(pathname : std::string)</span>
+    <span class="token comment">%% ===================== 日志消息模块 =====================</span>
+    namespace 日志消息模块 <span class="token punctuation">&#123;</span>
+        <span class="token keyword">class</span> LogMsg <span class="token punctuation">&#123;</span>
+            + _line <span class="token operator">:</span> size_t
+            + _time <span class="token operator">:</span> time_t
+            + _tid <span class="token operator">:</span> thread<span class="token operator">:</span><span class="token operator">:</span>id
+            + _name <span class="token operator">:</span> string
+            + _file <span class="token operator">:</span> string
+            + _payload <span class="token operator">:</span> string
+            + _level <span class="token operator">:</span> Level
+        <span class="token punctuation">&#125;</span>
     <span class="token punctuation">&#125;</span>
 
-    <span class="token keyword">class</span> Level <span class="token punctuation">&#123;</span>
-        <span class="token annotation important">&lt;&lt;enumeration>></span>
-        UNKNOW = 0
-        DEBUG
-        INFO
-        WARNING
-        ERROR
-        FATAL
-        OFF
+    <span class="token comment">%% ===================== 格式化系统模块 =====================</span>
+    namespace 格式化系统模块 <span class="token punctuation">&#123;</span>
+        <span class="token keyword">class</span> FormatItem <span class="token punctuation">&#123;</span>
+            <span class="token annotation important">&lt;&lt;interface>></span>
+            + format<span class="token text string">(os: ostream, msg: LogMsg)</span> <span class="token operator">:</span> void
+        <span class="token punctuation">&#125;</span>
+
+        <span class="token keyword">class</span> TimeFormatItem <span class="token punctuation">&#123;</span>
+            + format<span class="token text string">(os: ostream, msg: LogMsg)</span> <span class="token operator">:</span> void
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">class</span> LineFormatItem <span class="token punctuation">&#123;</span>
+            + format<span class="token text string">(os: ostream, msg: LogMsg)</span> <span class="token operator">:</span> void
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">class</span> ThreadFormatItem <span class="token punctuation">&#123;</span>
+            + format<span class="token text string">(os: ostream, msg: LogMsg)</span> <span class="token operator">:</span> void
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">class</span> NameFormatItem <span class="token punctuation">&#123;</span>
+            + format<span class="token text string">(os: ostream, msg: LogMsg)</span> <span class="token operator">:</span> void
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">class</span> FileFormatItem <span class="token punctuation">&#123;</span>
+            + format<span class="token text string">(os: ostream, msg: LogMsg)</span> <span class="token operator">:</span> void
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">class</span> PayLoadFormatItem <span class="token punctuation">&#123;</span>
+            + format<span class="token text string">(os: ostream, msg: LogMsg)</span> <span class="token operator">:</span> void
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">class</span> LevelFormatItem <span class="token punctuation">&#123;</span>
+            + format<span class="token text string">(os: ostream, msg: LogMsg)</span> <span class="token operator">:</span> void
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">class</span> TabFormatItem <span class="token punctuation">&#123;</span>
+            + format<span class="token text string">(os: ostream, msg: LogMsg)</span> <span class="token operator">:</span> void
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">class</span> NLineFormatItem <span class="token punctuation">&#123;</span>
+            + format<span class="token text string">(os: ostream, msg: LogMsg)</span> <span class="token operator">:</span> void
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">class</span> OtherFormatItem <span class="token punctuation">&#123;</span>
+            + format<span class="token text string">(os: ostream, msg: LogMsg)</span> <span class="token operator">:</span> void
+        <span class="token punctuation">&#125;</span>
+
+        <span class="token keyword">class</span> Format <span class="token punctuation">&#123;</span>
+            + Format<span class="token text string">(pattern: string)</span>
+            + format<span class="token text string">(out: ostream, msg: LogMsg)</span> <span class="token operator">:</span> void
+            + format<span class="token text string">(msg: LogMsg)</span> <span class="token operator">:</span> string
+            - parsePattern<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> bool
+            - createItem<span class="token text string">(key: string, value: string)</span> <span class="token operator">:</span> FormatItem*
+        <span class="token punctuation">&#125;</span>
     <span class="token punctuation">&#125;</span>
 
-    <span class="token keyword">class</span> LogMsg <span class="token punctuation">&#123;</span>
-        +size_t _line
-        +time_t _time
-        +thread_id_t _tid
-        +std<span class="token operator">:</span><span class="token operator">:</span>string _name
-        +std<span class="token operator">:</span><span class="token operator">:</span>string _file
-        +std<span class="token operator">:</span><span class="token operator">:</span>string _payload
-        +Level _level
-        +LogMsg<span class="token text string">(name : std::string, file : std::string, line : size_t, payload : std::string, level : Level)</span>
+    <span class="token comment">%% ===================== 输出目标模块 =====================</span>
+    namespace 输出目标模块 <span class="token punctuation">&#123;</span>
+        <span class="token keyword">class</span> LogSink <span class="token punctuation">&#123;</span>
+            <span class="token annotation important">&lt;&lt;interface>></span>
+            + log<span class="token text string">(data: const char*, len: size_t)</span> <span class="token operator">:</span> void
+            + flush<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> void
+        <span class="token punctuation">&#125;</span>
+
+        <span class="token keyword">class</span> StdOutLogSink <span class="token punctuation">&#123;</span>
+            + log<span class="token text string">(data: const char*, len: size_t)</span> <span class="token operator">:</span> void
+            + flush<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> void
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">class</span> FixedFileLogSink <span class="token punctuation">&#123;</span>
+            + log<span class="token text string">(data: const char*, len: size_t)</span> <span class="token operator">:</span> void
+            + flush<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> void
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">class</span> RollBySizeLogSink <span class="token punctuation">&#123;</span>
+            + log<span class="token text string">(data: const char*, len: size_t)</span> <span class="token operator">:</span> void
+            + flush<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> void
+        <span class="token punctuation">&#125;</span>
     <span class="token punctuation">&#125;</span>
 
-    <span class="token comment">%% --- FormatItem 接口及实现 ---</span>
-    <span class="token keyword">class</span> FormatItem <span class="token punctuation">&#123;</span>
-        <span class="token annotation important">&lt;&lt;interface>></span>
-        +format<span class="token text string">(os : std::ostream&amp;, msg : LogMsg)</span> <span class="token operator">:</span> void
+    <span class="token comment">%% ===================== 异步核心模块 =====================</span>
+    namespace 异步核心模块 <span class="token punctuation">&#123;</span>
+        <span class="token keyword">class</span> Buffer <span class="token punctuation">&#123;</span>
+            + append<span class="token text string">(data: const char*, len: size_t)</span> <span class="token operator">:</span> void
+            + data<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> const char*
+            + size<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> size_t
+            + clear<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> void
+        <span class="token punctuation">&#125;</span>
+
+        <span class="token keyword">class</span> AsyncLooper <span class="token punctuation">&#123;</span>
+            + push<span class="token text string">(msg: string)</span> <span class="token operator">:</span> void
+            + flush<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> void
+            + start<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> void
+            + stop<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> void
+        <span class="token punctuation">&#125;</span>
     <span class="token punctuation">&#125;</span>
 
-    <span class="token keyword">class</span> TimeFormatItem <span class="token punctuation">&#123;</span>
-        -std<span class="token operator">:</span><span class="token operator">:</span>string _format
-        +TimeFormatItem<span class="token text string">(str : std::string)</span>
-        +format<span class="token text string">(os : std::ostream&amp;, msg : LogMsg)</span> <span class="token operator">:</span> void
+    <span class="token comment">%% ===================== 日志器核心模块 =====================</span>
+    namespace 日志器核心模块 <span class="token punctuation">&#123;</span>
+        <span class="token keyword">class</span> Logger <span class="token punctuation">&#123;</span>
+            <span class="token annotation important">&lt;&lt;interface>></span>
+            + info<span class="token text string">(filename: string, line: size_t, fmt: const char*, ...)</span> <span class="token operator">:</span> void
+            + debug<span class="token text string">(filename: string, line: size_t, fmt: const char*, ...)</span> <span class="token operator">:</span> void
+            + error<span class="token text string">(filename: string, line: size_t, fmt: const char*, ...)</span> <span class="token operator">:</span> void
+            + fatal<span class="token text string">(filename: string, line: size_t, fmt: const char*, ...)</span> <span class="token operator">:</span> void
+            + flush<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> void
+        <span class="token punctuation">&#125;</span>
+
+        <span class="token keyword">class</span> SyncLogger <span class="token punctuation">&#123;</span>
+            + logManage<span class="token text string">(msg: string)</span> <span class="token operator">:</span> void
+            + flush<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> void
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">class</span> AsyncLogger <span class="token punctuation">&#123;</span>
+            + logManage<span class="token text string">(msg: string)</span> <span class="token operator">:</span> void
+            + flush<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> void
+        <span class="token punctuation">&#125;</span>
     <span class="token punctuation">&#125;</span>
 
-    <span class="token keyword">class</span> LineFormatItem <span class="token punctuation">&#123;</span>
-        +LineFormatItem<span class="token text string">(str : std::string)</span>
-        +format<span class="token text string">(os : std::ostream&amp;, msg : LogMsg)</span> <span class="token operator">:</span> void
+    <span class="token comment">%% ===================== 建造者体系模块 =====================</span>
+    namespace 建造者体系模块 <span class="token punctuation">&#123;</span>
+        <span class="token keyword">class</span> LoggerType <span class="token punctuation">&#123;</span>
+            <span class="token annotation important">&lt;&lt;enumeration>></span>
+            LOGGER_SYNC
+            LOGGER_ASYNC
+        <span class="token punctuation">&#125;</span>
+
+        <span class="token keyword">class</span> LoggerBuilder <span class="token punctuation">&#123;</span>
+            <span class="token annotation important">&lt;&lt;abstract>></span>
+            + buildLoggerName<span class="token text string">(name: string)</span> <span class="token operator">:</span> void
+            + buildLimitLevel<span class="token text string">(level: Level)</span> <span class="token operator">:</span> void
+            + buildType<span class="token text string">(type: LoggerType)</span> <span class="token operator">:</span> void
+            + buildSink<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> void
+            + buildFormat<span class="token text string">(pattern: string)</span> <span class="token operator">:</span> void
+            + build<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> Logger*
+        <span class="token punctuation">&#125;</span>
+
+        <span class="token keyword">class</span> LocalLoggerBuilder <span class="token punctuation">&#123;</span>
+            + build<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> Logger*
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">class</span> GlobalLoggerBuilder <span class="token punctuation">&#123;</span>
+            + build<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> Logger*
+        <span class="token punctuation">&#125;</span>
     <span class="token punctuation">&#125;</span>
 
-    <span class="token keyword">class</span> ThreadFormatItem <span class="token punctuation">&#123;</span>
-        +ThreadFormatItem<span class="token text string">(str : std::string)</span>
-        +format<span class="token text string">(os : std::ostream&amp;, msg : LogMsg)</span> <span class="token operator">:</span> void
+    <span class="token comment">%% ===================== 日志管理模块 =====================</span>
+    namespace 日志管理模块 <span class="token punctuation">&#123;</span>
+        <span class="token keyword">class</span> LoggerManager <span class="token punctuation">&#123;</span>
+            &lt;&lt;singleton>>
+            + getInstance<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> LoggerManager&amp;
+            + getLogger<span class="token text string">(name: string)</span> <span class="token operator">:</span> Logger*
+            + registerLogger<span class="token text string">(name: string, logger: Logger*)</span> <span class="token operator">:</span> void
+        <span class="token punctuation">&#125;</span>
     <span class="token punctuation">&#125;</span>
 
-    <span class="token keyword">class</span> NameFormatItem <span class="token punctuation">&#123;</span>
-        +NameFormatItem<span class="token text string">(str : std::string)</span>
-        +format<span class="token text string">(os : std::ostream&amp;, msg : LogMsg)</span> <span class="token operator">:</span> void
-    <span class="token punctuation">&#125;</span>
-
-    <span class="token keyword">class</span> FileFormatItem <span class="token punctuation">&#123;</span>
-        +FileFormatItem<span class="token text string">(str : std::string)</span>
-        +format<span class="token text string">(os : std::ostream&amp;, msg : LogMsg)</span> <span class="token operator">:</span> void
-    <span class="token punctuation">&#125;</span>
-
-    <span class="token keyword">class</span> PayLoadFormatItem <span class="token punctuation">&#123;</span>
-        +PayLoadFormatItem<span class="token text string">(str : std::string)</span>
-        +format<span class="token text string">(os : std::ostream&amp;, msg : LogMsg)</span> <span class="token operator">:</span> void
-    <span class="token punctuation">&#125;</span>
-
-    <span class="token keyword">class</span> LevelFormatItem <span class="token punctuation">&#123;</span>
-        +LevelFormatItem<span class="token text string">(str : std::string)</span>
-        +format<span class="token text string">(os : std::ostream&amp;, msg : LogMsg)</span> <span class="token operator">:</span> void
-    <span class="token punctuation">&#125;</span>
-
-    <span class="token keyword">class</span> TabFormatItem <span class="token punctuation">&#123;</span>
-        +TabFormatItem<span class="token text string">(str : std::string)</span>
-        +format<span class="token text string">(os : std::ostream&amp;, msg : LogMsg)</span> <span class="token operator">:</span> void
-    <span class="token punctuation">&#125;</span>
-
-    <span class="token keyword">class</span> NLineFormatItem <span class="token punctuation">&#123;</span>
-        +NLineFormatItem<span class="token text string">(str : std::string)</span>
-        +format<span class="token text string">(os : std::ostream&amp;, msg : LogMsg)</span> <span class="token operator">:</span> void
-    <span class="token punctuation">&#125;</span>
-
-    <span class="token keyword">class</span> OtherFormatItem <span class="token punctuation">&#123;</span>
-        -std<span class="token operator">:</span><span class="token operator">:</span>string message
-        +OtherFormatItem<span class="token text string">(str : std::string)</span>
-        +format<span class="token text string">(os : std::ostream&amp;, msg : LogMsg)</span> <span class="token operator">:</span> void
-    <span class="token punctuation">&#125;</span>
-
-    <span class="token keyword">class</span> Format <span class="token punctuation">&#123;</span>
-        -std<span class="token operator">:</span><span class="token operator">:</span>string _pattern
-        -std<span class="token operator">:</span><span class="token operator">:</span>vector&lt;FormatItem*> _items
-        +Format<span class="token text string">(pattern : std::string)</span>
-        +format<span class="token text string">(out : std::ostream&amp;, msg : LogMsg)</span> <span class="token operator">:</span> void
-        +formatToString<span class="token text string">(msg : LogMsg)</span> <span class="token operator">:</span> std<span class="token operator">:</span><span class="token operator">:</span>string
-        -parsePattern<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> bool
-        -createItem<span class="token text string">(key : std::string, value : std::string)</span> <span class="token operator">:</span> FormatItem*
-    <span class="token punctuation">&#125;</span>
-
-    <span class="token comment">%% --- Sink ---</span>
-    <span class="token keyword">class</span> LogSink <span class="token punctuation">&#123;</span>
-        <span class="token annotation important">&lt;&lt;interface>></span>
-        +log<span class="token text string">(msg : const char*, len : size_t)</span> <span class="token operator">:</span> void
-    <span class="token punctuation">&#125;</span>
-
-    <span class="token keyword">class</span> StdOutLogSink <span class="token punctuation">&#123;</span>
-        +log<span class="token text string">(msg : const char*, len : size_t)</span> <span class="token operator">:</span> void
-    <span class="token punctuation">&#125;</span>
-
-    <span class="token comment">%% --- Logger 抽象与实现 ---</span>
-    <span class="token keyword">class</span> Logger <span class="token punctuation">&#123;</span>
-        <span class="token annotation important">&lt;&lt;interface>></span>
-        +info<span class="token text string">(filename : std::string, line : size_t, fmt : const char*, ...)</span> <span class="token operator">:</span> void
-        +log<span class="token text string">(level : Level, filename : std::string, line : size_t, fmt : const char*, ...)</span> <span class="token operator">:</span> void
-        +logManage<span class="token text string">(msg : std::string)</span> <span class="token operator">:</span> void
-    <span class="token punctuation">&#125;</span>
-
-    <span class="token keyword">class</span> SyncLogger <span class="token punctuation">&#123;</span>
-        -std<span class="token operator">:</span><span class="token operator">:</span>mutex _mtx
-        -std<span class="token operator">:</span><span class="token operator">:</span>vector&lt;LogSink*> _sinks
-        +logManage<span class="token text string">(msg : std::string)</span> <span class="token operator">:</span> void
-    <span class="token punctuation">&#125;</span>
-
-    <span class="token keyword">class</span> AsyncLogger <span class="token punctuation">&#123;</span>
-        -Looper* _looper
-        +logManage<span class="token text string">(msg : std::string)</span> <span class="token operator">:</span> void
-    <span class="token punctuation">&#125;</span>
-
-    <span class="token keyword">class</span> LoggerBuilder <span class="token punctuation">&#123;</span>
-        -std<span class="token operator">:</span><span class="token operator">:</span>string _logger_name
-        -std<span class="token operator">:</span><span class="token operator">:</span>vector&lt;LogSink*> _sinks
-        -Format* _format
-        -std<span class="token operator">:</span><span class="token operator">:</span>atomic&lt;Level> _limit_level
-        -LoggerType _type
-        +LoggerBuilder<span class="token text string">(type : LoggerType = LOGGER_SYNC, limit_level : Level = DEBUG)</span>
-        +buildLoggerName<span class="token text string">(name : std::string)</span> <span class="token operator">:</span> void
-        +buildLimitLevel<span class="token text string">(level : Level)</span> <span class="token operator">:</span> void
-        +buildType<span class="token text string">(type : LoggerType)</span> <span class="token operator">:</span> void
-        +buildSink<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> void
-        +buildFormat<span class="token text string">(pattern : std::string)</span> <span class="token operator">:</span> void
-        +build<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> Logger*
-    <span class="token punctuation">&#125;</span>
-
-    <span class="token keyword">class</span> GlobalLoggerBuilder <span class="token punctuation">&#123;</span>
-        +build<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> Logger*
-    <span class="token punctuation">&#125;</span>
-
-    <span class="token comment">%% --- 继承 / 关联关系 ---</span>
+    <span class="token comment">%% ===================== 继承关系 =====================</span>
     FormatItem <span class="token arrow operator">&lt;|--</span> TimeFormatItem
     FormatItem <span class="token arrow operator">&lt;|--</span> LineFormatItem
     FormatItem <span class="token arrow operator">&lt;|--</span> ThreadFormatItem
@@ -2243,23 +2277,27 @@ v<span class="token punctuation">.</span><span class="token function">push_back<
     FormatItem <span class="token arrow operator">&lt;|--</span> NLineFormatItem
     FormatItem <span class="token arrow operator">&lt;|--</span> OtherFormatItem
 
-    Format <span class="token arrow operator">*--</span> FormatItem <span class="token operator">:</span> contains
+    LogSink <span class="token arrow operator">&lt;|--</span> StdOutLogSink
+    LogSink <span class="token arrow operator">&lt;|--</span> FixedFileLogSink
+    LogSink <span class="token arrow operator">&lt;|--</span> RollBySizeLogSink
 
     Logger <span class="token arrow operator">&lt;|--</span> SyncLogger
     Logger <span class="token arrow operator">&lt;|--</span> AsyncLogger
 
-    LoggerBuilder <span class="token arrow operator">*--</span> Logger <span class="token operator">:</span> creates
-    GlobalLoggerBuilder <span class="token arrow operator">&lt;|--</span> LoggerBuilder
+    LoggerBuilder <span class="token arrow operator">&lt;|--</span> LocalLoggerBuilder
+    LoggerBuilder <span class="token arrow operator">&lt;|--</span> GlobalLoggerBuilder
 
-    Logger <span class="token arrow operator">*--</span> Format <span class="token operator">:</span> uses
-    Logger <span class="token arrow operator">*--</span> LogSink <span class="token operator">:</span> uses
-
-    LogMsg <span class="token arrow operator">*--</span> Level <span class="token operator">:</span> has
-    LogMsg <span class="token arrow operator">*--</span> Date <span class="token operator">:</span> uses
-
-    AsyncLogger <span class="token arrow operator">*--</span> Looper <span class="token operator">:</span> uses
-
-    LogSink <span class="token arrow operator">&lt;|--</span> StdOutLogSink<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+    <span class="token comment">%% ===================== 组合/依赖/关联关系 =====================</span>
+    Format <span class="token string">"1"</span> <span class="token arrow operator">*--</span> <span class="token string">"*"</span> FormatItem <span class="token operator">:</span> 包含
+    Logger <span class="token arrow operator">o--></span> <span class="token string">"1"</span> Format <span class="token operator">:</span> 使用
+    Logger <span class="token arrow operator">o--></span> <span class="token string">"*"</span> LogSink <span class="token operator">:</span> 包含
+    Logger <span class="token arrow operator">..></span> LogMsg <span class="token operator">:</span> 创建
+    AsyncLogger <span class="token arrow operator">--></span> AsyncLooper <span class="token operator">:</span> 包含
+    AsyncLooper <span class="token arrow operator">o--></span> <span class="token string">"2"</span> Buffer <span class="token operator">:</span> 双缓冲
+    LogMsg <span class="token arrow operator">--></span> Level <span class="token operator">:</span> 使用
+    LogMsg <span class="token arrow operator">--></span> Date <span class="token operator">:</span> 使用
+    GlobalLoggerBuilder <span class="token arrow operator">..></span> LoggerManager <span class="token operator">:</span> 注册
+    LoggerManager <span class="token arrow operator">o--></span> <span class="token string">"*"</span> Logger <span class="token operator">:</span> 管理<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p>同时，附上一张用户使用异步日志器的时序图，帮助大家更好地理解异步日志器的工作流程：</p>
 <pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">sequenceDiagram</span>
