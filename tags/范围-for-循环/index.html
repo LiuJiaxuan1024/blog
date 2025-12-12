@@ -1,0 +1,522 @@
+
+<!DOCTYPE html>
+<html lang="zh" class="loading">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tag: 范围 for 循环 - 刘家炫的博客</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate" />
+    <meta name="keywords" content="Fechin,"> 
+    
+    <meta name="author" content="Jiaxuan Liu"> 
+    <link rel="alternative" href="atom.xml" title="刘家炫的博客" type="application/atom+xml"> 
+    <link rel="icon" href="/blog/img/favicon.png"> 
+    
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+
+    
+    
+    <meta name="twitter:card" content="summary"/>
+    <meta name="twitter:title" content="Tag: 范围 for 循环 - 刘家炫的博客"/>
+    
+    
+    
+    
+    
+    <meta property="og:site_name" content="刘家炫的博客"/>
+    <meta property="og:type" content="object"/>
+    <meta property="og:title" content="Tag: 范围 for 循环 - 刘家炫的博客"/>
+    
+    
+<link rel="stylesheet" href="/blog/css/diaspora.css">
+
+    <script>window.searchDbPath = "/blog/search.xml";</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- Prism.js 官方主题 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+<meta name="generator" content="Hexo 7.3.0"></head>
+<script src="https://cdn.jsdelivr.net/npm/TagCloud@2.2.0/dist/TagCloud.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
+<!-- Mermaid.js -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+    // 由页面脚本在转换为 .mermaid 元素后再触发渲染
+    mermaid.initialize({ startOnLoad: false });
+    window.renderMermaidInContainer = async function(selector){
+        try {
+            if (window.mermaid && typeof mermaid.run === 'function') {
+                await mermaid.run({ querySelector: selector || '.mermaid' });
+            } else if (window.mermaid && typeof mermaid.init === 'function') {
+                mermaid.init(undefined, document.querySelectorAll(selector || '.mermaid'));
+            }
+        } catch (e) { /* 忽略渲染异常，避免影响页面 */ }
+    };
+</script>
+
+
+
+<body class="loading">
+    <span id="config-title" style="display:none">刘家炫的博客</span>
+
+  <!-- 永远渲染导航栏，但通过动画类控制初始状态 -->
+<nav class="navbar 
+  animate__animated animate__fadeInDown
+  ">
+
+    <div class="navbar-container">
+        <a href="/blog/" class="site-title">
+            刘家炫的博客
+        </a>
+        <div class="nav-menu">
+            <a href="/blog/">首页</a>
+            <a href="/blog/archives/">归档</a>
+            <a href="/blog/categories/">分类</a>
+            <a href="/blog/tags/">标签</a>
+        </div>
+    </div>
+</nav>
+
+<script>
+    function is_home() {
+        // 获取当前路径（去掉末尾的斜杠和查询参数）
+        const path = window.location.pathname.replace(/\/$/, '');
+        // 判断是否是首页（根据您的网站结构调整）
+        return path === '' ||
+            path === '/' ||
+            path === '/index' ||
+            path === '/index.html' ||
+            path.startsWith('/zh-cn/'); // 如果是多语言网站
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log(localStorage.getItem('navbarVisible'))
+        const navbar = document.querySelector('.navbar');
+        if (!navbar) return;
+
+        // 1. 获取存储的 navbar 上次状态（默认 false）
+        const wasNavbarVisible = localStorage.getItem('navbarVisible') === 'true';
+        // 2. 判断当前页面是否需要 navbar（假设 is_home() 返回布尔值）
+        const shouldShowNavbar = !is_home();
+        console.log(shouldShowNavbar);
+
+        // 3. 处理四种状态变化
+        if (!wasNavbarVisible && shouldShowNavbar) {
+            // 状态 1：从无到有 → 显示 + 动画 + 更新状态
+            navbar.classList.remove('animate__fadeOutUp');
+            navbar.classList.add('animate__fadeInDown');
+            localStorage.setItem('navbarVisible', 'true');
+        } else if (wasNavbarVisible && !shouldShowNavbar) {
+            // 状态 2：从有到无 → 隐藏 + 动画 + 更新状态
+            navbar.classList.remove('animate__fadeInDown');
+            navbar.classList.add('animate__fadeOutUp');
+            localStorage.setItem('navbarVisible', 'false');
+        } else if (wasNavbarVisible && shouldShowNavbar) {
+            // 状态 3：从有到有 → 保持显示（无动画）
+            navbar.classList.remove('animate__fadeOutUp');
+            navbar.classList.add('animate__fadeInDown', 'no-transition');
+            setTimeout(() => navbar.classList.remove('no-transition'), 10);
+        } else {
+            // 状态 4：从无到无 → 保持隐藏（无动画）
+            navbar.classList.remove('animate__fadeInDown');
+            navbar.classList.add('animate__fadeOutUp', 'no-transition');
+            setTimeout(() => navbar.classList.remove('no-transition'), 10);
+        }
+
+        // 4. 滚动控制（仅在需要 navbar 的页面生效）
+        if (shouldShowNavbar) {
+            const blogpage = document.querySelector('.section'); // 替换成你的博客内容容器选择器
+            const navbar = document.querySelector('.navbar'); // 替换成导航栏选择器
+            let lastScrollDirection = null; // 记录上一次滚轮方向
+
+            blogpage.addEventListener('wheel', (e) => {
+                const currentScrollDirection = e.deltaY > 0 ? 'down' : 'up';
+
+                // 避免重复触发（防抖）
+                if (currentScrollDirection === lastScrollDirection) return;
+                lastScrollDirection = currentScrollDirection;
+
+                if (currentScrollDirection === 'down') {
+                    // 鼠标滚轮向下 → 隐藏导航栏
+                    navbar.classList.remove('animate__fadeInDown');
+                    navbar.classList.add('animate__fadeOutUp');
+                    localStorage.setItem('navbarVisible', 'false');
+                } else {
+                    // 鼠标滚轮向上 → 显示导航栏
+                    navbar.classList.remove('animate__fadeOutUp');
+                    navbar.classList.add('animate__fadeInDown');
+                    localStorage.setItem('navbarVisible', 'true');
+                }
+            });
+        }
+
+    });
+
+</script>
+
+
+    <div id="loader"></div>
+    <style>
+/* 基础容器样式 */
+.single-tag-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* 标签头图区样式 */
+.tag-hero {
+  padding: 4rem 2rem;
+  margin-bottom: 3rem;
+  text-align: center;
+  color: white;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  background: linear-gradient(135deg, #FFA07A, #FFA07A);
+}
+
+.tag-hero h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.tag-meta {
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+/* 时间轴样式 */
+.tag-timeline {
+  position: relative;
+  padding-left: 30px;
+  margin: 3rem 0;
+}
+
+.timeline-node {
+  position: relative;
+  padding-bottom: 40px;
+}
+
+.node-dot {
+  position: absolute;
+  left: -21px;
+  top: 5px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #98D8C8;
+  box-shadow: 0 0 0 3px white, 0 0 0 6px #98D8C8;
+}
+
+.node-content {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  transition: transform 0.3s;
+}
+
+.node-content:hover {
+  transform: translateY(-3px);
+}
+
+.node-content time {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.node-content h3 {
+  margin: 0.5rem 0;
+}
+
+.post-excerpt {
+  color: #555;
+  margin: 0.8rem 0;
+  line-height: 1.6;
+}
+
+.post-cats {
+  margin-top: 1rem;
+}
+
+.cat-badge {
+  display: inline-block;
+  padding: 0.3rem 0.8rem;
+  background: rgba(0,0,0,0.05);
+  border-radius: 20px;
+  margin-right: 0.5rem;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+/* 相关标签样式 */
+.related-tags {
+  margin: 4rem 0;
+}
+
+.related-tags h3 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #333;
+}
+
+.related-tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.related-tag {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  background: rgba(0,0,0,0.03);
+  color: #333;
+  text-decoration: none;
+  transition: all 0.3s;
+  font-size: var(--tag-size);
+}
+
+.related-tag:hover,
+.related-tag:focus,
+.related-tag:active,
+.related-tag:visited:hover {
+  background: var(--hover-bg, rgba(13,148,136,.08));
+  color: #0d9488;
+  transform: scale(1.05);
+}
+</style>
+
+<style>
+  .single-tag-container .node-content h3 a {
+  color: #1f2937; text-decoration: none; transition: color .2s;
+}
+.single-tag-container .node-content h3 a:link { color: #1f2937; }
+.single-tag-container .node-content h3 a:visited { color: #374151; }
+.single-tag-container .node-content h3 a:hover,
+.single-tag-container .node-content h3 a:focus,
+.single-tag-container .node-content h3 a:active,
+.single-tag-container .node-content h3 a:visited:hover {
+  color: #0d9488 !important; text-decoration: none;
+}
+.cat-badge:hover,
+.cat-badge:focus,
+.cat-badge:active,
+.cat-badge:visited:hover {
+  color: #0d9488; background: rgba(13,148,136,.08);
+}
+
+</style>
+
+
+<div class="single-tag-container" style="padding-top: 10%;">
+  <!-- 标签头图区 -->
+  <div class="tag-hero" style="background: linear-gradient(135deg, getRandomColor(), getRandomColor())">
+    <h1>#范围 for 循环</h1>
+    <div class="tag-meta">
+      <span>1 篇探索记录</span>
+      <span>·</span>
+      <span>最后更新：2025-12-10</span>
+    </div>
+  </div>
+
+  <!-- 时间轴式文章列表 -->
+  <div class="tag-timeline">
+    
+      <div class="timeline-node">
+        <div class="node-dot"></div>
+        <div class="node-content">
+          <time>2025/12/10</time>
+          <h3><a href="/blog/2025/12/10/C++/C++_base/">C++ 入门核心知识点总结</a></h3>
+          <div class="post-excerpt">
+
+
+命名空间 namespace
+命名空间的概念
+
+
+
+
+
+命名空间 namespace命名空间的概念在 C 语言中，当我们编写大程序的时候，多个库之间...</div>
+          
+            <div class="post-cats">
+              
+                <a href="/blog/categories/C/" class="cat-badge">📁 C++</a>
+              
+            </div>
+          
+        </div>
+      </div>
+    
+  </div>
+<!-- 加载更多按钮 -->
+  <div class="tag-loadmore-wrap">
+    <button id="tag-load-more" class="btn-loadmore" data-step="10">加载更多</button>
+  </div>
+  <!-- 相关标签推荐 -->
+  <div class="related-tags">
+    <h3>🚀 关联维度</h3>
+    <div class="related-tag-cloud">
+      
+        <a href="/blog/tags/C/" class="related-tag" 
+           style="--tag-size: 40px">
+          C++ (15)
+        </a>
+      
+        <a href="/blog/tags/%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4/" class="related-tag" 
+           style="--tag-size: 22px">
+          命名空间 (1)
+        </a>
+      
+        <a href="/blog/tags/%E7%BC%BA%E7%9C%81%E5%8F%82%E6%95%B0/" class="related-tag" 
+           style="--tag-size: 22px">
+          缺省参数 (1)
+        </a>
+      
+        <a href="/blog/tags/%E5%87%BD%E6%95%B0%E9%87%8D%E8%BD%BD/" class="related-tag" 
+           style="--tag-size: 22px">
+          函数重载 (1)
+        </a>
+      
+        <a href="/blog/tags/%E5%BC%95%E7%94%A8/" class="related-tag" 
+           style="--tag-size: 22px">
+          引用 (1)
+        </a>
+      
+        <a href="/blog/tags/%E5%86%85%E8%81%94%E5%87%BD%E6%95%B0/" class="related-tag" 
+           style="--tag-size: 22px">
+          内联函数 (1)
+        </a>
+      
+    </div>
+  </div>
+</div>
+<style>
+/* 隐藏后续文章，点击再显示 */
+.timeline-node.lazy-hide { display: none; }
+
+/* 加载更多按钮样式 */
+.tag-loadmore-wrap {
+  display: flex; justify-content: center; margin: 16px 0 32px;
+}
+.btn-loadmore {
+  padding: 10px 16px; border-radius: 10px;
+  background: rgba(13,148,136,.1); color: #0d9488;
+  border: 1px solid rgba(13,148,136,.25); cursor: pointer;
+  transition: background .2s, color .2s, transform .1s;
+}
+.btn-loadmore:hover { background: rgba(13,148,136,.18); }
+.btn-loadmore:active { transform: scale(0.98); }
+.btn-loadmore[disabled] { opacity: .5; cursor: not-allowed; }
+</style>
+
+<script>
+// 每次加载 data-step（默认10）篇
+(function(){
+  var btn = document.getElementById('tag-load-more');
+  var box = document.querySelector('.tag-timeline');
+  if (!btn || !box) return;
+
+  var step = parseInt(btn.getAttribute('data-step') || '10', 10);
+  var hidden = Array.prototype.slice.call(box.querySelectorAll('.timeline-node.lazy-hide'));
+
+  function updateBtn() {
+    if (hidden.length === 0) {
+      btn.setAttribute('disabled', 'disabled');
+      btn.textContent = '没有更多了';
+    }
+  }
+  function loadMore() {
+    var count = Math.min(step, hidden.length);
+    for (var i = 0; i < count; i++) hidden[i].classList.remove('lazy-hide');
+    hidden = hidden.slice(count);
+    updateBtn();
+  }
+
+  // 初始化：如果不足或没有隐藏项，按钮禁用
+  updateBtn();
+  btn.addEventListener('click', loadMore);
+})();
+</script>
+</body>
+
+<script src="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+
+
+<script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="/blog/js/plugin.js"></script>
+<script src="/blog/js/typed.js"></script>
+<script src="/blog/js/diaspora.js"></script>
+
+
+<link rel="stylesheet" href="/blog/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/blog/photoswipe/default-skin/default-skin.css">
+
+
+<script src="/blog/photoswipe/photoswipe.min.js"></script>
+<script src="/blog/photoswipe/photoswipe-ui-default.min.js"></script>
+
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+</html>
