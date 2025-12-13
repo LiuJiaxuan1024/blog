@@ -15,12 +15,25 @@
 
 命名空间 namespace
 命名空间的概念
+嵌套命名空间
+匿名命名空间
+
+
+缺省参数
+函数重载
+为什么 C 语言不支持函数重载？
+
+
+引用
+引用特性
+常引用
+引用作为函数返回值
 
 
 
 
 
-命名空间 namespace命名空间的概念在 C 语言中，当我们编写大程序的时候，多个库之间可能会出现函数名或变量名冲突的问题。为了解决,"> 
+命,"> 
     <meta name="author" content="Jiaxuan Liu"> 
     <link rel="alternative" href="atom.xml" title="刘家炫的博客" type="application/atom+xml"> 
     <link rel="icon" href="/blog/img/favicon.png"> 
@@ -36,12 +49,25 @@
 
 命名空间 namespace
 命名空间的概念
+嵌套命名空间
+匿名命名空间
+
+
+缺省参数
+函数重载
+为什么 C 语言不支持函数重载？
+
+
+引用
+引用特性
+常引用
+引用作为函数返回值
 
 
 
 
 
-命名空间 namespace命名空间的概念在 C 语言中，当我们编写大程序的时候，多个库之间可能会出现函数名或变量名冲突的问题。为了解决,"/>
+命,"/>
     
     
     
@@ -54,12 +80,25 @@
 
 命名空间 namespace
 命名空间的概念
+嵌套命名空间
+匿名命名空间
+
+
+缺省参数
+函数重载
+为什么 C 语言不支持函数重载？
+
+
+引用
+引用特性
+常引用
+引用作为函数返回值
 
 
 
 
 
-命名空间 namespace命名空间的概念在 C 语言中，当我们编写大程序的时候，多个库之间可能会出现函数名或变量名冲突的问题。为了解决,"/>
+命,"/>
     
 <link rel="stylesheet" href="/blog/css/diaspora.css">
 
@@ -240,7 +279,7 @@
                     </div>
                     <div>
                         <a href="/blog/archives" style="text-decoration: none; color: inherit;">
-                                <span style="font-weight:bold; font-size:20px;">78</span>
+                                <span style="font-weight:bold; font-size:20px;">79</span>
                                 <span style="font-size:20px;">文章</span>
                         </a>
                     </div>
@@ -249,7 +288,7 @@
         </div>
         <div class="recommendations">
             <h2>相关推荐</h2>
-            <ul><li><a href="/blog/2025/12/07/C++/highconcur/">高并发内存池项目（简化版tcmalloc）</a></li><li><a href="/blog/2025/10/07/C++/stl_iterator_traits/">深入探索 C++ STL 容器中的迭代器萃取机制</a></li><li><a href="/blog/2025/08/14/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_func/">Redis C++ 客户端使用指南-基础指令篇</a></li><li><a href="/blog/2025/08/15/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_list/">Redis C++ 客户端使用指南-List 篇</a></li><li><a href="/blog/2025/09/30/C++/async/">C++ 异步编程</a></li><li><a href="/blog/2025/08/15/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_string/">Redis C++ 客户端使用指南-String 篇</a></li></ul>
+            <ul><li><a href="/blog/2025/08/16/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_hash/">Redis C++ 客户端使用指南-Hash 篇</a></li><li><a href="/blog/2025/09/30/C++/async/">C++ 异步编程</a></li><li><a href="/blog/2025/12/08/C++/log_system/">同步异步日志系统设计与实现</a></li><li><a href="/blog/2025/10/07/C++/template/">C++ 中的模版元编程</a></li><li><a href="/blog/2025/12/12/C++/C++_inherit/">C++ 继承与多态</a></li><li><a href="/blog/2025/12/11/C++/C++_class/">C++ 类与对象知识点总结</a></li></ul>
         </div>
         <div class='main' style="
     background: transparent;
@@ -275,6 +314,19 @@
 <ul>
 <li><a href="#%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4-namespace">命名空间 <code>namespace</code></a><ul>
 <li><a href="#%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4%E7%9A%84%E6%A6%82%E5%BF%B5">命名空间的概念</a></li>
+<li><a href="#%E5%B5%8C%E5%A5%97%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4">嵌套命名空间</a></li>
+<li><a href="#%E5%8C%BF%E5%90%8D%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4">匿名命名空间</a></li>
+</ul>
+</li>
+<li><a href="#%E7%BC%BA%E7%9C%81%E5%8F%82%E6%95%B0">缺省参数</a></li>
+<li><a href="#%E5%87%BD%E6%95%B0%E9%87%8D%E8%BD%BD">函数重载</a><ul>
+<li><a href="#%E4%B8%BA%E4%BB%80%E4%B9%88-c-%E8%AF%AD%E8%A8%80%E4%B8%8D%E6%94%AF%E6%8C%81%E5%87%BD%E6%95%B0%E9%87%8D%E8%BD%BD">为什么 C 语言不支持函数重载？</a></li>
+</ul>
+</li>
+<li><a href="#%E5%BC%95%E7%94%A8">引用</a><ul>
+<li><a href="#%E5%BC%95%E7%94%A8%E7%89%B9%E6%80%A7">引用特性</a></li>
+<li><a href="#%E5%B8%B8%E5%BC%95%E7%94%A8">常引用</a></li>
+<li><a href="#%E5%BC%95%E7%94%A8%E4%BD%9C%E4%B8%BA%E5%87%BD%E6%95%B0%E8%BF%94%E5%9B%9E%E5%80%BC">引用作为函数返回值</a></li>
 </ul>
 </li>
 </ul>
@@ -329,19 +381,16 @@
 <span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
     ljx<span class="token double-colon punctuation">::</span><span class="token function">test</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
     <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-而当我们在某一个场景中对命名空间中的所有成员都需要使用时，可以使用 `<span class="token keyword">using</span>` 声明：
-举个常用的例子，当我们初学 C<span class="token operator">++</span> 时，常常会使用 `std` 命名空间中的标准库函数和对象。为了避免每次都写 `std<span class="token double-colon punctuation">::</span>` 前缀，我们可以使用 `<span class="token keyword">using</span>` 声明：
-
-```cpp
-<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream></span></span>
+<p>而当我们在某一个场景中对命名空间中的所有成员都需要使用时，可以使用 <code>using</code> 声明：<br>举个常用的例子，当我们初学 C++ 时，常常会使用 <code>std</code> 命名空间中的标准库函数和对象。为了避免每次都写 <code>std::</code> 前缀，我们可以使用 <code>using</code> 声明：</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream></span></span>
 <span class="token keyword">using</span> <span class="token keyword">namespace</span> std<span class="token punctuation">;</span>
 
 <span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
     cout <span class="token operator">&lt;&lt;</span> <span class="token string">"Hello, World!"</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span> <span class="token comment">// 直接使用cout和endl</span>
     <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p>需要注意的是，过度使用 <code>using namespace</code> 可能会引入命名冲突，尤其是在大型项目中。因此，建议在头文件中避免使用 <code>using namespace</code>，而在源文件中谨慎使用。</p>
 <p>在大项目中使用 <code>using namespace</code> 功能基本可以判定为对项目不负责任的表现，建议使用命名空间限定符来明确指定所使用的命名空间成员。</p>
@@ -655,7 +704,7 @@ ref1 <span class="token operator">=</span> b<span class="token punctuation">;</s
 <span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
 
 <h2><span id="内联函数">内联函数</span></h2><p>在 C++ 中，<code>inline</code> 的真正作用常被误解。尽管它的字面含义类似“内联展开”，但现代 C++ 中 <code>inline</code> 的核心意义在于 <strong>解决跨文件定义的重复符号问题</strong>（ODR：One Definition Rule），而非提供性能优化。</p>
-<h4><span id="1-inline-的真正意义允许在头文件中定义函数或变量">1. <code>inline</code> 的真正意义：允许在头文件中定义函数或变量</span></h4><p>历史上，C&#x2F;C++ 不允许在多个源文件中重复定义同名函数，否则在链接阶段会产生 “multiple definition” 错误。<br>使用 <code>inline</code> 的函数或（C++17 起）变量，则允许：</p>
+<h3><span id="1-inline-的真正意义允许在头文件中定义函数或变量">1. <code>inline</code> 的真正意义：允许在头文件中定义函数或变量</span></h3><p>历史上，C&#x2F;C++ 不允许在多个源文件中重复定义同名函数，否则在链接阶段会产生 “multiple definition” 错误。<br>使用 <code>inline</code> 的函数或（C++17 起）变量，则允许：</p>
 <ul>
 <li>在头文件中定义</li>
 <li>被多个 <code>.cpp</code> 文件同时包含</li>
@@ -665,21 +714,21 @@ ref1 <span class="token operator">=</span> b<span class="token punctuation">;</s
 <blockquote>
 <p><strong>使函数或变量在多个翻译单元中具有“弱定义（weak ODR）”，避免重复定义错误。</strong></p>
 </blockquote>
-<h4><span id="2-编译器是否实际内联展开与-inline-无关">2. 编译器是否实际“内联展开”与 <code>inline</code> 无关</span></h4><p>编译器是否进行真正的“内联优化”（把函数体复制到调用点）完全由优化器决定，而不是由 <code>inline</code> 决定。现代编译器即便没有 <code>inline</code>，也会根据启发式规则自动内联短小函数；而即使加了 <code>inline</code>，编译器也可能拒绝内联（如函数过大、含递归、异常、虚调用等）。</p>
+<h3><span id="2-编译器是否实际内联展开与-inline-无关">2. 编译器是否实际“内联展开”与 <code>inline</code> 无关</span></h3><p>编译器是否进行真正的“内联优化”（把函数体复制到调用点）完全由优化器决定，而不是由 <code>inline</code> 决定。现代编译器即便没有 <code>inline</code>，也会根据启发式规则自动内联短小函数；而即使加了 <code>inline</code>，编译器也可能拒绝内联（如函数过大、含递归、异常、虚调用等）。</p>
 <blockquote>
 <p><strong><code>inline</code> 是一个“可以忽略的建议”，不是强制指令。</strong></p>
 </blockquote>
-<h4><span id="3-现代-cc17扩展inline-变量">3. 现代 C++（C++17）扩展：<code>inline</code> 变量</span></h4><p>从 C++17 起，<code>inline</code> 可以用于变量：</p>
+<h3><span id="3-现代-cc17扩展inline-变量">3. 现代 C++（C++17）扩展：<code>inline</code> 变量</span></h3><p>从 C++17 起，<code>inline</code> 可以用于变量：</p>
 <pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">inline</span> <span class="token keyword">int</span> global_value <span class="token operator">=</span> <span class="token number">10</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
 <p>这允许在头文件中定义全局变量、类静态成员变量，而不会产生重复定义，从而统一了函数与变量的定义模型。</p>
-<h4><span id="4-实际应用场景">4. 实际应用场景</span></h4><ul>
+<h3><span id="4-实际应用场景">4. 实际应用场景</span></h3><ul>
 <li>头文件中的模板函数（模板本身需要定义在头文件）</li>
 <li>头文件中的短小工具函数</li>
 <li>C++17 之后：头文件中的全局变量或 <code>static</code> 类成员变量</li>
 <li><code>constexpr</code> 函数和模板函数天生具有 inline 属性</li>
 </ul>
-<h3><span id="auto-关键字">auto 关键字</span></h3><p><code>auto</code> 关键字用于类型推断，允许编译器根据初始化表达式自动推导变量的类型。它简化了代码，尤其是在处理复杂类型时。例如：</p>
+<h2><span id="auto-关键字">auto 关键字</span></h2><p><code>auto</code> 关键字用于类型推断，允许编译器根据初始化表达式自动推导变量的类型。它简化了代码，尤其是在处理复杂类型时。例如：</p>
 <pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream></span></span>
 <span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector></span></span>
 

@@ -229,21 +229,18 @@
         </div>
         
             <div id="post0">
-                <p>十二月 10, 2025</p>
+                <p>十二月 12, 2025</p>
                 <h2>
-                    <a href="/blog/2025/12/10/C++/C++_base/" title="C++ 入门核心知识点总结" class="posttitle" onclick="event.stopPropagation(); window.location.href&#x3D;this.href; return false;">C++ 入门核心知识点总结</a>
+                    <a href="/blog/2025/12/12/C++/C++_inherit/" title="C++ 继承与多态" class="posttitle" onclick="event.stopPropagation(); window.location.href&#x3D;this.href; return false;">C++ 继承与多态</a>
                 </h2>
                 <p class="summary">
 
 
-命名空间 namespace
-命名空间的概念
-
-
-
-
-
-命名空间 namespace命名空间的概念在 C 语...</p>
+继承（Inheritance）
+继承解决了什么问题？
+基类与派生类
+继承的基本定义形式
+继承的本质：建立类型...</p>
             </div>
             
 
@@ -254,16 +251,24 @@
 <div class="post post-card">
     <div class="card-grid">
     <!-- 左侧：文章信息卡片 -->
-    <div class="post-left" onclick="window.location.href='/blog/2025/12/10/C++/C++_class/'">
-        <div class="post-meta">十二月 10, 2025</div>
+    <div class="post-left" onclick="window.location.href='/blog/2025/12/11/C++/C++_class/'">
+        <div class="post-meta">十二月 11, 2025</div>
         <h3 class="post-title">
-            <a href="/blog/2025/12/10/C++/C++_class/" title="C++ 类与对象知识点总结" class="posttitle" onclick="event.stopPropagation(); window.location.href&#x3D;this.href; return false;">C++ 类与对象知识点总结</a>
+            <a href="/blog/2025/12/11/C++/C++_class/" title="C++ 类与对象知识点总结" class="posttitle" onclick="event.stopPropagation(); window.location.href&#x3D;this.href; return false;">C++ 类与对象知识点总结</a>
         </h3>
-        <p class="post-excerpt">基础概念
-类（Class）：类是用户定义的数据类型，是对现实世界中事物的抽象。类包含数据成员（属性）和成员函数（方法）。
-对象（Object）：对象是类的实例，是类的具体体现。
+        <p class="post-excerpt">
 
-作为复...</p>
+
+基础概念
+类的定义规范
+类的访问限定符及封装
+访问限定符
+封装
+
+
+类的实例化
+C++ 中类的存储方式（方法共享）与结构体内存对齐原则
+一、类的存储方式：对象只存“数据”，方法是共...</p>
     </div>
 
     <!-- 右侧：分类与标签（分两排） -->
@@ -292,6 +297,142 @@
                 
                     <a class="cloud-chip cloud-tag" href="/blog/tags/%E5%AF%B9%E8%B1%A1/" title="查看标签：对象" onclick="event.stopPropagation();">
                         对象
+                    </a>
+                
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
+
+<style>
+    /* 标签词云封面样式（简约、无图片） */
+    /* 两列布局整体样式 */
+        /* 单一卡片：内部两列，中间分隔线 */
+        .post-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background: #fff;
+            padding: 0;
+            max-width: 980px;
+            margin: 40px auto;
+            box-shadow: 0 6px 18px rgba(0,0,0,.05);
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: 320px 1fr; /* 左窄右宽 */
+            align-items: stretch;
+        }
+        @media (max-width: 900px) { .card-grid { grid-template-columns: 1fr; } }
+
+    .post-left,
+    .post-right { padding: 18px 20px; }
+    .post-left { cursor: pointer; transition: transform .2s ease; min-height: 220px; }
+    .post-left:hover { transform: translateY(-2px); }
+    .post-right { min-height: 180px; border-left: 1px solid #e5e7eb; }
+    @media (max-width: 900px) { .post-right { border-left: none; border-top: 1px solid #e5e7eb; } }
+
+        /* 去除重叠，使用分隔线增强左右区块关系 */
+
+    .post-meta { color: #6b7280; font-size: 13px; margin-bottom: 6px; }
+    .post-title a { color: #0f172a; text-decoration: none; }
+    .post-title a:hover { color: #2563eb; }
+    .post-excerpt { color: #374151; margin-top: 8px; }
+
+    /* 右侧词云卡片：两排显示 */
+    .tag-cloud-cover { display: grid; grid-template-columns: 1fr; row-gap: 12px; }
+    .cloud-title { color:#6b7280; font-size: 13px; margin-right: 6px; }
+    .cloud-row { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: center; }
+    .cloud-chip { color:#111827; background:#f3f4f6; border:1px solid #e5e7eb; border-radius:999px; padding:6px 10px; line-height:1; text-decoration:none; }
+    .cloud-chip:hover { background:#eef2f7; }
+    .cloud-empty { color:#9ca3af; }
+
+    /* 夜间模式适配 */
+    html.dark-mode .post-card { background:#1f2937; border-color:#374151; box-shadow: 0 6px 18px rgba(0,0,0,.18); }
+    html.dark-mode .post-right { border-left-color:#374151; }
+    html.dark-mode .cloud-title { color:#9ca3af; }
+    html.dark-mode .cloud-chip { color:#e5e7eb; border-color:#4b5563; background:#2d3748; }
+    html.dark-mode .cloud-chip:hover { background:#323c4a; }
+    html.dark-mode .cloud-empty { color:#9ca3af; }
+</style>
+
+
+<div class="post post-card">
+    <div class="card-grid">
+    <!-- 左侧：文章信息卡片 -->
+    <div class="post-left" onclick="window.location.href='/blog/2025/12/10/C++/C++_base/'">
+        <div class="post-meta">十二月 10, 2025</div>
+        <h3 class="post-title">
+            <a href="/blog/2025/12/10/C++/C++_base/" title="C++ 入门核心知识点总结" class="posttitle" onclick="event.stopPropagation(); window.location.href&#x3D;this.href; return false;">C++ 入门核心知识点总结</a>
+        </h3>
+        <p class="post-excerpt">
+
+
+命名空间 namespace
+命名空间的概念
+嵌套命名空间
+匿名命名空间
+
+
+缺省参数
+函数重载
+为什么 C 语言不支持函数重载？
+
+
+引用
+引用特性
+常引用
+引用作为函数返回值
+...</p>
+    </div>
+
+    <!-- 右侧：分类与标签（分两排） -->
+    <div class="post-right">
+        <div class="tag-cloud-cover" aria-label="分类与标签">
+            <div class="cloud-row cloud-row-cats">
+                <span class="cloud-title">分类</span>
+                
+                
+                    <a class="cloud-chip cloud-cat" href="/blog/categories/C/" title="查看分类：C++" onclick="event.stopPropagation();">
+                        C++
+                    </a>
+                
+            </div>
+            <div class="cloud-row cloud-row-tags">
+                <span class="cloud-title">标签</span>
+                
+                
+                    <a class="cloud-chip cloud-tag" href="/blog/tags/C++/" title="查看标签：C++" onclick="event.stopPropagation();">
+                        C++
+                    </a>
+                
+                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4/" title="查看标签：命名空间" onclick="event.stopPropagation();">
+                        命名空间
+                    </a>
+                
+                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E7%BC%BA%E7%9C%81%E5%8F%82%E6%95%B0/" title="查看标签：缺省参数" onclick="event.stopPropagation();">
+                        缺省参数
+                    </a>
+                
+                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E5%87%BD%E6%95%B0%E9%87%8D%E8%BD%BD/" title="查看标签：函数重载" onclick="event.stopPropagation();">
+                        函数重载
+                    </a>
+                
+                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E5%BC%95%E7%94%A8/" title="查看标签：引用" onclick="event.stopPropagation();">
+                        引用
+                    </a>
+                
+                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E5%86%85%E8%81%94%E5%87%BD%E6%95%B0/" title="查看标签：内联函数" onclick="event.stopPropagation();">
+                        内联函数
+                    </a>
+                
+                    <a class="cloud-chip cloud-tag" href="/blog/tags/auto%20%E5%85%B3%E9%94%AE%E5%AD%97/" title="查看标签：auto 关键字" onclick="event.stopPropagation();">
+                        auto 关键字
+                    </a>
+                
+                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E8%8C%83%E5%9B%B4%20for%20%E5%BE%AA%E7%8E%AF/" title="查看标签：范围 for 循环" onclick="event.stopPropagation();">
+                        范围 for 循环
                     </a>
                 
             </div>
@@ -763,12 +904,12 @@ STL迭代器类型体系的链式...</p>
                         C++
                     </a>
                 
-                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E7%BC%96%E8%AF%91%E6%9C%9F%E8%AE%A1%E7%AE%97/" title="查看标签：编译期计算" onclick="event.stopPropagation();">
-                        编译期计算
-                    </a>
-                
                     <a class="cloud-chip cloud-tag" href="/blog/tags/%E6%A8%A1%E7%89%88%E5%85%83%E7%BC%96%E7%A8%8B/" title="查看标签：模版元编程" onclick="event.stopPropagation();">
                         模版元编程
+                    </a>
+                
+                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E7%BC%96%E8%AF%91%E6%9C%9F%E8%AE%A1%E7%AE%97/" title="查看标签：编译期计算" onclick="event.stopPropagation();">
+                        编译期计算
                     </a>
                 
             </div>
@@ -884,12 +1025,12 @@ S...</p>
                         C++
                     </a>
                 
-                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E7%BC%96%E8%AF%91%E6%9C%9F%E8%AE%A1%E7%AE%97/" title="查看标签：编译期计算" onclick="event.stopPropagation();">
-                        编译期计算
-                    </a>
-                
                     <a class="cloud-chip cloud-tag" href="/blog/tags/%E6%A8%A1%E7%89%88%E5%85%83%E7%BC%96%E7%A8%8B/" title="查看标签：模版元编程" onclick="event.stopPropagation();">
                         模版元编程
+                    </a>
+                
+                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E7%BC%96%E8%AF%91%E6%9C%9F%E8%AE%A1%E7%AE%97/" title="查看标签：编译期计算" onclick="event.stopPropagation();">
+                        编译期计算
                     </a>
                 
             </div>
@@ -999,12 +1140,12 @@ con...</p>
                         C++
                     </a>
                 
-                    <a class="cloud-chip cloud-tag" href="/blog/tags/constexpr/" title="查看标签：constexpr" onclick="event.stopPropagation();">
-                        constexpr
-                    </a>
-                
                     <a class="cloud-chip cloud-tag" href="/blog/tags/%E7%BC%96%E8%AF%91%E6%9C%9F%E8%AE%A1%E7%AE%97/" title="查看标签：编译期计算" onclick="event.stopPropagation();">
                         编译期计算
+                    </a>
+                
+                    <a class="cloud-chip cloud-tag" href="/blog/tags/constexpr/" title="查看标签：constexpr" onclick="event.stopPropagation();">
+                        constexpr
                     </a>
                 
                     <a class="cloud-chip cloud-tag" href="/blog/tags/%E6%A8%A1%E6%9D%BF%E5%85%83%E7%BC%96%E7%A8%8B/" title="查看标签：模板元编程" onclick="event.stopPropagation();">
@@ -1129,124 +1270,6 @@ std::future 和 std::promise
                 
                     <a class="cloud-chip cloud-tag" href="/blog/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" title="查看标签：多线程" onclick="event.stopPropagation();">
                         多线程
-                    </a>
-                
-            </div>
-        </div>
-    </div>
-    </div>
-</div>
-
-<style>
-    /* 标签词云封面样式（简约、无图片） */
-    /* 两列布局整体样式 */
-        /* 单一卡片：内部两列，中间分隔线 */
-        .post-card {
-            border: 1px solid #e5e7eb;
-            border-radius: 10px;
-            background: #fff;
-            padding: 0;
-            max-width: 980px;
-            margin: 40px auto;
-            box-shadow: 0 6px 18px rgba(0,0,0,.05);
-        }
-
-        .card-grid {
-            display: grid;
-            grid-template-columns: 320px 1fr; /* 左窄右宽 */
-            align-items: stretch;
-        }
-        @media (max-width: 900px) { .card-grid { grid-template-columns: 1fr; } }
-
-    .post-left,
-    .post-right { padding: 18px 20px; }
-    .post-left { cursor: pointer; transition: transform .2s ease; min-height: 220px; }
-    .post-left:hover { transform: translateY(-2px); }
-    .post-right { min-height: 180px; border-left: 1px solid #e5e7eb; }
-    @media (max-width: 900px) { .post-right { border-left: none; border-top: 1px solid #e5e7eb; } }
-
-        /* 去除重叠，使用分隔线增强左右区块关系 */
-
-    .post-meta { color: #6b7280; font-size: 13px; margin-bottom: 6px; }
-    .post-title a { color: #0f172a; text-decoration: none; }
-    .post-title a:hover { color: #2563eb; }
-    .post-excerpt { color: #374151; margin-top: 8px; }
-
-    /* 右侧词云卡片：两排显示 */
-    .tag-cloud-cover { display: grid; grid-template-columns: 1fr; row-gap: 12px; }
-    .cloud-title { color:#6b7280; font-size: 13px; margin-right: 6px; }
-    .cloud-row { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: center; }
-    .cloud-chip { color:#111827; background:#f3f4f6; border:1px solid #e5e7eb; border-radius:999px; padding:6px 10px; line-height:1; text-decoration:none; }
-    .cloud-chip:hover { background:#eef2f7; }
-    .cloud-empty { color:#9ca3af; }
-
-    /* 夜间模式适配 */
-    html.dark-mode .post-card { background:#1f2937; border-color:#374151; box-shadow: 0 6px 18px rgba(0,0,0,.18); }
-    html.dark-mode .post-right { border-left-color:#374151; }
-    html.dark-mode .cloud-title { color:#9ca3af; }
-    html.dark-mode .cloud-chip { color:#e5e7eb; border-color:#4b5563; background:#2d3748; }
-    html.dark-mode .cloud-chip:hover { background:#323c4a; }
-    html.dark-mode .cloud-empty { color:#9ca3af; }
-</style>
-
-
-<div class="post post-card">
-    <div class="card-grid">
-    <!-- 左侧：文章信息卡片 -->
-    <div class="post-left" onclick="window.location.href='/blog/2025/09/20/Redis/redis_cluster/'">
-        <div class="post-meta">九月 20, 2025</div>
-        <h3 class="post-title">
-            <a href="/blog/2025/09/20/Redis/redis_cluster/" title="Redis 集群" class="posttitle" onclick="event.stopPropagation(); window.location.href&#x3D;this.href; return false;">Redis 集群</a>
-        </h3>
-        <p class="post-excerpt">
-
-
-什么是 Redis 集群
-数据分片算法
-哈希求余法
-一致性哈希算法
-Redis 集群的分片算法–哈希槽分区算法
-
-
-集群搭建实践（基于 Docker）
-第一步：创建目录和配置
-第二...</p>
-    </div>
-
-    <!-- 右侧：分类与标签（分两排） -->
-    <div class="post-right">
-        <div class="tag-cloud-cover" aria-label="分类与标签">
-            <div class="cloud-row cloud-row-cats">
-                <span class="cloud-title">分类</span>
-                
-                
-                    <a class="cloud-chip cloud-cat" href="/blog/categories/%E6%8A%80%E6%9C%AF/" title="查看分类：技术" onclick="event.stopPropagation();">
-                        技术
-                    </a>
-                
-                    <a class="cloud-chip cloud-cat" href="/blog/categories/%E6%8A%80%E6%9C%AF/%E9%9D%9E%E5%85%B3%E7%B3%BB%E5%9E%8B%E6%95%B0%E6%8D%AE%E5%BA%93/" title="查看分类：非关系型数据库" onclick="event.stopPropagation();">
-                        非关系型数据库
-                    </a>
-                
-                    <a class="cloud-chip cloud-cat" href="/blog/categories/%E6%8A%80%E6%9C%AF/%E9%9D%9E%E5%85%B3%E7%B3%BB%E5%9E%8B%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%90%8E%E7%AB%AF%E5%B7%A5%E5%85%B7/" title="查看分类：后端工具" onclick="event.stopPropagation();">
-                        后端工具
-                    </a>
-                
-            </div>
-            <div class="cloud-row cloud-row-tags">
-                <span class="cloud-title">标签</span>
-                
-                
-                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E9%9B%86%E7%BE%A4/" title="查看标签：集群" onclick="event.stopPropagation();">
-                        集群
-                    </a>
-                
-                    <a class="cloud-chip cloud-tag" href="/blog/tags/Redis/" title="查看标签：Redis" onclick="event.stopPropagation();">
-                        Redis
-                    </a>
-                
-                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/" title="查看标签：数据库" onclick="event.stopPropagation();">
-                        数据库
                     </a>
                 
             </div>
