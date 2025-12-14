@@ -2346,9 +2346,9 @@
       
         <tags>
             
-            <tag> 性能 </tag>
-            
             <tag> Quartus2 </tag>
+            
+            <tag> 性能 </tag>
             
             <tag> CPU </tag>
             
@@ -2383,9 +2383,9 @@
       
         <tags>
             
-            <tag> 性能 </tag>
-            
             <tag> Quartus2 </tag>
+            
+            <tag> 性能 </tag>
             
             <tag> CPU </tag>
             
@@ -2416,11 +2416,11 @@
       
         <tags>
             
-            <tag> 性能 </tag>
-            
             <tag> Quartus2 </tag>
             
             <tag> ALU </tag>
+            
+            <tag> 性能 </tag>
             
             <tag> 4bit </tag>
             
@@ -2449,9 +2449,9 @@
       
         <tags>
             
-            <tag> 性能 </tag>
-            
             <tag> Quartus2 </tag>
+            
+            <tag> 性能 </tag>
             
             <tag> 加法器 </tag>
             
@@ -2482,13 +2482,13 @@
       
         <tags>
             
+            <tag> 性能 </tag>
+            
             <tag> Redis </tag>
             
             <tag> 数据库 </tag>
             
             <tag> 底层 </tag>
-            
-            <tag> 性能 </tag>
             
         </tags>
       
