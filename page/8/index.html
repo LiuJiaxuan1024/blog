@@ -42,6 +42,68 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
 <meta name="generator" content="Hexo 7.3.0"></head>
 <script src="https://cdn.jsdelivr.net/npm/TagCloud@2.2.0/dist/TagCloud.min.js"></script>
+<!-- 前缀过滤兼容层：确保在第三方库之前运行 -->
+<script>
+    (function () {
+        function stripBlogPrefix(path) {
+            try {
+                if (!path) return path;
+                return path.replace(/^\/?blog\/?/, '/');
+            } catch (e) { return path; }
+        }
+        try {
+            var origPath = location.pathname || '/';
+            var cleanPath = stripBlogPrefix(origPath);
+            window.__CLEAN_PATHNAME__ = cleanPath;
+        } catch (e) {}
+        // 规范计数元素 id（如果提前渲染存在）
+        document.addEventListener('DOMContentLoaded', function(){
+            try {
+                var selectors = ['.waline-visitor-count', '.leancloud_visitors', '.leancloud-visitors'];
+                var nodes = [];
+                selectors.forEach(function (sel) { document.querySelectorAll(sel).forEach(function (el) { nodes.push(el); }); });
+                nodes.forEach(function (el) {
+                    var id = el.getAttribute('id');
+                    if (id && /^\/?blog(\/|$)/.test(id)) {
+                        el.setAttribute('id', stripBlogPrefix(id));
+                    }
+                });
+            } catch (e) {}
+        });
+        // 拦截 fetch，重写 Waline /article path
+        try {
+            var _fetch = window.fetch;
+            window.fetch = function (url, init) {
+                try {
+                    var u = (typeof url === 'string') ? url : (url && url.url) || '';
+                    if (/\/article(\?|$)/.test(u)) {
+                        var urlObj = new URL(u, location.origin);
+                        if (urlObj.searchParams.has('path')) {
+                            var raw = urlObj.searchParams.get('path');
+                            if (raw) {
+                                var parts = raw.split(',').map(function (p) { return stripBlogPrefix(decodeURIComponent(p)); });
+                                urlObj.searchParams.set('path', encodeURIComponent(parts.join(',')));
+                                url = urlObj.toString();
+                            }
+                        }
+                    }
+                    if (init && init.body && /\/article$/.test(u)) {
+                        try {
+                            var obj = JSON.parse(init.body);
+                            if (obj && obj.path) {
+                                obj.path = stripBlogPrefix(obj.path);
+                                init.body = JSON.stringify(obj);
+                            }
+                        } catch (e) {}
+                    }
+                } catch (e) {}
+                return _fetch.apply(this, arguments);
+            };
+        } catch (e) {}
+        // 暴露 Valine 兼容路径变量
+        try { if (!window.VALINE_PATH && window.__CLEAN_PATHNAME__) { window.VALINE_PATH = window.__CLEAN_PATHNAME__; } } catch (e) {}
+    })();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
 <!-- Mermaid.js -->
@@ -789,12 +851,12 @@ Red...</p>
                 <span class="cloud-title">标签</span>
                 
                 
-                    <a class="cloud-chip cloud-tag" href="/blog/tags/Quartus2/" title="查看标签：Quartus2" onclick="event.stopPropagation();">
-                        Quartus2
-                    </a>
-                
                     <a class="cloud-chip cloud-tag" href="/blog/tags/%E6%80%A7%E8%83%BD/" title="查看标签：性能" onclick="event.stopPropagation();">
                         性能
+                    </a>
+                
+                    <a class="cloud-chip cloud-tag" href="/blog/tags/Quartus2/" title="查看标签：Quartus2" onclick="event.stopPropagation();">
+                        Quartus2
                     </a>
                 
                     <a class="cloud-chip cloud-tag" href="/blog/tags/CPU/" title="查看标签：CPU" onclick="event.stopPropagation();">
@@ -914,12 +976,12 @@ Red...</p>
                 <span class="cloud-title">标签</span>
                 
                 
-                    <a class="cloud-chip cloud-tag" href="/blog/tags/Quartus2/" title="查看标签：Quartus2" onclick="event.stopPropagation();">
-                        Quartus2
-                    </a>
-                
                     <a class="cloud-chip cloud-tag" href="/blog/tags/%E6%80%A7%E8%83%BD/" title="查看标签：性能" onclick="event.stopPropagation();">
                         性能
+                    </a>
+                
+                    <a class="cloud-chip cloud-tag" href="/blog/tags/Quartus2/" title="查看标签：Quartus2" onclick="event.stopPropagation();">
+                        Quartus2
                     </a>
                 
                     <a class="cloud-chip cloud-tag" href="/blog/tags/CPU/" title="查看标签：CPU" onclick="event.stopPropagation();">
@@ -1032,16 +1094,16 @@ CPU中简单的4位ALU（...</p>
                 <span class="cloud-title">标签</span>
                 
                 
+                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E6%80%A7%E8%83%BD/" title="查看标签：性能" onclick="event.stopPropagation();">
+                        性能
+                    </a>
+                
                     <a class="cloud-chip cloud-tag" href="/blog/tags/Quartus2/" title="查看标签：Quartus2" onclick="event.stopPropagation();">
                         Quartus2
                     </a>
                 
                     <a class="cloud-chip cloud-tag" href="/blog/tags/ALU/" title="查看标签：ALU" onclick="event.stopPropagation();">
                         ALU
-                    </a>
-                
-                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E6%80%A7%E8%83%BD/" title="查看标签：性能" onclick="event.stopPropagation();">
-                        性能
                     </a>
                 
                     <a class="cloud-chip cloud-tag" href="/blog/tags/4bit/" title="查看标签：4bit" onclick="event.stopPropagation();">
@@ -1149,12 +1211,12 @@ inscoin 输入对应加数 B 映射表
                 <span class="cloud-title">标签</span>
                 
                 
-                    <a class="cloud-chip cloud-tag" href="/blog/tags/Quartus2/" title="查看标签：Quartus2" onclick="event.stopPropagation();">
-                        Quartus2
-                    </a>
-                
                     <a class="cloud-chip cloud-tag" href="/blog/tags/%E6%80%A7%E8%83%BD/" title="查看标签：性能" onclick="event.stopPropagation();">
                         性能
+                    </a>
+                
+                    <a class="cloud-chip cloud-tag" href="/blog/tags/Quartus2/" title="查看标签：Quartus2" onclick="event.stopPropagation();">
+                        Quartus2
                     </a>
                 
                     <a class="cloud-chip cloud-tag" href="/blog/tags/%E5%8A%A0%E6%B3%95%E5%99%A8/" title="查看标签：加法器" onclick="event.stopPropagation();">
@@ -1256,10 +1318,6 @@ inscoin 输入对应加数 B 映射表
                 <span class="cloud-title">标签</span>
                 
                 
-                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E6%80%A7%E8%83%BD/" title="查看标签：性能" onclick="event.stopPropagation();">
-                        性能
-                    </a>
-                
                     <a class="cloud-chip cloud-tag" href="/blog/tags/Redis/" title="查看标签：Redis" onclick="event.stopPropagation();">
                         Redis
                     </a>
@@ -1270,6 +1328,10 @@ inscoin 输入对应加数 B 映射表
                 
                     <a class="cloud-chip cloud-tag" href="/blog/tags/%E5%BA%95%E5%B1%82/" title="查看标签：底层" onclick="event.stopPropagation();">
                         底层
+                    </a>
+                
+                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E6%80%A7%E8%83%BD/" title="查看标签：性能" onclick="event.stopPropagation();">
+                        性能
                     </a>
                 
             </div>
