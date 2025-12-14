@@ -93,68 +93,6 @@ wait 和 waitpid 的 status 参数说明
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
 <meta name="generator" content="Hexo 7.3.0"></head>
 <script src="https://cdn.jsdelivr.net/npm/TagCloud@2.2.0/dist/TagCloud.min.js"></script>
-<!-- 前缀过滤兼容层：确保在第三方库之前运行 -->
-<script>
-    (function () {
-        function stripBlogPrefix(path) {
-            try {
-                if (!path) return path;
-                return path.replace(/^\/?blog\/?/, '/');
-            } catch (e) { return path; }
-        }
-        try {
-            var origPath = location.pathname || '/';
-            var cleanPath = stripBlogPrefix(origPath);
-            window.__CLEAN_PATHNAME__ = cleanPath;
-        } catch (e) {}
-        // 规范计数元素 id（如果提前渲染存在）
-        document.addEventListener('DOMContentLoaded', function(){
-            try {
-                var selectors = ['.waline-visitor-count', '.leancloud_visitors', '.leancloud-visitors'];
-                var nodes = [];
-                selectors.forEach(function (sel) { document.querySelectorAll(sel).forEach(function (el) { nodes.push(el); }); });
-                nodes.forEach(function (el) {
-                    var id = el.getAttribute('id');
-                    if (id && /^\/?blog(\/|$)/.test(id)) {
-                        el.setAttribute('id', stripBlogPrefix(id));
-                    }
-                });
-            } catch (e) {}
-        });
-        // 拦截 fetch，重写 Waline /article path
-        try {
-            var _fetch = window.fetch;
-            window.fetch = function (url, init) {
-                try {
-                    var u = (typeof url === 'string') ? url : (url && url.url) || '';
-                    if (/\/article(\?|$)/.test(u)) {
-                        var urlObj = new URL(u, location.origin);
-                        if (urlObj.searchParams.has('path')) {
-                            var raw = urlObj.searchParams.get('path');
-                            if (raw) {
-                                var parts = raw.split(',').map(function (p) { return stripBlogPrefix(decodeURIComponent(p)); });
-                                urlObj.searchParams.set('path', encodeURIComponent(parts.join(',')));
-                                url = urlObj.toString();
-                            }
-                        }
-                    }
-                    if (init && init.body && /\/article$/.test(u)) {
-                        try {
-                            var obj = JSON.parse(init.body);
-                            if (obj && obj.path) {
-                                obj.path = stripBlogPrefix(obj.path);
-                                init.body = JSON.stringify(obj);
-                            }
-                        } catch (e) {}
-                    }
-                } catch (e) {}
-                return _fetch.apply(this, arguments);
-            };
-        } catch (e) {}
-        // 暴露 Valine 兼容路径变量
-        try { if (!window.VALINE_PATH && window.__CLEAN_PATHNAME__) { window.VALINE_PATH = window.__CLEAN_PATHNAME__; } } catch (e) {}
-    })();
-</script>
 <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
 <!-- Mermaid.js -->
@@ -332,7 +270,7 @@ wait 和 waitpid 的 status 参数说明
         </div>
         <div class="recommendations">
             <h2>相关推荐</h2>
-            <ul><li><a href="/blog/2025/07/17/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E8%BF%9B%E7%A8%8B/%E6%8E%A7%E5%88%B6/process_replacement/">Linux 进程程序替换</a></li><li><a href="/blog/2025/07/14/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E8%BF%9B%E7%A8%8B/process_status/">Linux 进程状态及优先级</a></li><li><a href="/blog/2025/07/24/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E7%BA%BF%E7%A8%8B/thread_control/">Linux 线程控制</a></li><li><a href="/blog/2025/07/20/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E8%BF%9B%E7%A8%8B/%E9%80%9A%E4%BF%A1/shared_memory/">Linux 进程间通信--system V 共享内存</a></li><li><a href="/blog/2025/07/23/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E8%BF%9B%E7%A8%8B/%E4%BF%A1%E5%8F%B7/signal_capture/">Linux 信号捕捉</a></li><li><a href="/blog/2025/07/18/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E8%BF%9B%E7%A8%8B/%E6%96%87%E4%BB%B6/file_buffer/">文件缓冲区</a></li></ul>
+            <ul><li><a href="/blog/2025/07/19/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E8%BF%9B%E7%A8%8B/%E6%96%87%E4%BB%B6/soft_hard_link/">Linux 文件软链接与硬链接</a></li><li><a href="/blog/2025/07/18/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E8%BF%9B%E7%A8%8B/%E6%96%87%E4%BB%B6/file_dup/">文件重定向</a></li><li><a href="/blog/2025/07/17/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E8%BF%9B%E7%A8%8B/%E6%96%87%E4%BB%B6/file_desc/">文件读写及文件描述符</a></li><li><a href="/blog/2025/07/13/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E8%BF%9B%E7%A8%8B/process_concept/">Linux 进程概念</a></li><li><a href="/blog/2025/07/18/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E8%BF%9B%E7%A8%8B/%E6%96%87%E4%BB%B6/file_buffer/">文件缓冲区</a></li><li><a href="/blog/2025/07/22/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E8%BF%9B%E7%A8%8B/%E4%BF%A1%E5%8F%B7/signal_manage/">Linux 信号管理</a></li></ul>
         </div>
         <div class='main' style="
     background: transparent;
@@ -2675,85 +2613,6 @@ int main()
 
   /* 亮色模式保持原有背景（透明/白），不覆盖全局 */
 </style>
-
-<!-- 统一过滤 URL 中的 /blog 前缀，确保 Waline/LeanCloud 计数不受前缀影响 -->
-<script>
-  (function () {
-    function stripBlogPrefix(path) {
-      try {
-        if (!path) return path;
-        // 仅移除前缀 /blog 或 /blog/，保留其后的真实路径
-        return path.replace(/^\/?blog\/?/, '/');
-      } catch (e) { return path; }
-    }
-
-    // 1) 规范化页面 path（供可能依赖 location 的脚本使用）
-    try {
-      var origPath = location.pathname || '/';
-      var cleanPath = stripBlogPrefix(origPath);
-      // 给依赖方一个明确的干净路径变量（避免直接覆写 location）
-      window.__CLEAN_PATHNAME__ = cleanPath;
-    } catch (e) {}
-
-    // 2) 统一修正页面上的访客计数相关元素的 id（Waline/Valine 会以 id 作为 url 键）
-    try {
-      var selectors = ['.waline-visitor-count', '.leancloud_visitors', '.leancloud-visitors'];
-      var nodes = [];
-      selectors.forEach(function (sel) {
-        document.querySelectorAll(sel).forEach(function (el) { nodes.push(el); });
-      });
-      nodes.forEach(function (el) {
-        var id = el.getAttribute('id');
-        if (id && /^\/?blog(\/|$)/.test(id)) {
-          el.setAttribute('id', stripBlogPrefix(id));
-        }
-      });
-    } catch (e) {}
-
-    // 3) 拦截 Waline 请求，去掉 body/query 中的 blog 前缀
-    try {
-      var _fetch = window.fetch;
-      window.fetch = function (url, init) {
-        try {
-          var u = (typeof url === 'string') ? url : (url && url.url) || '';
-          // 处理 GET /article?path=...（多个用逗号）
-          if (/\/article(\?|$)/.test(u)) {
-            var urlObj = new URL(u, location.origin);
-            if (urlObj.searchParams.has('path')) {
-              var raw = urlObj.searchParams.get('path');
-              if (raw) {
-                var parts = raw.split(',').map(function (p) { return stripBlogPrefix(decodeURIComponent(p)); });
-                urlObj.searchParams.set('path', encodeURIComponent(parts.join(',')));
-                url = urlObj.toString();
-              }
-            }
-          }
-          // 处理 POST /article，body: { path: "..." }
-          if (init && init.body && /\/article$/.test(u)) {
-            try {
-              var obj = JSON.parse(init.body);
-              if (obj && obj.path) {
-                obj.path = stripBlogPrefix(obj.path);
-                init.body = JSON.stringify(obj);
-              }
-            } catch (e) {
-              // 非 JSON body 不处理
-            }
-          }
-        } catch (e) {}
-        return _fetch.apply(this, arguments);
-      };
-    } catch (e) {}
-
-    // 4) 兼容 Valine：部分实现会使用配置中的 path 与元素 id 比较
-    // 若有脚本读取 window.VALINE_PATH 或类似变量，可暴露一个干净的路径
-    try {
-      if (!window.VALINE_PATH && window.__CLEAN_PATHNAME__) {
-        window.VALINE_PATH = window.__CLEAN_PATHNAME__;
-      }
-    } catch (e) {}
-  })();
-</script>
 
 <script>
   (function () {
