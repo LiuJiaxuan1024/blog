@@ -270,7 +270,7 @@ Redis 混合持久化详解
         </div>
         <div class="recommendations">
             <h2>相关推荐</h2>
-            <ul><li><a href="/blog/2025/07/09/Redis/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/Set/">Redis 常见数据类型-Set 类型</a></li><li><a href="/blog/2025/06/16/Redis/redis_command_line_user_guide/">Redis 命令行使用指南</a></li><li><a href="/blog/2025/09/20/Redis/redis_cluster/">Redis 集群</a></li><li><a href="/blog/2025/09/19/Redis/Redis_cache/">Redis 应用--缓存</a></li><li><a href="/blog/2025/07/10/Redis/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/Zset/">Redis 常见数据类型-Zset 类型</a></li><li><a href="/blog/2025/08/20/Redis/redis_trans/">Redis 事务</a></li></ul>
+            <ul><li><a href="/blog/2025/08/15/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_set/">Redis C++ 客户端使用指南-Set 篇</a></li><li><a href="/blog/2025/08/15/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_list/">Redis C++ 客户端使用指南-List 篇</a></li><li><a href="/blog/2025/07/08/Redis/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/Hash/">Redis 常见数据类型-Hash 类型</a></li><li><a href="/blog/2025/08/20/Redis/redis_trans/">Redis 事务</a></li><li><a href="/blog/2025/07/07/Redis/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/String/">Redis 常见数据类型-String 类型</a></li><li><a href="/blog/2025/09/19/Redis/Redis_cache/">Redis 应用--缓存</a></li></ul>
         </div>
         <div class='main' style="
     background: transparent;
@@ -2880,6 +2880,85 @@ aof-manifest-enabled no<span aria-hidden="true" class="line-numbers-rows"><span>
 
   /* 亮色模式保持原有背景（透明/白），不覆盖全局 */
 </style>
+
+<!-- 统一过滤 URL 中的 /blog 前缀，确保 Waline/LeanCloud 计数不受前缀影响 -->
+<script>
+  (function () {
+    function stripBlogPrefix(path) {
+      try {
+        if (!path) return path;
+        // 仅移除前缀 /blog 或 /blog/，保留其后的真实路径
+        return path.replace(/^\/?blog\/?/, '/');
+      } catch (e) { return path; }
+    }
+
+    // 1) 规范化页面 path（供可能依赖 location 的脚本使用）
+    try {
+      var origPath = location.pathname || '/';
+      var cleanPath = stripBlogPrefix(origPath);
+      // 给依赖方一个明确的干净路径变量（避免直接覆写 location）
+      window.__CLEAN_PATHNAME__ = cleanPath;
+    } catch (e) {}
+
+    // 2) 统一修正页面上的访客计数相关元素的 id（Waline/Valine 会以 id 作为 url 键）
+    try {
+      var selectors = ['.waline-visitor-count', '.leancloud_visitors', '.leancloud-visitors'];
+      var nodes = [];
+      selectors.forEach(function (sel) {
+        document.querySelectorAll(sel).forEach(function (el) { nodes.push(el); });
+      });
+      nodes.forEach(function (el) {
+        var id = el.getAttribute('id');
+        if (id && /^\/?blog(\/|$)/.test(id)) {
+          el.setAttribute('id', stripBlogPrefix(id));
+        }
+      });
+    } catch (e) {}
+
+    // 3) 拦截 Waline 请求，去掉 body/query 中的 blog 前缀
+    try {
+      var _fetch = window.fetch;
+      window.fetch = function (url, init) {
+        try {
+          var u = (typeof url === 'string') ? url : (url && url.url) || '';
+          // 处理 GET /article?path=...（多个用逗号）
+          if (/\/article(\?|$)/.test(u)) {
+            var urlObj = new URL(u, location.origin);
+            if (urlObj.searchParams.has('path')) {
+              var raw = urlObj.searchParams.get('path');
+              if (raw) {
+                var parts = raw.split(',').map(function (p) { return stripBlogPrefix(decodeURIComponent(p)); });
+                urlObj.searchParams.set('path', encodeURIComponent(parts.join(',')));
+                url = urlObj.toString();
+              }
+            }
+          }
+          // 处理 POST /article，body: { path: "..." }
+          if (init && init.body && /\/article$/.test(u)) {
+            try {
+              var obj = JSON.parse(init.body);
+              if (obj && obj.path) {
+                obj.path = stripBlogPrefix(obj.path);
+                init.body = JSON.stringify(obj);
+              }
+            } catch (e) {
+              // 非 JSON body 不处理
+            }
+          }
+        } catch (e) {}
+        return _fetch.apply(this, arguments);
+      };
+    } catch (e) {}
+
+    // 4) 兼容 Valine：部分实现会使用配置中的 path 与元素 id 比较
+    // 若有脚本读取 window.VALINE_PATH 或类似变量，可暴露一个干净的路径
+    try {
+      if (!window.VALINE_PATH && window.__CLEAN_PATHNAME__) {
+        window.VALINE_PATH = window.__CLEAN_PATHNAME__;
+      }
+    } catch (e) {}
+  })();
+</script>
 
 <script>
   (function () {

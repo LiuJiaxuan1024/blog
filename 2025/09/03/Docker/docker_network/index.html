@@ -249,7 +249,7 @@ Docker 网络架构简介
         </div>
         <div class="recommendations">
             <h2>相关推荐</h2>
-            <ul><li><a href="/blog/2025/09/02/Docker/docker_volume/">Docker Volume（存储卷）使用指南</a></li><li><a href="/blog/2025/09/05/Docker/docker_compose/">Docker Compose（容器编排）使用指南</a></li><li><a href="/blog/2025/08/28/Docker/docker_use/">Docker 使用入门</a></li><li><a href="/blog/2025/08/02/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/Reactor/">Linux 基于 Epoll 的主从 Reactor 多线程模型</a></li><li><a href="/blog/2025/08/30/Docker/docker_image/">Docker Image（镜像）使用指南</a></li><li><a href="/blog/2025/07/28/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/socket_udp/">Socket 套接字编程-UDP</a></li></ul>
+            <ul><li><a href="/blog/2025/08/02/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/Epoll/">Linux IO 多路转接--Epoll</a></li><li><a href="/blog/2025/07/31/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/protocol/">自定义协议 &amp;&amp; 序列化与反序列化</a></li><li><a href="/blog/2025/08/30/Docker/docker_image/">Docker Image（镜像）使用指南</a></li><li><a href="/blog/2025/08/31/Docker/docker_container/">Docker Container（容器）使用指南</a></li><li><a href="/blog/2025/09/05/Docker/docker_compose/">Docker Compose（容器编排）使用指南</a></li><li><a href="/blog/2025/08/02/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/Reactor/">Linux 基于 Epoll 的主从 Reactor 多线程模型</a></li></ul>
         </div>
         <div class='main' style="
     background: transparent;
@@ -3367,6 +3367,85 @@ ffd86b4df415e69582595858f038ab72cd219da6cb47f0433253652243434fa3
 
   /* 亮色模式保持原有背景（透明/白），不覆盖全局 */
 </style>
+
+<!-- 统一过滤 URL 中的 /blog 前缀，确保 Waline/LeanCloud 计数不受前缀影响 -->
+<script>
+  (function () {
+    function stripBlogPrefix(path) {
+      try {
+        if (!path) return path;
+        // 仅移除前缀 /blog 或 /blog/，保留其后的真实路径
+        return path.replace(/^\/?blog\/?/, '/');
+      } catch (e) { return path; }
+    }
+
+    // 1) 规范化页面 path（供可能依赖 location 的脚本使用）
+    try {
+      var origPath = location.pathname || '/';
+      var cleanPath = stripBlogPrefix(origPath);
+      // 给依赖方一个明确的干净路径变量（避免直接覆写 location）
+      window.__CLEAN_PATHNAME__ = cleanPath;
+    } catch (e) {}
+
+    // 2) 统一修正页面上的访客计数相关元素的 id（Waline/Valine 会以 id 作为 url 键）
+    try {
+      var selectors = ['.waline-visitor-count', '.leancloud_visitors', '.leancloud-visitors'];
+      var nodes = [];
+      selectors.forEach(function (sel) {
+        document.querySelectorAll(sel).forEach(function (el) { nodes.push(el); });
+      });
+      nodes.forEach(function (el) {
+        var id = el.getAttribute('id');
+        if (id && /^\/?blog(\/|$)/.test(id)) {
+          el.setAttribute('id', stripBlogPrefix(id));
+        }
+      });
+    } catch (e) {}
+
+    // 3) 拦截 Waline 请求，去掉 body/query 中的 blog 前缀
+    try {
+      var _fetch = window.fetch;
+      window.fetch = function (url, init) {
+        try {
+          var u = (typeof url === 'string') ? url : (url && url.url) || '';
+          // 处理 GET /article?path=...（多个用逗号）
+          if (/\/article(\?|$)/.test(u)) {
+            var urlObj = new URL(u, location.origin);
+            if (urlObj.searchParams.has('path')) {
+              var raw = urlObj.searchParams.get('path');
+              if (raw) {
+                var parts = raw.split(',').map(function (p) { return stripBlogPrefix(decodeURIComponent(p)); });
+                urlObj.searchParams.set('path', encodeURIComponent(parts.join(',')));
+                url = urlObj.toString();
+              }
+            }
+          }
+          // 处理 POST /article，body: { path: "..." }
+          if (init && init.body && /\/article$/.test(u)) {
+            try {
+              var obj = JSON.parse(init.body);
+              if (obj && obj.path) {
+                obj.path = stripBlogPrefix(obj.path);
+                init.body = JSON.stringify(obj);
+              }
+            } catch (e) {
+              // 非 JSON body 不处理
+            }
+          }
+        } catch (e) {}
+        return _fetch.apply(this, arguments);
+      };
+    } catch (e) {}
+
+    // 4) 兼容 Valine：部分实现会使用配置中的 path 与元素 id 比较
+    // 若有脚本读取 window.VALINE_PATH 或类似变量，可暴露一个干净的路径
+    try {
+      if (!window.VALINE_PATH && window.__CLEAN_PATHNAME__) {
+        window.VALINE_PATH = window.__CLEAN_PATHNAME__;
+      }
+    } catch (e) {}
+  })();
+</script>
 
 <script>
   (function () {
