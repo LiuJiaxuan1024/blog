@@ -1,0 +1,3349 @@
+
+<!DOCTYPE html>
+<html lang="zh" class="loading">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>main 函数开始前的那些事儿 - 刘家炫的博客</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate" />
+    <meta name="keywords" content="Fechin,"> 
+    <meta name="description" content="
+
+
+shell 执行程序替换
+内核装载 ELF
+什么是 ELF？
+
+
+CPU 跳到 _start 执行
+什么是 _start？
+_start 是汇编，不是 C/C++
+
+
+__libc_start,"> 
+    <meta name="author" content="Jiaxuan Liu"> 
+    <link rel="alternative" href="atom.xml" title="刘家炫的博客" type="application/atom+xml"> 
+    <link rel="icon" href="/blog/img/favicon.png"> 
+    
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+
+    
+    
+    <meta name="twitter:card" content="summary"/>
+    <meta name="twitter:title" content="main 函数开始前的那些事儿 - 刘家炫的博客"/>
+    <meta name="twitter:description" content="
+
+
+shell 执行程序替换
+内核装载 ELF
+什么是 ELF？
+
+
+CPU 跳到 _start 执行
+什么是 _start？
+_start 是汇编，不是 C/C++
+
+
+__libc_start,"/>
+    
+    
+    
+    
+    <meta property="og:site_name" content="刘家炫的博客"/>
+    <meta property="og:type" content="object"/>
+    <meta property="og:title" content="main 函数开始前的那些事儿 - 刘家炫的博客"/>
+    <meta property="og:description" content="
+
+
+shell 执行程序替换
+内核装载 ELF
+什么是 ELF？
+
+
+CPU 跳到 _start 执行
+什么是 _start？
+_start 是汇编，不是 C/C++
+
+
+__libc_start,"/>
+    
+<link rel="stylesheet" href="/blog/css/diaspora.css">
+
+    <script>window.searchDbPath = "/blog/search.xml";</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- Prism.js 官方主题 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+<meta name="generator" content="Hexo 7.3.0"></head>
+<script src="https://cdn.jsdelivr.net/npm/TagCloud@2.2.0/dist/TagCloud.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
+<!-- Mermaid.js -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+    // 由页面脚本在转换为 .mermaid 元素后再触发渲染
+    mermaid.initialize({ startOnLoad: false });
+    window.renderMermaidInContainer = async function(selector){
+        try {
+            if (window.mermaid && typeof mermaid.run === 'function') {
+                await mermaid.run({ querySelector: selector || '.mermaid' });
+            } else if (window.mermaid && typeof mermaid.init === 'function') {
+                mermaid.init(undefined, document.querySelectorAll(selector || '.mermaid'));
+            }
+        } catch (e) { /* 忽略渲染异常，避免影响页面 */ }
+    };
+</script>
+
+
+
+<body class="loading">
+    <span id="config-title" style="display:none">刘家炫的博客</span>
+
+  <!-- 永远渲染导航栏，但通过动画类控制初始状态 -->
+<nav class="navbar 
+  animate__animated animate__fadeInDown
+  ">
+
+    <div class="navbar-container">
+        <a href="/blog/" class="site-title">
+            刘家炫的博客
+        </a>
+        <div class="nav-menu">
+            <a href="/blog/">首页</a>
+            <a href="/blog/archives/">归档</a>
+            <a href="/blog/categories/">分类</a>
+            <a href="/blog/tags/">标签</a>
+        </div>
+    </div>
+</nav>
+
+<script>
+    function is_home() {
+        // 获取当前路径（去掉末尾的斜杠和查询参数）
+        const path = window.location.pathname.replace(/\/$/, '');
+        // 判断是否是首页（根据您的网站结构调整）
+        return path === '' ||
+            path === '/' ||
+            path === '/index' ||
+            path === '/index.html' ||
+            path.startsWith('/zh-cn/'); // 如果是多语言网站
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log(localStorage.getItem('navbarVisible'))
+        const navbar = document.querySelector('.navbar');
+        if (!navbar) return;
+
+        // 1. 获取存储的 navbar 上次状态（默认 false）
+        const wasNavbarVisible = localStorage.getItem('navbarVisible') === 'true';
+        // 2. 判断当前页面是否需要 navbar（假设 is_home() 返回布尔值）
+        const shouldShowNavbar = !is_home();
+        console.log(shouldShowNavbar);
+
+        // 3. 处理四种状态变化
+        if (!wasNavbarVisible && shouldShowNavbar) {
+            // 状态 1：从无到有 → 显示 + 动画 + 更新状态
+            navbar.classList.remove('animate__fadeOutUp');
+            navbar.classList.add('animate__fadeInDown');
+            localStorage.setItem('navbarVisible', 'true');
+        } else if (wasNavbarVisible && !shouldShowNavbar) {
+            // 状态 2：从有到无 → 隐藏 + 动画 + 更新状态
+            navbar.classList.remove('animate__fadeInDown');
+            navbar.classList.add('animate__fadeOutUp');
+            localStorage.setItem('navbarVisible', 'false');
+        } else if (wasNavbarVisible && shouldShowNavbar) {
+            // 状态 3：从有到有 → 保持显示（无动画）
+            navbar.classList.remove('animate__fadeOutUp');
+            navbar.classList.add('animate__fadeInDown', 'no-transition');
+            setTimeout(() => navbar.classList.remove('no-transition'), 10);
+        } else {
+            // 状态 4：从无到无 → 保持隐藏（无动画）
+            navbar.classList.remove('animate__fadeInDown');
+            navbar.classList.add('animate__fadeOutUp', 'no-transition');
+            setTimeout(() => navbar.classList.remove('no-transition'), 10);
+        }
+
+        // 4. 滚动控制（仅在需要 navbar 的页面生效）
+        if (shouldShowNavbar) {
+            const blogpage = document.querySelector('.section'); // 替换成你的博客内容容器选择器
+            const navbar = document.querySelector('.navbar'); // 替换成导航栏选择器
+            let lastScrollDirection = null; // 记录上一次滚轮方向
+
+            blogpage.addEventListener('wheel', (e) => {
+                const currentScrollDirection = e.deltaY > 0 ? 'down' : 'up';
+
+                // 避免重复触发（防抖）
+                if (currentScrollDirection === lastScrollDirection) return;
+                lastScrollDirection = currentScrollDirection;
+
+                if (currentScrollDirection === 'down') {
+                    // 鼠标滚轮向下 → 隐藏导航栏
+                    navbar.classList.remove('animate__fadeInDown');
+                    navbar.classList.add('animate__fadeOutUp');
+                    localStorage.setItem('navbarVisible', 'false');
+                } else {
+                    // 鼠标滚轮向上 → 显示导航栏
+                    navbar.classList.remove('animate__fadeOutUp');
+                    navbar.classList.add('animate__fadeInDown');
+                    localStorage.setItem('navbarVisible', 'true');
+                }
+            });
+        }
+
+    });
+
+</script>
+
+
+    <div id="loader"></div>
+    <div id="single">
+  <!-- 全屏背景层：覆盖最底层，防止左右露底 -->
+  <div class="page-bg-layer" aria-hidden="true"></div>
+  <!-- 背景图模块已移除 -->
+
+  <!-- 内容区 -->
+  <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="iconfont icon-home image-icon" href="javascript:;" data-url="/blog/"></a>
+    <div title="播放/暂停" class="iconfont icon-play"></div>
+    <h3 class="subtitle">main 函数开始前的那些事儿</h3>
+    <div class="social">
+        <div>
+            <div class="share">
+                <a title="获取二维码" class="iconfont icon-scan" href="javascript:;"></a>
+            </div>
+            <div id="qr"></div>
+        </div>
+    </div>
+    <div class="scrollbar"></div>
+</div>
+    <div class="section">
+      <div class="article" style="padding-top: 10vh;padding-bottom: 13vh;">
+    <div class="container-wrapper" style="display: flex; justify-content: center; gap: 20px;">
+        <div class="follow-sidebar">
+            <div class="github-avatar" style="text-align: center; margin-bottom: 20px;">
+                <a href="https://github.com/LiuJiaxuan1024" target="_blank" rel="noopener">
+                    <img src="https://github.com/LiuJiaxuan1024.png" alt="GitHub头像"
+                        style="width: 100px; height: 100px; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                </a>
+                <div class="github-name"
+                    style="margin-top: 10px; font-size: 18px; font-weight: bold;">
+                    LiuJiaxuan1024
+                </div>
+                <button class="github-follow-btn"
+                    onclick="window.open('https://github.com/LiuJiaxuan1024?tab=followers', '_blank')">
+                    关注我的 GitHub
+                </button>
+                <div class="github-info" style="display: flex; justify-content: center; gap: 20px; margin-top: 8px;">
+                    <div>
+                        <a href="https://github.com/LiuJiaxuan1024?tab=followers" target="_blank"
+                            style="text-decoration: none; color: inherit;">
+                            <span id="github-followers" style="font-weight:bold; font-size:20px;">--</span>
+                            <span style="font-size:20px;">关注者</span>
+                        </a>
+                    </div>
+                    <div>
+                        <a href="/blog/archives" style="text-decoration: none; color: inherit;">
+                                <span style="font-weight:bold; font-size:20px;">82</span>
+                                <span style="font-size:20px;">文章</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="recommendations">
+            <h2>相关推荐</h2>
+            <ul><li><a href="/blog/2025/08/15/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_list/">Redis C++ 客户端使用指南-List 篇</a></li><li><a href="/blog/2025/10/07/C++/stl_iterator_traits/">深入探索 C++ STL 容器中的迭代器萃取机制</a></li><li><a href="/blog/2025/09/30/C++/async/">C++ 异步编程</a></li><li><a href="/blog/2025/12/07/C++/highconcur/">高并发内存池项目（简化版tcmalloc）</a></li><li><a href="/blog/2025/08/16/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_zset/">Redis C++ 客户端使用指南-Zset 篇</a></li><li><a href="/blog/2025/12/08/C++/log_system/">同步异步日志系统设计与实现</a></li></ul>
+        </div>
+        <div class='main' style="
+    background: transparent;
+    border: 1px solid #000;
+    border-radius: 12px;
+    position: relative;
+    z-index: 1;">
+            <h1 class="title">main 函数开始前的那些事儿</h1>
+            <div class="stuff">
+                <span>十二月 15, 2025</span>
+                <!-- 阅读数统计 -->
+                <span id="leancloud_container_page_pv" class="leancloud">
+                    <span id="leancloud_value_page_pv" style="margin-right: auto !important;"></span> 次阅读
+                </span>
+                
+  <ul class="post-tags-list" itemprop="keywords"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/blog/tags/C/" rel="tag">C</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/blog/tags/C/" rel="tag">C++</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/blog/tags/main/" rel="tag">main</a></li></ul>
+
+
+            </div>
+            <div class="content markdown" id="post-content" style="color: var(--text-color, inherit);">
+                <!-- toc -->
+
+<ul>
+<li><a href="#shell-%E6%89%A7%E8%A1%8C%E7%A8%8B%E5%BA%8F%E6%9B%BF%E6%8D%A2">shell 执行程序替换</a></li>
+<li><a href="#%E5%86%85%E6%A0%B8%E8%A3%85%E8%BD%BD-elf">内核装载 ELF</a><ul>
+<li><a href="#%E4%BB%80%E4%B9%88%E6%98%AF-elf">什么是 <code>ELF</code>？</a></li>
+</ul>
+</li>
+<li><a href="#cpu-%E8%B7%B3%E5%88%B0-_start-%E6%89%A7%E8%A1%8C">CPU 跳到 <code>_start</code> 执行</a><ul>
+<li><a href="#%E4%BB%80%E4%B9%88%E6%98%AF-_start">什么是 <code>_start</code>？</a></li>
+<li><a href="#_start-%E6%98%AF%E6%B1%87%E7%BC%96%E4%B8%8D%E6%98%AF-cc"><code>_start</code> 是汇编，不是 <code>C/C++</code></a></li>
+</ul>
+</li>
+<li><a href="#__libc_start_main-%E5%81%9A%E4%BA%86%E4%BB%80%E4%B9%88"><code>__libc_start_main</code> 做了什么</a><ul>
+<li><a href="#%E5%85%88%E5%81%9A%E4%BA%9B%E4%BB%80%E4%B9%88">先做些什么？</a></li>
+<li><a href="#%E7%BB%88%E4%BA%8E%E7%AD%89%E5%88%B0-main-%E5%87%BD%E6%95%B0">终于等到 main 函数</a></li>
+</ul>
+</li>
+<li><a href="#main-%E8%BF%94%E5%9B%9E%E5%90%8E%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88"><code>main</code> 返回后发生了什么？</a><ul>
+<li><a href="#exit-%E5%81%9A%E4%BA%86%E4%BB%80%E4%B9%88"><code>exit()</code> 做了什么？</a></li>
+<li><a href="#_exit-%E6%9C%80%E7%BB%88%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E5%81%9A%E4%BA%86%E4%BB%80%E4%B9%88"><code>_exit()</code> – 最终系统调用做了什么</a></li>
+</ul>
+</li>
+</ul>
+<!-- tocstop -->
+
+<p>在 C&#x2F;C++ 程序中，<code>main</code> 函数是程序的入口点。然而，在 <code>main</code> 函数开始执行之前，实际上发生了许多重要的初始化工作。本文将探讨这些初始化过程以及它们对程序运行的影响。</p>
+<p>首先，我们要记住，<code>main</code> 函数不是程序的入口点，而是程序的起点。操作系统在加载程序时，会先执行一些底层的初始化代码，这些代码通常由编译器和运行时库提供。</p>
+<h2><span id="shell-执行程序替换">shell 执行程序替换</span></h2><p>不论我们执行什么程序，都是通过 <code>shell</code> 来完成的，因此，当我们执行某个可执行程序时，本质上是通过 <code>shell</code> 的 <code>exec</code> 系列函数来实现的。<code>exec</code> 函数族会替换当前进程的映像为指定的可执行文件，并传递参数和环境变量。这里我们打个比方，我们运行如下程序：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#include &lt;iostream></span>
+
+int global_val <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+
+int <span class="token function-name function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  std::cout <span class="token operator">&lt;&lt;</span> <span class="token string">"hello world"</span> <span class="token operator">&lt;&lt;</span> std::endl<span class="token punctuation">;</span>
+  <span class="token builtin class-name">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p><code>shell</code> 会调用系统调用：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token function">execve</span><span class="token punctuation">(</span><span class="token string">"./hello"</span><span class="token punctuation">,</span> argv<span class="token punctuation">,</span> envp<span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>进程替换后，旧进程的用户态代码、堆、栈全部都会被替换为新程序的内容，唯一不变的是进程的 PID。不熟悉进程替换的可以关注：<a href="https://liujiaxuan1024.github.io/blog/2025/07/17/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E8%BF%9B%E7%A8%8B/%E6%8E%A7%E5%88%B6/process_replacement/">进程替换详解</a></p>
+<h2><span id="内核装载-elf">内核装载 ELF</span></h2><h3><span id="什么是-elf">什么是 <code>ELF</code>？</span></h3><p><strong>ELF（Executable and Linkable Format）是 Linux&#x2F;Unix 下“程序和库的标准结构说明书”</strong>，它告诉<strong>链接器</strong>和<strong>内核</strong>三件最重要的事情：</p>
+<ul>
+<li>代码和数据在文件中的位置</li>
+<li>程序的入口点</li>
+<li>运行时还需要哪些共享库（所谓共享库指的就是动态链接库）</li>
+</ul>
+<p>在<strong>汇编</strong>阶段，汇编代码会被转换为机器指令，而此时就已然生成了<code>ELF</code> 文件，但此时的 <code>ELF</code> 文件还不是最终的可执行文件，我们称之为：<code>ELF relocatable file</code>，即可重定位文件。</p>
+<ul>
+<li>什么是可重定位文件？  <ul>
+<li>可重定位文件是指那些不能独立运行的文件，它们需要被链接器处理，链接器会将这些文件中的代码和数据段合并，并解决符号引用，最终生成一个可执行文件或共享库。</li>
+<li>这么说可能还是太书面化了，我们可以这么理解：可重定位指的就是各个部分知道了各自的内部布局，但还不知道整体的布局。而我们的<strong>链接</strong>阶段之所以被称为<strong>链接</strong>，正是因为它将各个部分链接在一起，形成了整体的布局。</li>
+</ul>
+</li>
+</ul>
+<p>因此，承接上文，在<strong>链接</strong>阶段，链接器会将各个可重定位文件链接在一起，生成最终的可执行文件，我们称之为：<code>ELF executable file</code>，即可执行文件。</p>
+<p>我们查看一下上面程序生成的可执行文件的 <code>ELF</code> 头信息：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">╭─ljx@VM-16-15-debian ~/linux_review/main
+╰─➤  readelf <span class="token parameter variable">-h</span> hello                                                                                               <span class="token number">1</span> ↵
+ELF Header:
+  Magic:   7f <span class="token number">45</span> 4c <span class="token number">46</span> 02 01 01 00 00 00 00 00 00 00 00 00
+  Class:                             ELF64
+  Data:                              <span class="token number">2</span>'s complement, little endian
+  Version:                           <span class="token number">1</span> <span class="token punctuation">(</span>current<span class="token punctuation">)</span>
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       <span class="token number">0</span>
+  Type:                              DYN <span class="token punctuation">(</span>Position-Independent Executable <span class="token function">file</span><span class="token punctuation">)</span>
+  Machine:                           Advanced Micro Devices X86-64
+  Version:                           0x1
+  Entry point address:               0x1080
+  Start of program headers:          <span class="token number">64</span> <span class="token punctuation">(</span>bytes into <span class="token function">file</span><span class="token punctuation">)</span>
+  Start of section headers:          <span class="token number">14608</span> <span class="token punctuation">(</span>bytes into <span class="token function">file</span><span class="token punctuation">)</span>
+  Flags:                             0x0
+  Size of this header:               <span class="token number">64</span> <span class="token punctuation">(</span>bytes<span class="token punctuation">)</span>
+  Size of program headers:           <span class="token number">56</span> <span class="token punctuation">(</span>bytes<span class="token punctuation">)</span>
+  Number of program headers:         <span class="token number">13</span>
+  Size of section headers:           <span class="token number">64</span> <span class="token punctuation">(</span>bytes<span class="token punctuation">)</span>
+  Number of section headers:         <span class="token number">31</span>
+  Section header string table index: <span class="token number">30</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>可以看到：<code>Entry point address</code>：程序的入口点地址为 <code>0x1080</code>，这意味着当内核加载这个可执行文件时，会从这个地址开始执行代码。当然，这个入口点地址是相对于加载地址的偏移。不到运行时我们永远都无法知道这个地址的真实值。这是因为现代操作系统通常会启用地址空间布局随机化（ASLR），以提高安全性。除此之外，如果我们将地址设置为绝对值，运行阶段加载动态库就会出现问题，因为动态库的加载地址是不可预测的。</p>
+<p>这个地址不是 <code>main</code> 函数的地址，而是一个由编译器和运行时库生成的启动代码的地址，我们称之为 <code>_start</code>，这段代码负责进行必要的初始化工作，然后才会调用 <code>main</code> 函数。</p>
+<p>在这个阶段，内核做了如下关键工作：</p>
+<p>1.映射内存<br>内核会根据 <code>ELF</code> 文件中的程序头表（Program Header Table）将代码段、数据段、堆栈等映射到进程的虚拟地址空间中。包括将动态链接器 <code>ld-linux.so</code> 映射到内存中，以便后续加载共享库。</p>
+<p>2.设置栈初始内容<br>栈顶长这样：（由高到低–压栈）</p>
+<pre class="line-numbers language-text" data-language="text"><code class="language-text">|----------------|
+| argc           |
+| argv[0]        |
+| argv[1]        |
+| ...            |
+| NULL           |
+| envp[0]        |
+| envp[1]        |
+| ...            |
+| NULL           |
+| AUXV           |  ← AT_PHDR / AT_ENTRY / AT_RANDOM 等
+|----------------|<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>这里 <code>argc</code> 是命令行参数的个数，<code>argv</code> 是参数数组，<code>envp</code> 是环境变量数组，<code>AUXV</code> 是辅助向量，包含了一些与程序运行相关的信息。这里我们可以看到一处细节，那就是 <code>argv</code> 和 <code>envp</code> 数组的结尾都有一个 <code>NULL</code> 指针，表示数组的结束。我们之前在给 <code>main</code> 函数传递参数时传递到最后需要一个 <code>NULL</code> 指针，在这里就体现出来了。</p>
+<h2><span id="cpu-跳到-_start-执行">CPU 跳到 <code>_start</code> 执行</span></h2><p>上面所做的一起都是为 <code>CPU</code> 进入 <code>_start</code> 函数做准备工作，接下来，<code>CPU</code> 会跳转到 <code>_start</code> 函数的地址开始执行。</p>
+<h3><span id="什么是-_start">什么是 <code>_start</code>？</span></h3><p><code>_start</code> 是程序的真正入口点，其由 <code>链接器</code> 指定，如上面所说，该地址是相对于加载地址的偏移。<code>_start</code> 函数的主要职责是进行必要的初始化工作，其被定义在 <code>C</code> 运行时库中，通常位于 <code>crt0.o</code> 文件中。我们通过如下指令查看：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">╭─ljx@VM-16-15-debian ~/linux_review/main
+╰─➤  objdump <span class="token parameter variable">-d</span> hello <span class="token operator">|</span> <span class="token function">grep</span> _start
+    <span class="token number">1004</span>:       <span class="token number">48</span> 8b 05 c5 2f 00 00    mov    0x2fc5<span class="token punctuation">(</span>%rip<span class="token punctuation">)</span>,%rax        <span class="token comment"># 3fd0 &lt;__gmon_start__@Base></span>
+0000000000001080 <span class="token operator">&lt;</span>_start<span class="token operator">></span>:
+    109b:       ff <span class="token number">15</span> 1f 2f 00 00       call   *0x2f1f<span class="token punctuation">(</span>%rip<span class="token punctuation">)</span>        <span class="token comment"># 3fc0 &lt;__libc_start_main@GLIBC_2.34></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>可以看到，<code>_start</code> 函数调用了 <code>__libc_start_main</code> 函数，这是 <code>C</code> 运行时库中的一个重要函数，负责完成更多的初始化工作，然后才会调用 <code>main</code> 函数。</p>
+<h3><span id="_start-是汇编不是-cc"><code>_start</code> 是汇编，不是 <code>C/C++</code></span></h3><p>在 <code>x86-64</code> 架构下，<code>_start</code> 函数通常是用汇编语言编写的，因为它需要直接与硬件交互，进行低级别的初始化工作。下面是一个典型的 <code>_start</code> 函数的汇编实现示例：</p>
+<pre class="line-numbers language-assembly" data-language="assembly"><code class="language-assembly">_start:
+    xor    %rbp, %rbp
+    mov    %rsp, %rdi    # 把栈指针传给 libc
+    call   __libc_start_main
+    hlt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>这个示例展示了 <code>_start</code> 函数的基本结构。它首先清除基指针寄存器 <code>%rbp</code>，然后将栈指针 <code>%rsp</code> 的值传递给 <code>__libc_start_main</code> 函数，最后调用该函数。</p>
+<h2><span id="__libc_start_main-做了什么"><code>__libc_start_main</code> 做了什么</span></h2><p>这是整个 <strong>C&#x2F;C++</strong> 程序初始化过程中最重要的一个函数。它负责完成以下关键任务：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token keyword">int</span> <span class="token function">__libc_start_main</span><span class="token punctuation">(</span>
+    <span class="token keyword">int</span> <span class="token punctuation">(</span><span class="token operator">*</span>main<span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">,</span><span class="token keyword">char</span><span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">,</span><span class="token keyword">char</span><span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token keyword">int</span> argc<span class="token punctuation">,</span>
+    <span class="token keyword">char</span> <span class="token operator">*</span><span class="token operator">*</span>argv<span class="token punctuation">,</span>
+    <span class="token keyword">void</span> <span class="token punctuation">(</span><span class="token operator">*</span>init<span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token keyword">void</span> <span class="token punctuation">(</span><span class="token operator">*</span>fini<span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token keyword">void</span> <span class="token punctuation">(</span><span class="token operator">*</span>rtld_fini<span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token keyword">void</span> <span class="token operator">*</span>stack_end
+<span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3><span id="先做些什么">先做些什么？</span></h3><p>1.初始化 libc</p>
+<ul>
+<li>TLS（线程局部存储）初始化</li>
+<li>errno 初始化</li>
+<li>malloc 初始化</li>
+<li>locale（本地化）初始化</li>
+</ul>
+<p>2.调用全局构造函数</p>
+<ul>
+<li>.init 函数指针参数指向的函数会被调用，这个函数负责调用所有全局对象的构造函数，确保在进入 <code>main</code> 函数之前，所有全局对象都已正确初始化。</li>
+<li>.init_array（C++ 全局对象构造）</li>
+</ul>
+<p>3.注册析构函数</p>
+<ul>
+<li>atexit 函数会注册所有全局对象的析构函数，这些析构函数会在程序退出时被调用，确保资源的正确释放。</li>
+<li>.fini_array（C++ 全局对象析构）</li>
+</ul>
+<h3><span id="终于等到-main-函数">终于等到 main 函数</span></h3><p>此时，一切就绪，整个世界都准备好了，<code>__libc_start_main</code> 函数最后会调用 <code>main</code> 函数，传递 <code>argc</code>、<code>argv</code> 和 <code>envp</code> 参数：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token function">exit</span><span class="token punctuation">(</span><span class="token function">main</span><span class="token punctuation">(</span>argc<span class="token punctuation">,</span> argv<span class="token punctuation">,</span> envp<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p><code>main</code> 会被当做成一个普通的函数来调用，<code>main</code> 函数执行完毕后，返回值会被传递给 <code>exit</code> 函数，进行程序的退出处理。</p>
+<p>从而我们在外面通过 <code>echo $?</code> 可以获取到 <code>main</code> 函数的返回值。</p>
+<p>这样一来，所有的知识点是不是就全部都串起来了？</p>
+<h2><span id="main-返回后发生了什么"><code>main</code> 返回后发生了什么？</span></h2><h3><span id="exit-做了什么"><code>exit()</code> 做了什么？</span></h3><p>这里我们也就知道了 <code>exit()</code> 做了什么：</p>
+<ul>
+<li>调用 <code>atexit</code> 注册的所有析构函数，释放资源</li>
+<li>调用 <code>.fini_array</code> 中的函数，进行更多的清理工作(如 C++ 全局对象的析构)</li>
+<li>刷新 <code>stdio buffer</code>，确保所有输出都被写入</li>
+</ul>
+<h3><span id="_exit-最终系统调用做了什么"><code>_exit()</code> – 最终系统调用做了什么</span></h3><p><code>exit()</code> 函数最终会调用 <code>_exit()</code> 系统调用，告诉内核当前进程已经结束，内核会进行以下工作：</p>
+<ul>
+<li>释放进程占用的所有资源，包括内存、文件描述符等</li>
+<li>将进程状态设置为“已终止”，以便父进程可以通过 <code>wait()</code> 系列函数获取子进程的退出状态</li>
+<li>通知父进程当前进程已经结束</li>
+</ul>
+<p>这样一来，我们就能够理解整个程序从启动到结束的完整过程了。下面是一个时序图，帮助大家更好地理解：</p>
+<pre class="line-numbers language-mermaid" data-language="mermaid"><code class="language-mermaid"><span class="token keyword">sequenceDiagram</span>
+    <span class="token keyword">participant</span> Shell
+    <span class="token keyword">participant</span> Kernel
+    <span class="token keyword">participant</span> <span class="token string">"ELF Loader"</span>
+    <span class="token keyword">participant</span> <span class="token string">"_start (汇编)"</span>
+    <span class="token keyword">participant</span> <span class="token string">"__libc_start_main"</span>
+    <span class="token keyword">participant</span> <span class="token string">"main 函数"</span>
+    <span class="token keyword">participant</span> <span class="token string">"exit()"</span>
+    <span class="token keyword">participant</span> <span class="token string">"_exit() 系统调用"</span>
+
+    <span class="token keyword">Note over</span> Shell<span class="token operator">:</span> 用户执行程序命令
+    Shell<span class="token arrow operator">->></span>Kernel<span class="token operator">:</span> 调用 execve<span class="token punctuation">(</span><span class="token punctuation">)</span> 系统调用
+    Kernel<span class="token arrow operator">->></span><span class="token string">"ELF Loader"</span><span class="token operator">:</span> 解析 ELF 文件
+    <span class="token string">"ELF Loader"</span><span class="token arrow operator">->></span>Kernel<span class="token operator">:</span> 映射内存<span class="token text string">(代码段/数据段/堆栈)</span>
+    Kernel<span class="token arrow operator">->></span><span class="token string">"ELF Loader"</span><span class="token operator">:</span> 设置栈初始内容<span class="token text string">(argc/argv/envp/AUXV)</span>
+    <span class="token string">"ELF Loader"</span><span class="token arrow operator">->></span><span class="token string">"_start (汇编)"</span><span class="token operator">:</span> 跳转到程序入口点
+    <span class="token string">"_start (汇编)"</span><span class="token arrow operator">->></span><span class="token string">"__libc_start_main"</span><span class="token operator">:</span> 调用初始化函数
+    <span class="token keyword">Note over</span> <span class="token string">"__libc_start_main"</span><span class="token operator">:</span> 初始化 libc&lt;br/>- TLS 初始化&lt;br/>- malloc 初始化等
+    <span class="token keyword">Note over</span> <span class="token string">"__libc_start_main"</span><span class="token operator">:</span> 调用全局构造函数&lt;br/><span class="token text string">(.init/.init_array)</span>
+    <span class="token keyword">Note over</span> <span class="token string">"__libc_start_main"</span><span class="token operator">:</span> 注册全局析构函数&lt;br/><span class="token text string">(atexit/.fini_array)</span>
+    <span class="token string">"__libc_start_main"</span><span class="token arrow operator">->></span><span class="token string">"main 函数"</span><span class="token operator">:</span> 调用 main<span class="token text string">(argc, argv, envp)</span>
+    <span class="token string">"main 函数"</span><span class="token arrow operator">->></span><span class="token string">"exit()"</span><span class="token operator">:</span> 执行完毕返回状态码
+    <span class="token keyword">Note over</span> <span class="token string">"exit()"</span><span class="token operator">:</span> 调用 atexit 注册的析构函数&lt;br/>刷新 stdio 缓冲区
+    <span class="token string">"exit()"</span><span class="token arrow operator">->></span><span class="token string">"_exit() 系统调用"</span><span class="token operator">:</span> 触发最终退出
+    <span class="token string">"_exit() 系统调用"</span><span class="token arrow operator">->></span>Kernel<span class="token operator">:</span> 通知进程终止
+    <span class="token keyword">Note over</span> Kernel<span class="token operator">:</span> 释放进程资源&lt;br/>设置终止状态&lt;br/>通知父进程<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<link rel="stylesheet" href="/blog/css/spoiler.css" type="text/css"><script src="/blog/js/spoiler.js" type="text/javascript" async></script>
+                    <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+                    <audio id="audio" loop="1" preload="auto" controls="controls"
+                        data-autoplay=" false">
+                        <source type="audio/mpeg" src="">
+                    </audio>
+                    
+                        <ul id="audio-list" style="display:none">
+                            
+                                
+                                        <li title="0" data-url="/blog/./music/StarryWinter.mp3"></li>
+                                        
+                                            
+                                
+                                        <li title="1" data-url="/blog/./music/三叶的主题音乐.mp3"></li>
+                                        
+                                            
+                                
+                                        <li title="2" data-url="/blog/./music/菊次郎的夏天.mp3"></li>
+                                        
+                                            
+                        </ul>
+                        
+            </div>
+            
+                        
+    <div id="gitalk-container" class="comment link"
+		data-enable="true"
+        data-ae="true"
+        data-ci="Ov23liAMVJGsSVpYEORo"
+        data-cs="bac5abf96cef1ba321ec7084197393d805bf8b88"
+        data-r="blog-comments"
+        data-o="LiuJiaxuan1024"
+        data-a="LiuJiaxuan1024"
+        data-d="false"
+    >查看评论</div>
+
+
+
+        </div>
+        <!-- 右侧目录栏 -->
+        <aside class="toc-sidebar">
+            <div class="toc-header">
+                <h1 class="toc-title">目录</h1>
+            </div>
+        </aside>
+    </div>
+
+    <!-- ...existing code... -->
+    <style>
+        /* 夜间模式文章页整体可读性增强 */
+        body.dark-mode .article,
+        html.dark-mode .article {
+            color: #e5e5e5;
+        }
+
+        body.dark-mode .article .title,
+        html.dark-mode .article .title {
+            color: #f0f0f0;
+        }
+
+        body.dark-mode .article a,
+        html.dark-mode .article a {
+            color: #93c5fd; /* 浅蓝，提高可读性 */
+        }
+
+        body.dark-mode .article a:hover,
+        html.dark-mode .article a:hover {
+            color: #60a5fa;
+        }
+
+        /* 夜间边框稍柔和，避免过度突兀 */
+        body.dark-mode .main,
+        body.dark-mode .follow-sidebar,
+        body.dark-mode .recommendations,
+        body.dark-mode .toc-sidebar,
+        html.dark-mode .main,
+        html.dark-mode .follow-sidebar,
+        html.dark-mode .recommendations,
+        html.dark-mode .toc-sidebar {
+            border-color: #d1d5db; /* 亮灰边框 */
+        }
+
+        /* 推荐项文本对比度提升 */
+        body.dark-mode .recommendations li a,
+        html.dark-mode .recommendations li a {
+            color: #e5e7eb;
+        }
+
+        body.dark-mode .recommendations h2,
+        html.dark-mode .recommendations h2 {
+            color: #e5e5e5;
+        }
+
+        /* 目录文字颜色提升对比 */
+        body.dark-mode .toc-sidebar a,
+        html.dark-mode .toc-sidebar a {
+            color: #e5e5e5;
+        }
+
+        body.dark-mode .toc-title,
+        html.dark-mode .toc-title {
+            color: #f0f0f0 !important;
+        }
+        .recommendations li a,
+        .recommendations li a:hover,
+        .recommendations li a:focus,
+        .recommendations li a:active {
+            text-decoration: none !important;
+        }
+
+        .recommendations {
+            position: fixed;
+            top: calc(10% + 80px + 350px + 20px);
+            right: 50%;
+            transform: translateX(-439px);
+            width: 264px;
+            height: 35%;
+            max-height: calc(100% - 550px);
+            z-index: 100;
+            box-sizing: border-box;
+            background: transparent;
+            border: 1px solid #000;
+            border-radius: 12px;
+            padding: 14px 6px 12px;
+            /* 原来只有 padding-top:60px，排版会怪 */
+            overflow-y: auto;
+        }
+
+        .recommendations h2 {
+            margin: 0 0 10px;
+            font-size: 16px;
+            line-height: 1.2;
+            font-weight: 700;
+            color: #0f5132;
+            /* 与背景协调的深绿 */
+        }
+
+        .recommendations ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            counter-reset: rec;
+        }
+
+        /* 每项做成小卡片，提高可读性 */
+        .recommendations li {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            line-height: 1.5;
+            font-size: 14px;
+            background: transparent;
+            border: 1px solid #000;
+        }
+
+        .recommendations li+li {
+            margin-top: 8px;
+        }
+
+        /* 左侧编号（不需要可删除本块） */
+        /* .recommendations li::before {
+            counter-increment: rec;
+            content: counter(rec);
+            flex: 0 0 1.4em;
+            width: 1.4em;
+            height: 1.4em;
+            line-height: 1.4em;
+            text-align: center;
+            border-radius: 999px;
+            font-weight: 600;
+            background: rgba(16, 185, 129, .18);
+            color: #0f766e;
+            margin-top: 2px;
+        } */
+
+        .recommendations li a {
+            color: #1f2937;
+            text-decoration: none;
+            transition: color .15s ease, background-color .15s ease;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* 先放 visited */
+        .recommendations li a:visited {
+            color: #374151;
+        }
+
+        /* 再放 hover，确保覆盖 visited */
+        .recommendations li a:hover,
+        .recommendations li a:focus,
+        .recommendations li a:active,
+        .recommendations li a:visited:hover {
+            color: #0d9488;
+            text-decoration: none;
+            background: rgba(13, 148, 136, .06);
+            border-radius: 6px;
+        }
+        /* 夜间模式下，提升推荐区 hover 的优先级，避免被全局 .article a:hover(蓝色) 覆盖 */
+        body.dark-mode .article .recommendations li a:hover,
+        body.dark-mode .article .recommendations li a:focus,
+        body.dark-mode .article .recommendations li a:active,
+        body.dark-mode .article .recommendations li a:visited:hover,
+        html.dark-mode .article .recommendations li a:hover,
+        html.dark-mode .article .recommendations li a:focus,
+        html.dark-mode .article .recommendations li a:active,
+        html.dark-mode .article .recommendations li a:visited:hover {
+            color: #0d9488 !important;
+            background: rgba(13, 148, 136, .10) !important;
+        }
+    </style>
+    <!-- ...existing code... -->
+    <style>
+        .follow-sidebar {
+            position: fixed;
+            top: calc(10% + 80px);
+            right: 50%;
+            /* 660px + 1320px*0.325 + 10px = 660 + 429 + 10 = 1099px */
+            transform: translateX(-439px);
+            /* 660px + 396px/2 + 10px，396px为目录宽度 */
+            width: 264px;
+            /* 1320*0.15=198px，或你想要的宽度 */
+            background: transparent;
+            border: 1px solid #000;
+            border-radius: 12px;
+            padding-top: 60px;
+            height: 350px;
+            overflow-y: auto;
+            z-index: 100;
+            box-sizing: border-box;
+        }
+
+        .github-avatar {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            height: 200px;
+            /* 可根据需要调整高度 */
+        }
+
+        .github-info {
+            padding-top: 40px;
+        }
+
+        .github-info span:first-child {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .github-info span:last-child {
+            font-size: 20px;
+        }
+
+        .github-follow-btn {
+            margin: 16px 0 8px 0;
+            padding: 6px 18px;
+            background: #24292f;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .github-follow-btn:hover {
+            background: #444c56;
+        }
+    </style>
+
+    <style>
+        .dark-mode .main {
+            background: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+        }
+
+        .post-tags-list-link {
+            color: rgba(0, 0, 0, 0.6);
+        }
+
+        .dark-mode .post-tags-list-link {
+            color: white;
+        }
+
+        .toc-sidebar ul {
+            list-style: none;
+            padding-left: 1em;
+        }
+
+        .toc-sidebar li {
+            margin: 0.2em 0;
+        }
+
+        .toc-sidebar a {
+            color: #333;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .toc-sidebar li ul {
+            margin-left: 1em;
+            border-left: 1px solid #eee;
+            padding-left: 0.7em;
+        }
+
+        .toc-sidebar {
+            position: fixed;
+            top: calc(10% + 80px);
+            left: 50%;
+            /* 660px + 1320px*0.325 + 10px = 660 + 429 + 10 = 1099px */
+            transform: translateX(439px);
+            /* 660px + 396px/2 + 10px，396px为目录宽度 */
+            width: 264px;
+            /* 1320*0.15=198px，或你想要的宽度 */
+            min-width: 160px;
+            background: transparent;
+            border: 1px solid #000;
+            border-radius: 12px;
+            padding: 10px;
+            height: 70%;
+            min-height: 500px;
+            overflow-y: auto;
+            z-index: 1000;
+            pointer-events: auto;
+            box-sizing: border-box;
+        }
+
+
+        .toc-sidebar>ul>li>a {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .toc-sidebar>ul>li>ul>li>a {
+            font-size: 1em;
+            font-weight: normal;
+        }
+
+        .toc-sidebar>ul>li>ul>li>ul>li>a {
+            font-size: 0.8em;
+            font-weight: normal;
+        }
+
+        .toc-sidebar>ul>li {
+            margin-top: 1.2em;
+            /* 一级标题间距最大 */
+        }
+
+        .toc-sidebar>ul>li>ul>li {
+            margin-top: 0.8em;
+            /* 二级标题间距适中 */
+        }
+
+        .toc-sidebar>ul>li>ul>li>ul>li {
+            margin-top: 0.5em;
+            /* 三级标题间距较小 */
+        }
+
+        /* 目录标题 */
+        .toc-header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .toc-title {
+            font-size: 20px;
+            margin: 0;
+            font-weight: bold;
+        }
+
+        .toc-highlight {
+            animation: toc-highlight-fade 1.2s;
+            background: #ffe082;
+            color: #d32f2f;
+            box-shadow: 0 0 10px #ffe082;
+            transition: color 0.6s, background 0.6s;
+        }
+
+        @keyframes toc-highlight-fade {
+            0% {
+                background: #ffe082;
+                color: #d32f2f;
+            }
+
+            60% {
+                background: #ffe082;
+                color: #d32f2f;
+            }
+
+            100% {
+                background: transparent;
+                color: inherit;
+                box-shadow: none;
+            }
+        }
+    </style>
+
+    <script>
+        const isLocalhost = (
+            ['localhost', '127.0.0.1', '::1'].includes(location.hostname) ||
+            /^192\.168\.\d+\.\d+$/.test(location.hostname) ||
+            /^10\.\d+\.\d+\.\d+$/.test(location.hostname) ||
+            /^172\.(1[6-9]|2[0-9]|3[0-1])\.\d+\.\d+$/.test(location.hostname)
+        );
+
+        // 获取 GitHub 关注数（增加 UA / Accept 头 + 本地缓存 + 错误回退，避免 403 和频繁请求）
+        (function loadGitHubFollowers(){
+            const el = document.getElementById('github-followers');
+            if(!el) return;
+            if(isLocalhost){
+                // 本地不请求，使用缓存或占位
+                const cachedLocal = localStorage.getItem('gh_followers');
+                el.textContent = cachedLocal || '—';
+                return;
+            }
+            const url = 'https://api.github.com/users/LiuJiaxuan1024';
+            fetch(url, {
+                headers: {
+                    'Accept': 'application/vnd.github+json',
+                    'User-Agent': 'hexo-site'
+                }
+            }).then(r => {
+                if(!r.ok) throw new Error('status ' + r.status);
+                return r.json();
+            }).then(data => {
+                const count = (data && typeof data.followers === 'number') ? data.followers : '—';
+                el.textContent = count;
+                if(count !== '—') localStorage.setItem('gh_followers', count);
+            }).catch(err => {
+                const cached = localStorage.getItem('gh_followers');
+                el.textContent = cached || '—';
+            });
+        })();
+        window.addEventListener('DOMContentLoaded', function () {
+            // 统一 slugify：重写标题 id 与 headerlink href，确保与目录一致
+            (function unifyHeadingIds(){
+                const content = document.getElementById('post-content') || document.querySelector('.content.markdown');
+                if (!content) return;
+                const slugify = (s)=>{
+                    let txt = (s||'').trim();
+                    try { txt = decodeURIComponent(txt); } catch(e) {}
+                    if (txt.normalize) txt = txt.normalize('NFKC');
+                    // HTML 实体到可见字符（覆盖常见斜杠实体）
+                    txt = txt.replace(/&#x2F;|&#47;/gi, '/').replace(/\bx2f\b/gi, '/');
+                    // 全角到半角
+                    txt = txt.replace(/[\uFF01-\uFF5E]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0));
+                    return txt
+                        .replace(/[()\[\]{}]/g, '')
+                        .replace(/[\/\\]/g, '-')
+                        .replace(/[:;,\.?!\'"`]/g, '')
+                        .replace(/\s+/g, '-')
+                        .replace(/-+/g, '-')
+                        .replace(/^-+|-+$/g, '')
+                        .toLowerCase();
+                };
+                const heads = content.querySelectorAll('h1, h2, h3, h4, h5, h6');
+                heads.forEach(h=>{
+                    const txt = (h.textContent||'').trim();
+                    const id = slugify(txt);
+                    if (id) h.id = id;
+                    // 更新 headerlink
+                    const a = h.querySelector('a.headerlink');
+                    if (a) a.setAttribute('href', `#${id}`);
+                });
+            })();
+            // 轻量诊断输出：现有 heading id 与目录链接解析
+            (function(){
+                try {
+                    const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6')).map(h => h.id);
+                    const tocLinks = Array.from(document.querySelectorAll('#toc a, .toc a, .toc ul a')).map(a => {
+                        const raw = a.getAttribute('href') || '';
+                        const hash = raw.includes('#') ? raw.split('#').slice(1).join('#') : '';
+                        let decoded = hash; try { decoded = decodeURIComponent(hash); } catch(e) {}
+                        const nfc = decoded.normalize ? decoded.normalize('NFKC') : decoded;
+                        const entityFixed = (nfc || '').replace(/&#x2F;|&#47;|x2f/gi, '/');
+                        return { text: (a.textContent||'').trim(), raw, hash, idGuess: entityFixed };
+                    });
+                    console.log('[TOC-Debug] headings:', headings);
+                    console.log('[TOC-Debug] tocLinks:', tocLinks);
+                } catch(err) { console.warn('[TOC-Debug] failed', err); }
+            })();
+            // 只查找正文里的第一个 ul，且它前面有 <!-- toc --> 注释
+            var content = document.querySelector('.content.markdown');
+            if (!content) return;
+            // 查找第一个 ul，且它前面是 toc 注释
+            var childNodes = content.childNodes;
+            for (var i = 0; i < childNodes.length; i++) {
+                var node = childNodes[i];
+                // 找到 toc 注释
+                if (node.nodeType === 8 && node.nodeValue.trim() === 'toc') {
+                    // 下一个元素节点就是 ul
+                    for (var j = i + 1; j < childNodes.length; j++) {
+                        var next = childNodes[j];
+                        if (next.nodeType === 1 && next.tagName === 'UL') {
+                            var tocSidebar = document.querySelector('.toc-sidebar');
+                            if (tocSidebar) {
+                                tocSidebar.appendChild(next);
+                                // 追加：规范并重写目录链接为实际标题ID，避免斜杠等符号不一致
+                                try {
+                                    const qsId = (id)=> { try { return `#${CSS.escape(id)}`; } catch { return `#${id}`; } };
+                                    const buildCandidates = (rawHash)=> {
+                                        const raw = (rawHash || '').replace(/^#/, '');
+                                        const decoded = decodeURIComponent(raw);
+                                        const set = new Set();
+                                        const push = v => { if (v) set.add(v); };
+                                        push(raw);
+                                        push(decoded);
+                                        const stripPunc = decoded
+                                            .replace(/[()\[\]{}]/g, '')
+                                            .replace(/[\/\\]/g, '-')
+                                            .replace(/[:;,\.?!'"`]/g, '');
+                                        const dash = stripPunc.replace(/\s+/g, '-').replace(/-+/g, '-');
+                                        push(dash);
+                                        push(dash.toLowerCase());
+                                        push(stripPunc.replace(/\s+/g, '_'));
+                                        push(stripPunc.replace(/\s+/g, ''));
+                                        return Array.from(set);
+                                    };
+                                    const findTargetByHash = (hash)=>{
+                                        const cands = buildCandidates(hash);
+                                        for (const id of cands) {
+                                            const el = document.getElementById(id);
+                                            if (el) return el;
+                                        }
+                                        for (const id of cands) {
+                                            const el = document.querySelector(qsId(id));
+                                            if (el) return el;
+                                        }
+                                        for (const id of cands) {
+                                            const a = document.querySelector(`a.headerlink[href="#${id}"]`);
+                                            if (a && a.parentElement) return a.parentElement;
+                                        }
+                                        return null;
+                                    };
+                                    const anchors = next.querySelectorAll('a[href]');
+                                    anchors.forEach(a=>{
+                                        const href = a.getAttribute('href') || '';
+                                        // 只处理含有 # 的链接
+                                        const hashIndex = href.indexOf('#');
+                                        if (hashIndex < 0) return;
+                                        const hash = href.slice(hashIndex);
+                                        const target = findTargetByHash(hash);
+                                        if (target && target.id) {
+                                            // 重写为本页哈希，彻底避免绝对URL干扰
+                                            a.setAttribute('href', `#${target.id}`);
+                                        }
+                                    });
+                                } catch(err) { /* 安静失败，不影响目录显示 */ }
+                            }
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+
+            // 目录平滑滚动并让标题居中
+            var tocSidebar = document.querySelector('.toc-sidebar');
+            if (tocSidebar) {
+                tocSidebar.addEventListener('click', function (e) {
+                    if (e.target.tagName === 'A' && e.target.hash) {
+                        var targetId = decodeURIComponent(e.target.hash.substring(1));
+                        var target = document.getElementById(targetId);
+                        if (target) {
+                            e.preventDefault();
+                            var rect = target.getBoundingClientRect();
+                            var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                            var viewportHeight = window.innerHeight;
+                            var offset = rect.top + scrollTop - viewportHeight * 0.3;
+                            window.scrollTo({
+                                top: offset,
+                                behavior: 'smooth'
+                            });
+
+                            // 使用 IntersectionObserver 等待标题进入视口指定区域再高亮
+                            var observer = new IntersectionObserver(function (entries, obs) {
+                                entries.forEach(function (entry) {
+                                    if (entry.isIntersecting) {
+                                        setTimeout(function () {
+                                            target.classList.remove('toc-highlight');
+                                            void target.offsetWidth;
+                                            target.classList.add('toc-highlight');
+                                            target.addEventListener('animationend', function handler() {
+                                                target.classList.remove('toc-highlight');
+                                                target.removeEventListener('animationend', handler);
+                                            });
+                                        }, 500); // 延迟0.5秒
+                                        obs.disconnect();
+                                    }
+                                });
+                            }, {
+                                root: null,
+                                threshold: 0.6 // 进入视口60%区域时触发
+                            });
+                            observer.observe(target);
+                        }
+                    }
+                });
+            }
+            if (typeof AV !== 'undefined' && !isLocalhost) {
+                AV.init({
+                    appId: 'DeDpSsgoQ9tvOCpA405bP6Jb-gzGzoHsz',
+                    appKey: 'HEHycsODe2IoaZkZCJk1RaPY',
+                    serverURLs: 'https://dedpssgo.lc-cn-n1-shared.com'
+                });
+                updatePageView();
+            } else {
+                console.log('本地环境，跳过 LeanCloud 阅读统计初始化/上报');
+            }
+
+        });
+        function updatePageView() {
+            console.log('更新阅读量');
+            const counterElement = document.getElementById('leancloud_value_page_pv');
+            if (!counterElement) return;
+
+            const url = window.location.pathname;
+            const query = new AV.Query('Counter');
+            query.equalTo('url', url);
+
+            query.first().then(function (counter) {
+                if (counter) {
+                    // 使用原子操作避免并发问题
+                    counter.increment('time', 1);
+                    return counter.save();
+                } else {
+                    const newCounter = new AV.Object('Counter');
+                    newCounter.set('title', document.title);
+                    newCounter.set('url', url);
+                    newCounter.set('time', 1);
+                    return newCounter.save();
+                }
+            }).then(function (counter) {
+                counterElement.textContent = counter.get('time');
+            }).catch(function (error) {
+                console.error('统计错误:', error);
+                counterElement.textContent = '0';
+            });
+        }
+
+    </script>
+
+    <!-- 滚动样式 -->
+    <style>
+        /* 阻止右侧目录滚动到底/顶时冒泡到页面（现代浏览器） */
+        .toc-sidebar,
+        .follow-sidebar,
+        .recommendations {
+            overscroll-behavior: contain;
+            /* 关键 */
+        }
+
+        /* 目录栏滚动条美化（与背景 rgb(185,207,214,0.8) 融合） */
+        :root {
+            --toc-thumb: #6f8f99;
+            /* 常态拇指色：蓝灰 */
+            --toc-thumb-hover: #517a86;
+            /* 悬停时更深一点 */
+        }
+
+        .toc-sidebar {
+            scrollbar-gutter: stable both-edges;
+            /* 避免出现/消失引发抖动 */
+            overscroll-behavior: contain;
+            /* 已有，防止滚动串联 */
+        }
+
+        /* Firefox */
+        .toc-sidebar {
+            scrollbar-width: thin;
+            scrollbar-color: var(--toc-thumb) transparent;
+        }
+
+        .toc-sidebar:hover {
+            scrollbar-color: var(--toc-thumb-hover) transparent;
+        }
+
+        /* WebKit (Chrome/Edge/Safari) */
+        .toc-sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .toc-sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .toc-sidebar::-webkit-scrollbar-thumb {
+            background-color: var(--toc-thumb);
+            border-radius: 8px;
+            border: 2px solid transparent;
+            /* 让拇指更细、更柔和 */
+            background-clip: padding-box;
+        }
+
+        .toc-sidebar:hover::-webkit-scrollbar-thumb {
+            background-color: var(--toc-thumb-hover);
+        }
+        @media (max-width: 768px) {
+            .toc-sidebar {
+                position: static;
+                transform: none;
+                left: auto;
+                width: auto;
+                min-width: 0;
+                height: auto;
+                min-height: 0;
+                max-height: none;
+                margin: 12px 0;
+            }
+            .container-wrapper { flex-direction: column; align-items: stretch; }
+        }
+    </style>
+    <style>
+        /* 推荐栏滚动条美化（与 rgba(232,245,233,0.9) 融合） */
+        :root {
+            --rec-thumb: #7bbfae;
+            /* 常态拇指色：薄荷青系 */
+            --rec-thumb-hover: #53ad98;
+            /* 悬停更深一点 */
+        }
+
+        .recommendations {
+            scrollbar-gutter: stable both-edges;
+            /* 防抖动 */
+            /* 已有 overscroll-behavior: contain; */
+        }
+
+        /* Firefox */
+        .recommendations {
+            scrollbar-width: thin;
+            scrollbar-color: var(--rec-thumb) transparent;
+        }
+
+        .recommendations:hover {
+            scrollbar-color: var(--rec-thumb-hover) transparent;
+        }
+
+        /* WebKit (Chrome/Edge/Safari) */
+        .recommendations::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .recommendations::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .recommendations::-webkit-scrollbar-thumb {
+            background-color: var(--rec-thumb);
+            border-radius: 8px;
+            border: 2px solid transparent;
+            /* 细一些、更柔和 */
+            background-clip: padding-box;
+        }
+
+        .recommendations:hover::-webkit-scrollbar-thumb {
+            background-color: var(--rec-thumb-hover);
+        }
+
+        /* 可选：仅悬停时显示滚轮
+  .recommendations::-webkit-scrollbar{ width: 0; }
+  .recommendations:hover::-webkit-scrollbar{ width: 8px; }
+  */
+    </style>
+
+    <!-- 分割线 -->
+    <style>
+        :root {
+            --hr-color: rgba(0, 0, 0, 0.22);
+            /* 日间分割线颜色 */
+        }
+
+        .dark-mode {
+            --hr-color: rgba(255, 255, 255, 0.28);
+            /* 夜间分割线颜色 */
+        }
+
+        /* Markdown 分割线（由 --- 或 *** 生成） */
+        .content.markdown hr,
+        #post-content hr {
+            border: 0;
+            height: 1px;
+            background: var(--hr-color);
+            margin: 1.5em 0;
+        }
+    </style>
+
+    <!-- 夜间模式覆盖：关注者与文章数量，以及目录文字颜色 -->
+    <style>
+        /* 日间模式：目录栏与正文引用竖线略深，降低刺眼度 */
+        .toc-sidebar,
+        .toc-sidebar * {
+            border-color: #bbb !important;
+        }
+        #post-content blockquote {
+            border-left: 3px solid #bbb !important;
+        }
+
+        /* 关注卡片：日间与夜间颜色（覆盖 a 的蓝色） */
+        .github-name { color: #333; }
+        .github-info a span:first-child { color: #000; }
+        .github-info a span:last-child { color: #666; }
+
+        body.dark-mode .github-name,
+        html.dark-mode .github-name { color: #f1f5f9 !important; }
+
+        body.dark-mode .github-info a span:first-child,
+        html.dark-mode .github-info a span:first-child { color: #f8fafc !important; }
+
+        body.dark-mode .github-info a span:last-child,
+        html.dark-mode .github-info a span:last-child { color: #e5e7eb !important; }
+
+        /* 覆盖内联颜色（包含 !important） */
+        body.dark-mode #github-followers,
+        html.dark-mode #github-followers {
+            color: #e5e7eb !important;
+        }
+
+        body.dark-mode .github-info span:last-child,
+        html.dark-mode .github-info span:last-child {
+            color: #e5e7eb !important;
+        }
+
+        /* 目录标题与链接在夜间提亮 */
+        body.dark-mode .toc-title,
+        html.dark-mode .toc-title {
+            color: #f0f0f0 !important;
+        }
+
+        body.dark-mode .toc-sidebar a,
+        html.dark-mode .toc-sidebar a {
+            color: #e5e5e5 !important;
+        }
+    </style>
+
+    <!-- TOC 点击效果：为目标标题添加弹性加粗脉冲，不做滚动动画 -->
+    <style>
+        @keyframes tocPulseBold {
+            0% { font-weight: 500; }
+            40% { font-weight: 800; }
+            70% { font-weight: 700; }
+            100% { font-weight: 600; }
+        }
+        .toc-pulse-bold {
+            animation: tocPulseBold 600ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        /* 夜间模式下标题颜色稍提亮以配合加粗效果 */
+        body.dark-mode .toc-pulse-bold,
+        html.dark-mode .toc-pulse-bold { color: #f3f4f6 !important; }
+    </style>
+
+    <script>
+        (function(){
+            const toc = document.querySelector('.toc-sidebar');
+            if(!toc) return;
+
+            const getHash = (href)=> {
+                if (!href) return null;
+                // 支持绝对/相对URL，统一提取 # 之后的片段
+                try {
+                    const u = new URL(href, window.location.origin);
+                    return u.hash || null;
+                } catch {
+                    const i = href.indexOf('#');
+                    return i >= 0 ? href.slice(i) : null;
+                }
+            };
+
+            const buildCandidates = (hash)=> {
+                const raw = (hash || '').replace(/^#/, '');
+                const decoded = decodeURIComponent(raw);
+                const set = new Set();
+                const push = v => { if (v) set.add(v); };
+                push(raw);
+                push(decoded);
+                // 常见ID归一：去除括号/标点，空白转连字符/下划线/移除，小写化
+                const stripPunc = decoded
+                    .replace(/[()\[\]{}]/g, '')
+                    .replace(/[\/\\]/g, '-')
+                    // 处理HTML实体形式的斜杠以及文本中的 x2f 标记
+                    .replace(/&#x2F;/gi, '-')
+                    .replace(/\bx2f\b/gi, '-')
+                    .replace(/[:;,\.?!'"`]/g, '');
+                const dash = stripPunc.replace(/\s+/g, '-').replace(/-+/g, '-');
+                push(dash);
+                push(dash.toLowerCase());
+                push(stripPunc.replace(/\s+/g, '_'));
+                push(stripPunc.replace(/\s+/g, ''));
+                return Array.from(set);
+            };
+
+            const qsId = (id)=> {
+                try { return `#${CSS.escape(id)}`; } catch { return `#${id}`; }
+            };
+
+            const findTarget = (hash)=> {
+                if (!hash) return null;
+                const candidates = buildCandidates(hash);
+                // 直接通过 getElementById
+                for (const id of candidates) {
+                    const el = document.getElementById(id);
+                    if (el) return el;
+                }
+                // 通过选择器（处理需转义的字符）
+                for (const id of candidates) {
+                    const el = document.querySelector(qsId(id));
+                    if (el) return el;
+                }
+                // markdown-it-anchor 等会生成 headerlink，回溯到父级标题
+                for (const id of candidates) {
+                    const a = document.querySelector(`a.headerlink[href="#${id}"]`);
+                    if (a && a.parentElement) return a.parentElement;
+                }
+                // 兜底：按链接文本匹配标题文本（归一规则与上面一致）
+                const content = document.getElementById('post-content') || document.querySelector('.content.markdown');
+                if (content) {
+                    const heads = content.querySelectorAll('h1, h2, h3, h4, h5, h6');
+                    // 将标题可见文本进行与 candidates 相同的归一
+                    const norm = (s)=> {
+                        const decoded = decodeURIComponent(s || '');
+                        const stripPunc = decoded
+                            .replace(/[()\[\]{}]/g, '')
+                            .replace(/[\/\\]/g, '-')
+                            .replace(/&#x2F;/gi, '-')
+                            .replace(/\bx2f\b/gi, '-')
+                            .replace(/[:;,\.?!'"`]/g, '');
+                        const dash = stripPunc.replace(/\s+/g, '-').replace(/-+/g, '-');
+                        return [decoded, stripPunc, dash, dash.toLowerCase(), stripPunc.replace(/\s+/g, '_'), stripPunc.replace(/\s+/g, '')];
+                    };
+                    for (const h of heads) {
+                        const txt = (h.textContent || '').trim();
+                        const hv = norm(txt);
+                        for (const c of candidates) {
+                            if (hv.includes(c) || hv.includes(decodeURIComponent(c))) {
+                                return h;
+                            }
+                        }
+                    }
+                }
+                return null;
+            };
+
+            // 计算并滚动到目标：适配窗口或内部滚动容器
+            const getScrollableAncestor = (el)=> {
+                let node = el.parentElement;
+                while (node) {
+                    const style = getComputedStyle(node);
+                    const overflowY = style.overflowY;
+                    if ((overflowY === 'auto' || overflowY === 'scroll') && node.scrollHeight > node.clientHeight) {
+                        return node;
+                    }
+                    node = node.parentElement;
+                }
+                return null; // 回退到窗口滚动
+            };
+            const scrollToTarget = (target)=> {
+                // 期望目标在视口顶部偏下 30%
+                const viewport = { h: window.innerHeight, top: 0 };
+                const rect = target.getBoundingClientRect();
+                const desiredTop = rect.top - viewport.h * 0.3; // 让标题略下移
+
+                const container = getScrollableAncestor(target);
+                if (container) {
+                    // 将目标相对容器的偏移滚动到可视范围
+                    const containerRect = container.getBoundingClientRect();
+                    const targetOffsetInContainer = rect.top - containerRect.top + container.scrollTop;
+                    const top = Math.max(0, targetOffsetInContainer - container.clientHeight * 0.3);
+                    container.scrollTo({ top, behavior: 'auto' });
+                } else {
+                    const currentScroll = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+                    const top = currentScroll + Math.max(0, desiredTop);
+                    window.scrollTo({ top, behavior: 'auto' });
+                }
+            };
+
+            toc.addEventListener('click', function(e){
+                const a = e.target.closest('a');
+                if(!a) return;
+                const href = a.getAttribute('href');
+                // 如果是跨页面链接（不同路径），不拦截，交给浏览器默认跳转
+                try {
+                    const u = new URL(href, window.location.origin);
+                    if (u.pathname !== window.location.pathname) {
+                        return; // 允许默认行为，前往目标页面
+                    }
+                } catch {}
+                const hash = getHash(href);
+                if(!hash) return;
+                e.preventDefault();
+                const target = findTarget(hash);
+                if(!target) { location.hash = hash; return; }
+
+                // 取消浏览器默认平滑/瞬时滚动动画，直接定位哈希
+                const prevBehavior = document.documentElement.style.scrollBehavior;
+                document.documentElement.style.scrollBehavior = 'auto';
+                location.hash = hash;
+                // 使用自定义滚动，适配内部滚动容器或窗口
+                scrollToTarget(target);
+                // 小延迟确保定位完成后再触发加粗脉冲
+                setTimeout(()=>{
+                    document.querySelectorAll('.toc-pulse-bold').forEach(el=> el.classList.remove('toc-pulse-bold'));
+                    target.classList.add('toc-pulse-bold');
+                    setTimeout(()=>{ target.classList.remove('toc-pulse-bold'); }, 700);
+                    document.documentElement.style.scrollBehavior = prevBehavior || '';
+                }, 50);
+            }, { passive: false });
+        })();
+    </script>
+    </div>
+
+    <!-- 返回顶部按钮 -->
+    <button id="back-to-top" aria-label="返回顶部" class="back-to-top">
+      <svg class="back-to-top-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+      </svg>
+      <span class="back-to-top-text">TOP</span>
+    </button>
+
+    <!-- 黑白模式切换按钮 -->
+    <button id="theme-toggle" aria-label="黑白模式切换" class="theme-toggle">
+      <svg class="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+      </svg>
+    </button>
+
+    <!-- AI 悬浮按钮（简约无背景风格） -->
+    <button id="ai-fab" title="AI 问答" class="ai-fab">AI</button>
+</div>
+
+<!-- AI 弹窗容器（修复：默认添加基础样式，确保DOM存在） -->
+<div id="ai-mask" class="ai-mask" style="display: none; pointer-events: none;"></div>
+<div id="ai-dialog" class="ai-dialog" aria-modal="true" role="dialog" style="display: none; pointer-events: none; z-index: 9999;">
+  <!-- 弹窗头部 -->
+  <div class="ai-head">
+    <span>AI 问答（基于本文）</span>
+    <button id="ai-close" aria-label="关闭" class="ai-close">✕</button>
+  </div>
+  <!-- 消息区 -->
+  <div id="ai-msgs" class="ai-msgs" aria-live="polite"></div>
+  <!-- 输入区 -->
+  <div class="ai-input">
+    <input id="ai-q" type="text" placeholder="就本文提问…（支持上下文对话）" />
+    <button id="ai-send" class="ai-send">发送</button>
+  </div>
+</div>
+
+
+<style>
+  /* 背景图模块已移除 */
+
+  /* 全屏背景层（根因修复）：确保页面最底层被完全覆盖 */
+  .page-bg-layer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #ffffff; /* 亮色模式背景 */
+    z-index: 0;
+    pointer-events: none; /* 不阻塞交互 */
+  }
+  body.dark-mode .page-bg-layer, html.dark-mode .page-bg-layer {
+    background: #121212; /* 夜间深色非纯黑 */
+  }
+
+  /* 基础变量 */
+  :root {
+    --back-to-top-size: 56px;
+    --back-to-top-margin: 24px;
+    --back-to-top-color: #fff;
+    --back-to-top-bg: rgba(0, 0, 0, 0.7);
+    --back-to-top-hover-bg: rgba(0, 0, 0, 0.9);
+    --back-to-top-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --back-to-top-transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    /* 自定义弹窗颜色变量 */
+    --confirm-primary: #0d9488;
+    --confirm-primary-hover: #0f766e;
+    --confirm-gray: #f3f4f6;
+    --confirm-gray-dark: #9ca3af;
+    --confirm-text: #374151;
+    --confirm-text-light: #6b7280;
+    /* AI 对话框夜间模式变量 */
+    --ai-bg-light: #fff;
+    --ai-bg-dark: #1f2937; /* 深色模式弹窗背景 */
+    --ai-head-border-light: rgba(0, 0, 0, 0.08);
+    --ai-head-border-dark: rgba(255, 255, 255, 0.1); /* 深色模式边框 */
+    --ai-msg-user-light: #e5f6f5;
+    --ai-msg-user-dark: #115e59; /* 深色模式用户消息背景 */
+    --ai-msg-ai-light: #f3f4f6;
+    --ai-msg-ai-dark: #374151; /* 深色模式AI消息背景 */
+    --ai-input-border-light: #d1d5db;
+    --ai-input-border-dark: #4b5563; /* 深色模式输入框边框 */
+    --ai-input-bg-light: #fff;
+    --ai-input-bg-dark: #2d3748; /* 深色模式输入框背景 */
+    --ai-text-light: #374151;
+    --ai-text-dark: #e5e7eb; /* 深色模式文字颜色 */
+    --ai-placeholder-light: #9ca3af;
+    --ai-placeholder-dark: #9ca3af; /* 深色模式占位符颜色 */
+    --ai-scrollbar-thumb-light: #ddd;
+    --ai-scrollbar-thumb-dark: #4b5563; /* 深色模式滚动条 */
+    /* AI按钮悬浮变量 */
+    --ai-fab-size: 56px;
+    --ai-fab-hover-size: 62px; /* 悬浮时放大6px */
+    --ai-fab-font-size: 20px;
+    --ai-fab-hover-font-size: 24px; /* 悬浮时文字放大 */
+  }
+
+  /* 返回顶部按钮样式 */
+  .back-to-top {
+    position: fixed;
+    right: var(--back-to-top-margin);
+    bottom: var(--back-to-top-margin);
+    width: var(--back-to-top-size);
+    height: var(--back-to-top-size);
+    border-radius: 50%;
+    background: var(--back-to-top-bg);
+    color: var(--back-to-top-color);
+    border: none;
+    cursor: pointer;
+    z-index: 999;
+    box-shadow: var(--back-to-top-shadow);
+    transition: var(--back-to-top-transition);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .back-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .back-to-top:hover {
+    background: var(--back-to-top-hover-bg);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  .back-to-top:active {
+    transform: scale(0.95);
+  }
+
+  .back-to-top-icon {
+    width: 24px;
+    height: 24px;
+    transition: var(--back-to-top-transition);
+    margin-bottom: 2px;
+  }
+
+  .back-to-top-text {
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: var(--back-to-top-transition);
+    transform: translateY(10px);
+    opacity: 0;
+  }
+
+  .back-to-top:hover .back-to-top-text {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  /* 主题切换按钮样式 */
+  .theme-toggle {
+    position: fixed;
+    left: 24px;
+    bottom: 24px;
+    width: var(--back-to-top-size);
+    height: var(--back-to-top-size);
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    cursor: pointer;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+  }
+
+  .theme-toggle:hover {
+    background: rgba(0, 0, 0, 0.9);
+    transform: scale(1.1);
+  }
+
+  .theme-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  /* AI 悬浮按钮样式（新增悬浮放大交互） */
+  .ai-fab {
+    position: fixed;
+    right: var(--back-to-top-margin);
+    bottom: calc(var(--back-to-top-margin) + var(--back-to-top-size) + 12px); /* 在返回顶部上方，间距12px */
+    width: var(--ai-fab-size);
+    height: var(--ai-fab-size);
+    border-radius: 50%;
+    border: 1px solid #e5e7eb;
+    background: rgba(255, 255, 255, 0.75);
+    color: #0f172a;
+    font-size: var(--ai-fab-font-size);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.06);
+    cursor: pointer;
+    z-index: 999;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* 流畅的过渡动画 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* 防止文字溢出 */
+    overflow: hidden;
+    white-space: nowrap;
+    /* 强制居中 */
+    line-height: 1;
+  }
+
+  /* AI按钮悬浮效果（核心：大小+文字同时放大） */
+  .ai-fab:hover {
+    width: var(--ai-fab-hover-size);
+    height: var(--ai-fab-hover-size);
+    font-size: var(--ai-fab-hover-font-size);
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 8px 22px rgba(0,0,0,.12);
+    /* 轻微上浮，增强交互感 */
+    transform: translateY(-3px);
+  }
+
+  /* 深色模式下AI按钮悬浮效果 */
+  .dark-mode .ai-fab {
+    border-color: #374151;
+    background: rgba(31, 41, 55, 0.85);
+    color: #e5e7eb;
+    box-shadow: 0 6px 18px rgba(0,0,0,.25);
+  }
+  .dark-mode .ai-fab:hover {
+    background: rgba(31, 41, 55, 0.95);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+    /* 深色模式悬浮时保持放大效果 */
+    width: var(--ai-fab-hover-size);
+    height: var(--ai-fab-hover-size);
+    font-size: var(--ai-fab-hover-font-size);
+  }
+
+  /* AI 遮罩层样式（修复：默认隐藏，打开时仅作为背景不拦截交互） */
+  .ai-mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: transparent; /* 透明遮罩，不遮挡内容 */
+    z-index: 9998;
+    transition: all 0.2s ease;
+  }
+
+  /* AI 对话框核心样式（修复：确保DOM有实体，可交互） */
+  .ai-dialog {
+    position: fixed;
+    right: var(--back-to-top-margin);
+    bottom: calc(var(--back-to-top-margin) + var(--back-to-top-size) + 72px); /* 在AI按钮上方 */
+    width: 340px;
+    max-width: 92vw;
+    height: 440px;
+    background: var(--ai-bg-light); /* 浅色模式背景 */
+    border: 1px solid var(--ai-head-border-light);
+    border-radius: 14px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+    display: flex;
+    flex-direction: column;
+    z-index: 9999;
+    transition: transform 0.2s, opacity 0.2s;
+    transform: translateY(10px);
+    opacity: 0;
+    color: var(--ai-text-light); /* 浅色模式文字 */
+    pointer-events: none; /* 默认不可交互 */
+    /* 强制保证盒子模型完整 */
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  /* AI 对话框显示状态（核心修复：恢复交互能力） */
+  .ai-dialog.show {
+    display: flex !important;
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto !important; /* 打开时可交互 */
+  }
+
+  /* 深色模式弹窗主体 */
+  .dark-mode .ai-dialog {
+    background: var(--ai-bg-dark) !important;
+    border-color: var(--ai-head-border-dark) !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3) !important;
+    color: var(--ai-text-dark) !important;
+  }
+
+  .ai-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--ai-head-border-light);
+    font-weight: 600;
+    font-size: 15px;
+    /* 强制头部样式 */
+    box-sizing: border-box;
+    flex-shrink: 0;
+  }
+
+  /* 深色模式头部边框 */
+  .dark-mode .ai-head {
+    border-bottom-color: var(--ai-head-border-dark) !important;
+  }
+
+  /* 清空历史按钮样式（保留但隐藏，如需启用可取消注释） */
+  .ai-clear {
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    cursor: pointer;
+    color: #666;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+    margin-right: 8px;
+    display: none; /* 隐藏 */
+  }
+
+  /* 深色模式按钮颜色 */
+  .dark-mode .ai-clear,
+  .dark-mode .ai-close {
+    color: #9ca3af !important;
+  }
+
+  .ai-clear:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #000;
+  }
+
+  .dark-mode .ai-clear:hover,
+  .dark-mode .ai-close:hover {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: #fff !important;
+  }
+
+  .ai-close {
+    border: none;
+    background: transparent;
+    font-size: 18px;
+    cursor: pointer;
+    color: #666;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+    /* 强制按钮可点击 */
+    pointer-events: auto;
+  }
+
+  .ai-close:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #000;
+  }
+
+  .ai-msgs {
+    flex: 1;
+    overflow: auto;
+    padding: 12px;
+    line-height: 1.6;
+    font-size: 14px;
+    /* 强制消息区样式 */
+    box-sizing: border-box;
+    background: inherit;
+  }
+
+  /* 深色模式滚动条 */
+  .dark-mode .ai-msgs::-webkit-scrollbar-thumb {
+    background: var(--ai-scrollbar-thumb-dark) !important;
+  }
+
+  .ai-msgs::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .ai-msgs::-webkit-scrollbar-thumb {
+    background: var(--ai-scrollbar-thumb-light);
+    border-radius: 3px;
+  }
+
+  .ai-msgs::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  /* 消息气泡样式 - 浅色模式 */
+  .ai-msg {
+    margin: 8px 0;
+    max-width: 86%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    word-break: break-word;
+    font-size: 14px;
+    box-sizing: border-box;
+  }
+
+  .ai-msg.user {
+    margin-left: auto;
+    background: var(--ai-msg-user-light);
+    color: #0f766e;
+  }
+
+  .ai-msg.ai {
+    margin-right: auto;
+    background: var(--ai-msg-ai-light);
+    color: var(--ai-text-light);
+  }
+
+  /* 深色模式消息气泡 */
+  .dark-mode .ai-msg.user {
+    background: var(--ai-msg-user-dark) !important;
+    color: #d1fae5 !important; /* 深色模式用户消息文字 */
+  }
+
+  .dark-mode .ai-msg.ai {
+    background: var(--ai-msg-ai-dark) !important;
+    color: var(--ai-text-dark) !important;
+  }
+
+  /* AI 加载中提示样式 - 深色模式适配 */
+  .ai-loading {
+    color: #9ca3af;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .dark-mode .ai-loading {
+    color: #6b7280 !important;
+  }
+
+  /* 加载动画（三个点依次闪烁） */
+  .ai-loading::after {
+    content: '';
+    animation: loading 1.5s infinite;
+  }
+
+  @keyframes loading {
+    0% { content: ''; }
+    25% { content: '.'; }
+    50% { content: '..'; }
+    75% { content: '...'; }
+    100% { content: ''; }
+  }
+
+  /* AI 输入区样式 - 基础样式 */
+  .ai-input {
+    display: flex;
+    gap: 8px;
+    padding: 10px;
+    border-top: 1px solid var(--ai-head-border-light);
+    /* 强制输入区样式 */
+    box-sizing: border-box;
+    flex-shrink: 0;
+  }
+
+  /* 深色模式输入区边框 */
+  .dark-mode .ai-input {
+    border-top-color: var(--ai-head-border-dark) !important;
+  }
+
+  #ai-q {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--ai-input-border-light);
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, background-color 0.2s;
+    background: var(--ai-input-bg-light);
+    color: var(--ai-text-light);
+    /* 强制输入框可交互 */
+    pointer-events: auto;
+    box-sizing: border-box;
+  }
+
+  /* 深色模式输入框 */
+  .dark-mode #ai-q {
+    border-color: var(--ai-input-border-dark) !important;
+    background: var(--ai-input-bg-dark) !important;
+    color: var(--ai-text-dark) !important;
+  }
+
+  /* 输入框占位符样式 - 深色模式适配 */
+  #ai-q::placeholder {
+    color: var(--ai-placeholder-light);
+  }
+
+  .dark-mode #ai-q::placeholder {
+    color: var(--ai-placeholder-dark) !important;
+  }
+
+  /* 输入框禁用状态样式 */
+  #ai-q:disabled {
+    background-color: #f9fafb !important;
+    color: #9ca3af !important;
+    cursor: not-allowed;
+    border-color: #e5e7eb !important;
+  }
+
+  .dark-mode #ai-q:disabled {
+    background-color: #2d3748 !important;
+    color: #6b7280 !important;
+    border-color: #4b5563 !important;
+  }
+
+  #ai-q:focus {
+    border-color: #0d9488 !important;
+    box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.1) !important;
+  }
+
+  .dark-mode #ai-q:focus {
+    box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.3) !important;
+  }
+
+  .ai-send {
+    padding: 0 16px;
+    border: none;
+    background: #0d9488;
+    color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+    /* 强制按钮可交互 */
+    pointer-events: auto;
+  }
+
+  .ai-send:hover:not(:disabled) {
+    background: #0f766e !important;
+  }
+
+  .ai-send:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* Markdown 解析样式 - 深色模式适配 */
+  .ai-msg strong {
+    font-weight: 600;
+  }
+
+  .ai-msg em {
+    font-style: italic;
+  }
+
+  .ai-msg ul {
+    list-style: disc;
+    padding-left: 20px;
+    margin: 8px 0;
+  }
+
+  .ai-msg ol {
+    list-style: decimal;
+    padding-left: 20px;
+    margin: 8px 0;
+  }
+
+  .ai-msg code {
+    background: #f1f5f9;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 13px;
+  }
+
+  .dark-mode .ai-msg code {
+    background: #1f2937 !important;
+    color: #f8fafc !important;
+  }
+
+  .ai-msg pre {
+    background: #f1f5f9;
+    padding: 10px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 10px 0;
+  }
+
+  .dark-mode .ai-msg pre {
+    background: #1f2937 !important;
+    border-color: #374151 !important;
+  }
+
+  .dark-mode .ai-msg pre code {
+    background: transparent !important;
+  }
+
+  .ai-msg blockquote {
+    border-left: 3px solid #ddd;
+    padding: 8px 12px;
+    margin: 10px 0;
+    color: #6b7280;
+  }
+
+  .dark-mode .ai-msg blockquote {
+    border-left-color: #4b5563 !important;
+    color: #9ca3af !important;
+  }
+
+  .ai-msg table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 12px 0;
+    font-size: 13px;
+    border: 1px solid #e5e7eb;
+  }
+
+  .dark-mode .ai-msg table {
+    border-color: #374151 !important;
+  }
+
+  .ai-msg th,
+  .ai-msg td {
+    border: 1px solid #e5e7eb;
+    padding: 8px 10px;
+    text-align: left;
+  }
+
+  .dark-mode .ai-msg th,
+  .dark-mode .ai-msg td {
+    border-color: #374151 !important;
+  }
+
+  .ai-msg th {
+    background: #f9fafb;
+    font-weight: 600;
+  }
+
+  .dark-mode .ai-msg th {
+    background: #2d3748 !important;
+    color: #f9fafb !important;
+  }
+
+  .ai-msg tr:nth-child(even) {
+    background: #fdfdfe;
+  }
+
+  .dark-mode .ai-msg tr:nth-child(even) {
+    background: #2d3748 !important;
+  }
+
+  /* 小屏幕适配 */
+  @media (max-width: 768px) {
+    :root {
+      --back-to-top-size: 48px;
+      --back-to-top-margin: 16px;
+      /* 小屏幕AI按钮尺寸调整 */
+      --ai-fab-size: 48px;
+      --ai-fab-hover-size: 54px;
+      --ai-fab-font-size: 18px;
+      --ai-fab-hover-font-size: 22px;
+    }
+
+    .back-to-top-icon {
+      width: 20px;
+      height: 20px;
+    }
+
+    .back-to-top-text {
+      display: none;
+    }
+
+    .theme-toggle {
+      left: auto;
+      right: calc(var(--back-to-top-margin) + var(--back-to-top-size) + 12px);
+      bottom: var(--back-to-top-margin);
+    }
+
+    .ai-fab {
+      bottom: calc(var(--back-to-top-margin) + var(--back-to-top-size) + 12px);
+    }
+
+    .ai-dialog {
+      bottom: calc(var(--back-to-top-margin) + var(--back-to-top-size) + var(--back-to-top-size) + 24px);
+      height: 380px;
+      width: 92vw !important;
+    }
+  }
+
+  /* 原有样式保持不变 */
+  .spoiler:not(.collapsed) .spoiler-title::after {
+    content: "(ゝ∀･)已展开~";
+  }
+
+  .spoiler:not(.collapsed) .spoiler-title:hover::after {
+    content: "( ´ﾟДﾟ`)要走了吗";
+  }
+
+  .spoiler:not(.open) .spoiler-title::before {
+    content: "";
+  }
+
+  .spoiler.collapsed .spoiler-title::after {
+    content: "点我点我(≧∀≦)ゞ";
+  }
+
+  .spoiler.collapsed .spoiler-title:hover::after {
+    content: "对的对的(*ﾟ∀ﾟ*)";
+    margin-right: 5px;
+  }
+
+  .dark-mode .spoiler-title {
+    background-color: #2d2d2d;
+  }
+
+  a[href^="#"] {
+    color: #444444 !important;
+  }
+
+  .dark-mode *:not(table):not(table *):not(button):not(input):not(textarea):not(a):not(pre):not(pre *):not(.mermaid):not(.mermaid *) {
+    color: #e0e0e0 !important;
+    border-color: #444 !important;
+  }
+
+  .dark-mode table {
+    color: #444 !important;
+  }
+
+  /* 评论区样式 */
+  .gt-container .gt-comment-content {
+    border-radius: 10px;
+  }
+
+  .gt-container .gt-btn-public:hover {
+    background-color: var(--gt-hover-color);
+  }
+
+  .gt-container a,
+  .gt-container .gt-comment-username,
+  .gt-container .gt-svg svg {
+    color: var(--gt-primary-color);
+    fill: var(--gt-primary-color);
+  }
+
+  .gt-container .gt-header-textarea {
+    border-radius: 10px;
+  }
+
+  .gt-container .gt-popup .gt-action.is--active:before {
+    background: var(--gt-primary-color);
+  }
+
+  .dark-mode .gt-container {
+    --gt-bg-color: none;
+    --gt-text-color: #e0e0e0;
+    --gt-border-color: none;
+    --gt-card-bg: none;
+    --gt-input-bg: #2d2d2d;
+  }
+
+  .dark-mode .gt-container .gt-comment-content {
+    background: none;
+  }
+
+  .dark-mode .gt-container .gt-header-textarea {
+    background-color: #2d2d2d;
+  }
+
+  .dark-mode .gt-container .gt-btn-preview {
+    background-color: rgb(0, 255, 255, 0.3);
+    border-color: rgb(0, 255, 255, 0.3);
+  }
+
+  .dark-mode .gt-container .gt-btn-login {
+    background-color: rgb(16, 208, 122, 0.3);
+    border-color: rgb(16, 208, 122, 0.3);
+  }
+
+  .dark-mode .gt-container .gt-comment .gt-comment-content {
+    background-color: rgb(255, 255, 255, 0.1);
+    margin-left: 20px;
+  }
+
+  .dark-mode .gt-header-textarea,
+  .dark-mode .gt-comment-admin .gt-comment-content {
+    background-color: var(--gt-input-bg);
+    color: var(--gt-text-color);
+  }
+
+  .dark-mode .gt-container a:hover {
+    opacity: 0.8;
+  }
+
+  .dark-mode #post-content {
+    color: var(--text-color);
+  }
+
+  /* 背景图模块已移除 */
+
+  .dark-mode .theme-toggle {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--text-color);
+  }
+
+  /* mermaid 图表样式 */
+  .mermaid {
+    padding: 10px;
+    border-radius: 5px;
+  }
+
+  /* 仅亮色模式：加深箭头/连线颜色，提升可读性 */
+  html:not(.dark-mode) .mermaid path,
+  html:not(.dark-mode) .mermaid line {
+    stroke: #666666 !important; /* 比原来的#f0f0f0更深一些 */
+  }
+
+  /* 夜间模式：箭头/连线更接近白色，提高对比度 */
+  html.dark-mode .mermaid path,
+  html.dark-mode .mermaid line {
+    stroke: #f6f6f6 !important; /* 近白色，避免纯白刺眼 */
+  }
+
+  .mermaid rect path {
+    stroke: inherit !important;
+  }
+
+  .mermaid text {
+    fill: #4a8ecd !important;
+  }
+
+  /* Mermaid 点击放大覆盖层 */
+  #mermaid-zoom-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+    z-index: 10000;
+    display: none;
+  }
+  #mermaid-zoom-overlay.show { display: block; }
+  #mermaid-zoom-content {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 96vw; height: 92vh;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 10px 28px rgba(0,0,0,.25);
+    overflow: hidden;
+  }
+  html.dark-mode #mermaid-zoom-content { background: #1f2937; }
+  #mermaid-zoom-close {
+    position: absolute;
+    top: 8px; right: 10px;
+    background: rgba(0,0,0,.5);
+    color: #fff;
+    border: none; border-radius: 6px;
+    padding: 6px 10px; cursor: pointer;
+    z-index: 10001;
+  }
+  #mermaid-zoom-stage {
+    position: relative;
+    width: 100%; height: 100%;
+    transform-origin: 0 0;
+    cursor: grab;
+  }
+  #mermaid-zoom-stage.grabbing { cursor: grabbing; }
+  #post-content .mermaid svg { cursor: zoom-in; }
+
+  /* 自定义确认弹窗样式 */
+  .custom-confirm-mask {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(2px);
+    z-index: 10000; /* 高于AI弹窗 */
+    display: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .custom-confirm {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.95);
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    width: 90%;
+    max-width: 350px;
+    padding: 24px;
+    text-align: center;
+    z-index: 10001;
+    display: none;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    opacity: 0;
+  }
+
+  /* 弹窗显示状态 */
+  .custom-confirm-mask.show {
+    display: block;
+    opacity: 1;
+  }
+
+  .custom-confirm.show {
+    display: block;
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+
+  /* 暗色模式适配 */
+  .dark-mode .custom-confirm {
+    background: #1f2937 !important;
+    color: #e5e7eb !important;
+  }
+
+  .custom-confirm-icon {
+    font-size: 36px;
+    margin-bottom: 16px;
+  }
+
+  .custom-confirm-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--confirm-text);
+  }
+
+  .dark-mode .custom-confirm-title {
+    color: #f9fafb !important;
+  }
+
+  .custom-confirm-desc {
+    font-size: 14px;
+    color: var(--confirm-text-light);
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+
+  .dark-mode .custom-confirm-desc {
+    color: #d1d5db !important;
+  }
+
+  .custom-confirm-btns {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+
+  .confirm-btn {
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    border: none;
+  }
+
+  .cancel-btn {
+    background: var(--confirm-gray);
+    color: var(--confirm-text);
+  }
+
+  .dark-mode .cancel-btn {
+    background: #374151 !important;
+    color: #e5e7eb !important;
+  }
+
+  .cancel-btn:hover {
+    background: #e5e7eb !important;
+  }
+
+  .dark-mode .cancel-btn:hover {
+    background: #4b5563 !important;
+  }
+
+  .ok-btn {
+    background: var(--confirm-primary);
+    color: #fff;
+  }
+
+  .ok-btn:hover {
+    background: var(--confirm-primary-hover) !important;
+  }
+
+  /* 夜间模式容器背景：确保整页非纯黑深色可见 */
+  body.dark-mode #single, html.dark-mode #single,
+  body.dark-mode .section, html.dark-mode .section {
+    background: #121212 !important;
+  }
+
+  /* 移除 full-bleed 扩展，避免 100vw 带来的水平溢出与左侧露底 */
+
+  /* 亮色模式保持原有背景（透明/白），不覆盖全局 */
+</style>
+
+<script>
+  (function () {
+    // 背景图模块已移除，仅保留主题切换逻辑
+    const themeToggle = document.getElementById('theme-toggle');
+    const htmlElement = document.documentElement;
+
+    // 初始化深色模式状态
+    if (localStorage.getItem('darkMode') === 'true') {
+      htmlElement.classList.add('dark-mode');
+    }
+
+    // 切换并持久化
+    themeToggle.addEventListener('click', () => {
+      const isDarkMode = htmlElement.classList.toggle('dark-mode');
+      localStorage.setItem('darkMode', isDarkMode);
+      // 同步更新AI弹窗样式
+      if (window.updateAIDialogStyle) {
+        window.updateAIDialogStyle();
+      }
+    });
+
+    // ================ 返回顶部按钮 ================
+    const backToTopBtn = document.getElementById('back-to-top');
+    const scrollThreshold = 300;
+    let isScrolling = false;
+
+    window.addEventListener('scroll', function () {
+      if (isScrolling) return;
+      isScrolling = true;
+      requestAnimationFrame(function () {
+        backToTopBtn.classList.toggle('visible', window.pageYOffset > scrollThreshold);
+        isScrolling = false;
+      });
+    });
+
+    backToTopBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    backToTopBtn.addEventListener('touchstart', function () {
+      this.classList.add('touching');
+    });
+    backToTopBtn.addEventListener('touchend', function () {
+      this.classList.remove('touching');
+    });
+
+  })();
+</script>
+
+<!-- AI 流式渲染核心脚本（修复 innerHTML 错误 + 实时分段解析 Markdown + 加载提示） -->
+<script>
+;(function(){
+  const container = document.getElementById('ai-msgs');
+  if(!container) return;
+
+  // 初始化 markdown-it（使用全局变量，确保已在页面头部引入）
+  const md = window.markdownit ? window.markdownit({
+    html: false,    // 关闭原始 HTML 渲染，确保安全
+    linkify: true,  // 自动链接URL
+    breaks: true    // 换行符转换为 <br>
+  }) : null;
+
+  // 工具函数：HTML 转义
+  function escapeHtml(unsafe) {
+    if (!unsafe) return '';
+    return unsafe
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  // 核心修复：自动修复表格格式（给表格行添加换行符）
+  function fixTableFormat(content) {
+    if (!content.includes('|') || !content.includes(':')) return content;
+
+    // 匹配 Markdown 表格特征：包含 | 分隔列，且有 :--- 分隔线
+    const tableRegex = /(\|.*?\|)(?:\s*\|.*?\|)*\s*\|.*?:---.*?\|/s;
+    if (!tableRegex.test(content)) return content;
+
+    // 按 | 分割内容，再重新拼接（给每行添加换行）
+    const lines = content.split(/\r?\n/);
+    const fixedLines = [];
+
+    let inTable = false;
+    for (let line of lines) {
+      line = line.trim();
+      if (!line) {
+        fixedLines.push(line);
+        inTable = false;
+        continue;
+      }
+
+      // 检测表格开始（包含 | 且不是纯分隔线）
+      if (line.startsWith('|') && !line.match(/^\|[:\- ]+\|$/)) {
+        inTable = true;
+        fixedLines.push(line);
+      }
+      // 检测表格分隔线（| :--- | 格式）
+      else if (line.match(/^\|[:\- ]+\|$/)) {
+        fixedLines.push(line);
+      }
+      // 表格内容行（在表格中，且包含 |）
+      else if (inTable && line.includes('|')) {
+        fixedLines.push(line);
+      }
+      // 非表格内容
+      else {
+        fixedLines.push(line);
+        inTable = false;
+      }
+    }
+
+    // 特殊处理：如果后端返回的表格是一行连写（没有换行），手动拆分
+    const fixedContent = fixedLines.join('\n');
+    if (fixedContent.includes('|') && fixedContent.includes(':---') && !fixedContent.includes('\n|')) {
+      // 按 | 拆分后，重新按表格结构拼接（假设表头、分隔线、内容行的列数一致）
+      const parts = fixedContent.split('|').filter(part => part.trim());
+      const colCount = Math.floor(parts.length / 3); // 假设 表头 + 分隔线 + 内容行
+      if (colCount >= 2) {
+        const header = '| ' + parts.slice(0, colCount).join(' | ') + ' |';
+        const separator = '| ' + Array(colCount).fill(':---').join(' | ') + ' |';
+        const content = '| ' + parts.slice(colCount * 2, colCount * 3).join(' | ') + ' |';
+        return [header, separator, content].join('\n');
+      }
+    }
+
+    return fixedContent;
+  }
+
+  // 暴露给全局，供其他脚本复用
+  window.__AI_STREAM_MANAGER__ = {
+    currentStream: null,
+    fixTableFormat: fixTableFormat,
+    // 触发Markdown解析的分隔符（常用标点，可自定义）
+    markdownTriggers: [',', '。', '；', '！', '？', '：', '】', ')', '}', '\n', '、', '"', "'"],
+    createStream() {
+      // 销毁旧流（如果存在）- 仅销毁状态，不删除DOM（保留历史对话）
+      if (this.currentStream) {
+        this.currentStream.destroy();
+      }
+
+      // 1. 创建AI消息气泡（默认显示加载提示）
+      const msgEl = document.createElement('div');
+      msgEl.className = 'ai-msg ai';
+      msgEl.innerHTML = '<span class="ai-loading">AI 思考中</span>';
+      container.appendChild(msgEl);
+
+      const stream = {
+        buffer: '', // 未完成的内容（未遇到分隔符）
+        parsedContent: '', // 已解析为HTML的完整片段
+        msgEl: msgEl, // 直接挂载到流对象，避免作用域丢失
+        destroyed: false,
+        hasReceivedData: false, // 标记是否已收到第一个流数据
+
+        // 追加流数据（核心：检测分隔符，分段解析）
+        append(chunk) {
+          if (this.destroyed || !this.msgEl) return;
+          
+          // 收到第一个数据时，清空加载提示
+          if (!this.hasReceivedData) {
+            this.parsedContent = ''; // 重置已解析内容
+            this.hasReceivedData = true;
+          }
+
+          this.buffer += chunk;
+          const triggerIndex = this.findFirstTriggerIndex(this.buffer);
+          
+          if (triggerIndex !== -1) {
+            // 截取完整片段（包含分隔符）
+            const completeSegment = this.buffer.slice(0, triggerIndex + 1);
+            // 剩余内容保留在缓冲区
+            this.buffer = this.buffer.slice(triggerIndex + 1);
+            
+            // 修复表格格式 + 解析Markdown
+            const fixedSegment = fixTableFormat(completeSegment);
+            this.parsedContent += md ? md.render(fixedSegment)
+              .replace(/<p>/g, '')
+              .replace(/<\/p>/g, '<br>')
+              .replace(/<br><br>/g, '<br>') : escapeHtml(fixedSegment);
+            
+            // 实时渲染
+            this.render();
+          } else {
+            // 未遇到分隔符，仅渲染已解析内容 + 未解析原文
+            this.render();
+          }
+        },
+
+        // 查找第一个触发分隔符的索引
+        findFirstTriggerIndex(str) {
+          let minIndex = -1;
+          for (const trigger of window.__AI_STREAM_MANAGER__.markdownTriggers) {
+            const index = str.indexOf(trigger);
+            if (index !== -1 && (minIndex === -1 || index < minIndex)) {
+              minIndex = index;
+            }
+          }
+          return minIndex;
+        },
+
+        // 实时渲染（确保msgEl存在）
+        render() {
+          if (this.destroyed || !this.msgEl) return;
+          
+          // 未收到数据时，保持加载提示
+          if (!this.hasReceivedData) return;
+          
+          const unparsedContent = escapeHtml(this.buffer);
+          this.msgEl.innerHTML = this.parsedContent + unparsedContent;
+          // 自动滚动到底部
+          container.scrollTop = container.scrollHeight;
+        },
+
+        // 流结束：解析剩余内容
+        flush() {
+          if (this.destroyed || !this.msgEl) return;
+          
+          // 未收到数据时，不处理（保持加载提示或错误信息）
+          if (!this.hasReceivedData) return;
+          
+          if (this.buffer.trim()) {
+            const fixedSegment = fixTableFormat(this.buffer);
+            this.parsedContent += md ? md.render(fixedSegment)
+              .replace(/<p>/g, '')
+              .replace(/<\/p>/g, '<br>')
+              .replace(/<br><br>/g, '<br>') : escapeHtml(fixedSegment);
+            this.buffer = '';
+          }
+          
+          this.msgEl.innerHTML = this.parsedContent;
+          container.scrollTop = container.scrollHeight;
+        },
+
+        // 销毁流：仅重置状态，不删除DOM（保留历史对话）
+        destroy() {
+          this.destroyed = true;
+          this.buffer = '';
+          this.parsedContent = '';
+          this.hasReceivedData = false;
+          this.msgEl = null; // 解除引用，不删除DOM
+        }
+      };
+
+      this.currentStream = stream;
+      return stream;
+    }
+  };
+})();
+</script>
+
+<!-- AI 功能主脚本（完整功能整合 + 需求修改） -->
+<script>
+  (function () {
+    // 后端地址
+    const STREAM_URL = "https://blog-ai-abryylmdyu.cn-shanghai.fcapp.run";
+
+    // 当前文章路径（Hexo 变量）
+    const rawSource = "_posts/C++/main.md";
+    const slug = rawSource
+      .replace(/\\/g, '/')
+      .replace(/\.md$/i, '')
+      .replace(/^source\/_posts\//i, '')
+      .replace(/^_posts\//i, '')
+      .replace(/^posts\//i, '')
+      .replace(/^post\//i, '');
+
+    // 存储相关配置
+    const STORAGE_KEY = `ai_chat_history_${slug}`; // 按文章slug存储，不同文章独立对话
+    const MAX_HISTORY_COUNT = 20; // 最大20个消息气泡（10条来回对话）
+
+    // 获取 DOM 元素
+    const $fab = document.getElementById('ai-fab');
+    const $mask = document.getElementById('ai-mask');
+    const $dlg = document.getElementById('ai-dialog');
+    const $closeBtn = document.getElementById('ai-close');
+    const $msgs = document.getElementById('ai-msgs');
+    const $q = document.getElementById('ai-q');
+    const $sendBtn = document.getElementById('ai-send');
+
+    let isOpen = false;
+    let isAiResponding = false; // 标记AI是否正在回复
+
+    // 全局方法：更新AI弹窗样式（供主题切换调用）
+    window.updateAIDialogStyle = function() {
+      if (!$dlg) return;
+      const isDark = document.documentElement.classList.contains('dark-mode');
+      // 强制同步样式
+      $dlg.style.background = isDark 
+        ? getComputedStyle(document.documentElement).getPropertyValue('--ai-bg-dark') || '#1f2937'
+        : getComputedStyle(document.documentElement).getPropertyValue('--ai-bg-light') || '#ffffff';
+      $dlg.style.borderColor = isDark
+        ? getComputedStyle(document.documentElement).getPropertyValue('--ai-head-border-dark') || 'rgba(255,255,255,0.1)'
+        : getComputedStyle(document.documentElement).getPropertyValue('--ai-head-border-light') || 'rgba(0,0,0,0.08)';
+      $dlg.style.color = isDark
+        ? getComputedStyle(document.documentElement).getPropertyValue('--ai-text-dark') || '#e5e7eb'
+        : getComputedStyle(document.documentElement).getPropertyValue('--ai-text-light') || '#374151';
+    };
+
+    // ================ 关键修复：阻止滚动事件冒泡（仅保留消息区内部滚动） ================
+    function preventScrollBubble(e) {
+      e.stopPropagation(); // 阻止滚动事件冒泡到父元素（页面）
+      // 可选：当消息区滚动到顶部/底部时，禁止继续滚动（避免页面滚动）
+      const isAtTop = $msgs.scrollTop === 0;
+      const isAtBottom = $msgs.scrollTop + $msgs.clientHeight >= $msgs.scrollHeight - 1; // -1 兼容浮点精度
+
+      if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
+        e.preventDefault(); // 滚动到边界时，阻止默认滚动行为
+      }
+    }
+
+    // ================ 控制输入框和发送功能的启用/禁用 ================
+    /**
+     * 设置发送功能的启用状态
+     * @param {boolean} enabled - true: 启用，false: 禁用
+     */
+    function setSendEnabled(enabled) {
+      isAiResponding = !enabled;
+      $sendBtn.disabled = !enabled;
+      $q.disabled = !enabled;
+      
+      // 禁用时修改输入框提示文字，提示用户AI正在回复
+      if (!enabled) {
+        $q.setAttribute('data-original-placeholder', $q.placeholder);
+        $q.placeholder = 'AI正在回复中...';
+      } else {
+        // 启用时恢复原始提示文字
+        const originalPlaceholder = $q.getAttribute('data-original-placeholder');
+        if (originalPlaceholder) {
+          $q.placeholder = originalPlaceholder;
+        }
+      }
+    }
+
+    // ================ 历史对话核心功能 ================
+    /**
+     * 从本地存储获取历史对话
+     * @returns {Array} 对话数组，每个元素 {role: 'human/ai', content: '消息内容'}
+     */
+    function getHistoryFromStorage() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    }
+
+    /**
+     * 保存对话到本地存储（自动截取最大条数）
+     * @param {Array} history 对话数组
+     */
+    function saveHistoryToStorage(history) {
+      // 截取最新的 MAX_HISTORY_COUNT 条消息
+      const trimmedHistory = history.slice(-MAX_HISTORY_COUNT);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmedHistory));
+    }
+
+    /**
+     * 添加一条对话到历史
+     * @param {string} role - 'human' 或 'ai'
+     * @param {string} content - 消息内容
+     */
+    function addHistory(role, content) {
+      const history = getHistoryFromStorage();
+      history.push({ role, content });
+      saveHistoryToStorage(history);
+    }
+
+    /**
+     * 渲染历史对话到页面
+     */
+    function renderHistory() {
+      const history = getHistoryFromStorage();
+      if (!history.length) return;
+
+      // 清空现有内容（避免重复渲染）
+      $msgs.innerHTML = '';
+
+      history.forEach(item => {
+        const msgEl = document.createElement('div');
+        msgEl.className = `ai-msg ${item.role === 'human' ? 'user' : 'ai'}`;
+        
+        if (item.role === 'ai') {
+          // AI消息需要解析Markdown
+          const fixedContent = window.__AI_STREAM_MANAGER__.fixTableFormat(item.content);
+          const html = window.markdownit ? window.markdownit({
+            html: false,
+            linkify: true,
+            breaks: true
+          }).render(fixedContent)
+            .replace(/<p>/g, '')
+            .replace(/<\/p>/g, '<br>')
+            .replace(/<br><br>/g, '<br>') : escapeHtml(fixedContent);
+          msgEl.innerHTML = html;
+        } else {
+          // 用户消息纯文本显示
+          msgEl.textContent = item.content;
+        }
+
+        $msgs.appendChild(msgEl);
+      });
+
+      // 滚动到底部
+      $msgs.scrollTop = $msgs.scrollHeight;
+    }
+
+    /**
+     * 构建包含历史上下文的提问内容
+     * @param {string} currentQuestion - 当前提问
+     * @returns {string} 包含上下文的完整提问
+     */
+    function buildQuestionWithContext(currentQuestion) {
+      const history = getHistoryFromStorage();
+      if (!history.length) return currentQuestion;
+
+      // 拼接历史对话（格式：HumanMessage：xxx\nAIMessage：xxx\nHumanMessage：当前提问）
+      let context = '';
+      history.forEach(item => {
+        context += `${item.role === 'human' ? 'HumanMessage：' : 'AIMessage：'}${item.content}\n`;
+      });
+      context += `HumanMessage：${currentQuestion}`;
+
+      return context;
+    }
+
+    // ================ 弹窗控制 ================
+    // 打开 AI 窗口（同时渲染历史对话 + 绑定滚动阻止）
+    function openDialog() {
+      // 显示遮罩（透明，不拦截）
+      $mask.style.display = 'block';
+      $mask.style.pointerEvents = 'none';
+      
+      // 核心修复：显示弹窗并启用交互
+      $dlg.classList.add('show');
+      $dlg.style.display = 'flex';
+      $dlg.style.pointerEvents = 'auto';
+      
+      // 强制同步样式
+      window.updateAIDialogStyle();
+      
+      // 渲染历史对话
+      renderHistory();
+      
+      // 聚焦输入框
+      $q.focus();
+      
+      // 标记为打开状态
+      isOpen = true;
+      
+      // 绑定滚动阻止事件（只在弹窗打开时绑定）
+      $msgs.addEventListener('wheel', preventScrollBubble);
+      
+      // 打开时启用发送功能
+      setSendEnabled(true);
+    }
+
+    // 关闭 AI 窗口（解绑滚动阻止）
+    function closeDialog() {
+      // 隐藏弹窗并禁用交互
+      $dlg.classList.remove('show');
+      $dlg.style.display = 'none';
+      $dlg.style.pointerEvents = 'none';
+      
+      // 隐藏遮罩
+      $mask.style.display = 'none';
+      
+      // 标记为关闭状态
+      isOpen = false;
+      
+      // 解绑滚动阻止事件（避免影响其他区域）
+      $msgs.removeEventListener('wheel', preventScrollBubble);
+    }
+
+    // 添加用户消息气泡（同时保存到历史）
+    function addUserMsg(content) {
+      const div = document.createElement('div');
+      div.className = 'ai-msg user';
+      div.textContent = content;
+      $msgs.appendChild(div);
+      $msgs.scrollTop = $msgs.scrollHeight;
+
+      // 保存到历史
+      addHistory('human', content);
+    }
+
+    // 保存AI回复到历史
+    function saveAiReply(content) {
+      addHistory('ai', content);
+    }
+
+    // ================ 发送提问（核心逻辑） ================
+    async function send() {
+      // 如果AI正在回复，直接返回（防止重复发送）
+      if (isAiResponding) return;
+
+      let currentQuestion = $q.value.trim();
+      if (!currentQuestion) return;
+
+      // 发送前禁用发送功能（按钮+回车）
+      setSendEnabled(false);
+
+      // 构建包含历史上下文的完整提问
+      const fullQuestion = buildQuestionWithContext(currentQuestion);
+
+      // 添加用户消息气泡
+      addUserMsg(currentQuestion);
+      $q.value = '';
+
+      // 创建新的流实例（每次提问都新建，确保气泡独立）
+      const stream = window.__AI_STREAM_MANAGER__.createStream();
+      if (!stream) {
+        alert('AI回复初始化失败，请刷新页面重试！');
+        setSendEnabled(true); // 失败时恢复启用
+        return;
+      }
+
+      // 存储AI回复的完整内容（用于保存到历史）
+      let aiFullReply = '';
+
+      try {
+        const res = await fetch(STREAM_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            question: fullQuestion, // 发送包含上下文的完整提问
+            slug: slug 
+          }),
+          credentials: 'omit'
+        });
+
+        if (!res.ok || !res.body) throw new Error(`网络错误: ${res.status}`);
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let sseBuffer = '';
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+
+          sseBuffer += decoder.decode(value, { stream: true });
+          const lines = sseBuffer.split(/\r?\n/);
+          sseBuffer = lines.pop() || '';
+
+          for (const line of lines) {
+            const trimmedLine = line.trim();
+            if (trimmedLine === '') continue;
+
+            if (trimmedLine.startsWith('data:')) {
+              let payload = trimmedLine.slice(5).trim();
+              // 移除 [DONE] 标记
+              payload = payload.replace(/\[DONE\]/g, '');
+
+              if (payload) {
+                stream.append(payload);
+                aiFullReply += payload; // 累加完整回复
+                await new Promise(resolve => setTimeout(resolve, 25)); // 打字延迟（25ms/字）
+              }
+            }
+          }
+        }
+
+        // 处理剩余缓冲
+        if (sseBuffer.trim().startsWith('data:')) {
+          let payload = sseBuffer.trim().slice(5).trim();
+          payload = payload.replace(/\[DONE\]/g, '');
+          if (payload) {
+            stream.append(payload);
+            aiFullReply += payload;
+          }
+        }
+
+        // 流结束，完成最终解析
+        stream.flush();
+        // 保存AI回复到历史
+        saveAiReply(aiFullReply);
+
+      } catch (e) {
+        // 错误处理（替换加载提示为错误信息）
+        const errMsg = `❌ 请求失败：${e.message || '未知错误'}`;
+        if (stream && stream.msgEl) {
+          stream.msgEl.innerHTML = errMsg;
+        } else {
+          const errEl = document.createElement('div');
+          errEl.className = 'ai-msg ai';
+          errEl.innerHTML = errMsg;
+          $msgs.appendChild(errEl);
+        }
+        // 错误消息也保存到历史（可选，方便用户查看）
+        saveAiReply(errMsg);
+      } finally {
+        // 无论成功失败，都恢复发送功能
+        setSendEnabled(true);
+      }
+    }
+
+    // ================ 事件绑定 ================
+    // 初始化：确保弹窗默认不可见且不可交互
+    $dlg.style.display = 'none';
+    $dlg.style.pointerEvents = 'none';
+    $mask.style.display = 'none';
+    $mask.style.pointerEvents = 'none';
+
+    // 打开/关闭弹窗
+    $fab.addEventListener('click', () => {
+      isOpen ? closeDialog() : openDialog();
+    });
+
+    // 关闭按钮关闭弹窗
+    $closeBtn.addEventListener('click', closeDialog);
+
+    // 发送提问
+    $sendBtn.addEventListener('click', send);
+
+    // 回车发送（AI回复中禁用）
+    $q.addEventListener('keydown', (e) => {
+      // 只有发送功能启用时，才允许回车发送
+      if (!isAiResponding && e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        send();
+      }
+    });
+
+    // ESC 键关闭弹窗
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        closeDialog();
+      }
+    });
+
+    // 初始化暗色模式样式
+    window.updateAIDialogStyle();
+    
+    // 监听窗口大小变化，同步样式
+    window.addEventListener('resize', window.updateAIDialogStyle);
+
+    // 工具函数：HTML转义
+    function escapeHtml(unsafe) {
+      if (!unsafe) return '';
+      return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  })();
+</script>
+
+<!-- 将 ```mermaid 代码块转换为 .mermaid 并渲染 -->
+<script>
+  (function(){
+    function convertMermaidBlocks(container){
+      if (!container) return 0;
+      var blocks = container.querySelectorAll('pre code.language-mermaid, code.language-mermaid');
+      var count = 0;
+      blocks.forEach(function(codeEl){
+        var diagram = codeEl.textContent || '';
+        var wrapper = document.createElement('div');
+        wrapper.className = 'mermaid';
+        // 直接填纯文本，Mermaid自行解析
+        wrapper.textContent = diagram;
+        var pre = codeEl.closest && codeEl.closest('pre');
+        if (pre) pre.replaceWith(wrapper); else codeEl.replaceWith(wrapper);
+        count++;
+      });
+      return count;
+    }
+
+    function render(container){
+      if (window.renderMermaidInContainer) {
+        window.renderMermaidInContainer('#post-content .mermaid');
+      } else if (window.mermaid) {
+        // 兜底：直接尝试 mermaid.run/init
+        try {
+          if (typeof mermaid.run === 'function') mermaid.run({ querySelector: '#post-content .mermaid' });
+          else if (typeof mermaid.init === 'function') mermaid.init(undefined, container.querySelectorAll('.mermaid'));
+        } catch(e) {}
+      }
+    }
+
+    // DOM 就绪后执行
+    document.addEventListener('DOMContentLoaded', function(){
+      var container = document.getElementById('post-content');
+      if (!container) return;
+      var n = convertMermaidBlocks(container);
+      if (n > 0) render(container);
+    });
+  })();
+  </script>
+
+<!-- Mermaid 放大查看覆盖层结构 -->
+<div id="mermaid-zoom-overlay" aria-modal="true" role="dialog" tabindex="-1">
+  <button id="mermaid-zoom-close" aria-label="关闭">关闭</button>
+  <div id="mermaid-zoom-content">
+    <div id="mermaid-zoom-stage"></div>
+  </div>
+</div>
+
+<script>
+  (function(){
+    function initMermaidZoom(){
+      var overlay = document.getElementById('mermaid-zoom-overlay');
+      var content = document.getElementById('mermaid-zoom-content');
+      var stage = document.getElementById('mermaid-zoom-stage');
+      var closeBtn = document.getElementById('mermaid-zoom-close');
+      if (!overlay || !content || !stage || !closeBtn) return;
+
+      var state = { scale: 1, minScale: 0.4, maxScale: 4, x: 0, y: 0 };
+      var dragging = false, lastPos = { x:0, y:0 };
+
+      function apply(){
+        stage.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
+      }
+
+      function fitInitial(svg){
+        var rect = content.getBoundingClientRect();
+        var bbox = null;
+        try { bbox = svg.getBBox(); } catch(e) { bbox = null; }
+        var vb = svg.getAttribute('viewBox');
+        var w=null,h=null,vx=0,vy=0;
+        if (bbox && bbox.width && bbox.height) { w=bbox.width; h=bbox.height; vx=bbox.x; vy=bbox.y; }
+        else if (vb) { var p=vb.split(/\s+/); vx=+p[0]; vy=+p[1]; w=+p[2]; h=+p[3]; }
+        else { w=+(svg.getAttribute('width')||0); h=+(svg.getAttribute('height')||0); }
+        svg.setAttribute('preserveAspectRatio','xMinYMin meet');
+        svg.removeAttribute('width'); svg.removeAttribute('height');
+        if (!vb && bbox && bbox.width && bbox.height) {
+          svg.setAttribute('viewBox', `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`);
+        }
+        var pad = 24;
+        if (w && h) {
+          var sx = (rect.width - pad)/w, sy=(rect.height - pad)/h;
+          state.scale = Math.max(state.minScale, Math.min(state.maxScale, Math.min(sx, sy)));
+          state.x = (rect.width - w*state.scale)/2 - vx*state.scale;
+          state.y = (rect.height - h*state.scale)/2 - vy*state.scale;
+        } else { state.scale=1; state.x=0; state.y=0; }
+        apply();
+      }
+
+      function openWith(svg){
+        stage.innerHTML = '';
+        var clone = svg.cloneNode(true);
+        clone.removeAttribute('style'); clone.style.display='block';
+        stage.appendChild(clone);
+        overlay.classList.add('show'); overlay.focus();
+        fitInitial(clone);
+      }
+
+      function close(){ overlay.classList.remove('show'); }
+      overlay.addEventListener('click', function(e){ if (e.target===overlay) close(); });
+      closeBtn.addEventListener('click', close);
+      document.addEventListener('keydown', function(e){ if (e.key==='Escape') close(); });
+
+      // 绑定点击放大
+      document.querySelectorAll('#post-content .mermaid svg').forEach(function(svg){
+        svg.addEventListener('click', function(){ openWith(svg); });
+      });
+
+      // 滑轮缩放（以鼠标为中心）
+      content.addEventListener('wheel', function(e){
+        e.preventDefault();
+        var prev = state.scale;
+        var factor = Math.sign(e.deltaY)>0 ? 0.9 : 1.1;
+        state.scale = Math.max(state.minScale, Math.min(state.maxScale, state.scale*factor));
+        var rect = content.getBoundingClientRect();
+        var mx = e.clientX - rect.left, my = e.clientY - rect.top;
+        var dx = (mx - state.x) * (1 - state.scale/prev);
+        var dy = (my - state.y) * (1 - state.scale/prev);
+        state.x += dx; state.y += dy; apply();
+      }, { passive: false });
+
+      // 拖拽平移
+      stage.addEventListener('mousedown', function(e){ dragging=true; stage.classList.add('grabbing'); lastPos.x=e.clientX; lastPos.y=e.clientY; });
+      window.addEventListener('mousemove', function(e){ if(!dragging) return; var dx=e.clientX-lastPos.x, dy=e.clientY-lastPos.y; state.x+=dx; state.y+=dy; lastPos.x=e.clientX; lastPos.y=e.clientY; apply(); });
+      window.addEventListener('mouseup', function(){ dragging=false; stage.classList.remove('grabbing'); });
+    }
+
+    document.addEventListener('DOMContentLoaded', function(){ initMermaidZoom(); });
+    if (typeof window.renderMermaidInContainer === 'function') {
+      var orig = window.renderMermaidInContainer;
+      window.renderMermaidInContainer = function(sel){ orig(sel); initMermaidZoom(); };
+    }
+  })();
+</script>
+</body>
+
+<script src="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+
+
+<script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="/blog/js/plugin.js"></script>
+<script src="/blog/js/typed.js"></script>
+<script src="/blog/js/diaspora.js"></script>
+
+
+<link rel="stylesheet" href="/blog/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/blog/photoswipe/default-skin/default-skin.css">
+
+
+<script src="/blog/photoswipe/photoswipe.min.js"></script>
+<script src="/blog/photoswipe/photoswipe-ui-default.min.js"></script>
+
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+</html>
