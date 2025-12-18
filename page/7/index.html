@@ -231,17 +231,15 @@
             <div id="post0">
                 <p>七月 17, 2025</p>
                 <h2>
-                    <a href="/blog/2025/07/17/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E8%BF%9B%E7%A8%8B/%E6%8E%A7%E5%88%B6/process_replacement/" title="Linux 进程程序替换" class="posttitle" onclick="event.stopPropagation(); window.location.href&#x3D;this.href; return false;">Linux 进程程序替换</a>
+                    <a href="/blog/2025/07/17/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E8%BF%9B%E7%A8%8B/%E6%96%87%E4%BB%B6/file_desc/" title="文件读写及文件描述符" class="posttitle" onclick="event.stopPropagation(); window.location.href&#x3D;this.href; return false;">文件读写及文件描述符</a>
                 </h2>
                 <p class="summary">
 
 
-替换原理
-替换函数
-execl 函数
-execv 函数
-execlp 和 execvp
-execle 和 e...</p>
+C语言文件操作回顾
+1.fopen - 打开文件
+2. fclose - 关闭文件
+3. fwrite - ...</p>
             </div>
             
 
@@ -249,6 +247,115 @@ execle 和 e...</p>
  
       <div id="primary">
         
+<div class="post post-card">
+    <div class="card-grid">
+    <!-- 左侧：文章信息卡片 -->
+    <div class="post-left" onclick="window.location.href='/blog/2025/07/17/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E8%BF%9B%E7%A8%8B/%E6%96%87%E4%BB%B6/file_desc/'">
+        <div class="post-meta">七月 17, 2025</div>
+        <h3 class="post-title">
+            <a href="/blog/2025/07/17/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E8%BF%9B%E7%A8%8B/%E6%96%87%E4%BB%B6/file_desc/" title="文件读写及文件描述符" class="posttitle" onclick="event.stopPropagation(); window.location.href&#x3D;this.href; return false;">文件读写及文件描述符</a>
+        </h3>
+        <p class="post-excerpt">
+
+
+C语言文件操作回顾
+1.fopen - 打开文件
+2. fclose - 关闭文件
+3. fwrite - 写入数据
+4. fread - 读取数据
+
+
+文件描述符
+标准文件描述符...</p>
+    </div>
+
+    <!-- 右侧：分类与标签（分两排） -->
+    <div class="post-right">
+        <div class="tag-cloud-cover" aria-label="分类与标签">
+            <div class="cloud-row cloud-row-cats">
+                <span class="cloud-title">分类</span>
+                
+                
+                    <a class="cloud-chip cloud-cat" href="/blog/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" title="查看分类：操作系统" onclick="event.stopPropagation();">
+                        操作系统
+                    </a>
+                
+                    <a class="cloud-chip cloud-cat" href="/blog/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Linux/" title="查看分类：Linux" onclick="event.stopPropagation();">
+                        Linux
+                    </a>
+                
+            </div>
+            <div class="cloud-row cloud-row-tags">
+                <span class="cloud-title">标签</span>
+                
+                
+                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E8%BF%9B%E7%A8%8B/" title="查看标签：进程" onclick="event.stopPropagation();">
+                        进程
+                    </a>
+                
+                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E6%96%87%E4%BB%B6/" title="查看标签：文件" onclick="event.stopPropagation();">
+                        文件
+                    </a>
+                
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
+
+<style>
+    /* 标签词云封面样式（简约、无图片） */
+    /* 两列布局整体样式 */
+        /* 单一卡片：内部两列，中间分隔线 */
+        .post-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background: #fff;
+            padding: 0;
+            max-width: 980px;
+            margin: 40px auto;
+            box-shadow: 0 6px 18px rgba(0,0,0,.05);
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: 320px 1fr; /* 左窄右宽 */
+            align-items: stretch;
+        }
+        @media (max-width: 900px) { .card-grid { grid-template-columns: 1fr; } }
+
+    .post-left,
+    .post-right { padding: 18px 20px; }
+    .post-left { cursor: pointer; transition: transform .2s ease; min-height: 220px; }
+    .post-left:hover { transform: translateY(-2px); }
+    .post-right { min-height: 180px; border-left: 1px solid #e5e7eb; }
+    @media (max-width: 900px) { .post-right { border-left: none; border-top: 1px solid #e5e7eb; } }
+
+        /* 去除重叠，使用分隔线增强左右区块关系 */
+
+    .post-meta { color: #6b7280; font-size: 13px; margin-bottom: 6px; }
+    .post-title a { color: #0f172a; text-decoration: none; }
+    .post-title a:hover { color: #2563eb; }
+    .post-excerpt { color: #374151; margin-top: 8px; }
+
+    /* 右侧词云卡片：两排显示 */
+    .tag-cloud-cover { display: grid; grid-template-columns: 1fr; row-gap: 12px; }
+    .cloud-title { color:#6b7280; font-size: 13px; margin-right: 6px; }
+    .cloud-row { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: center; }
+    .cloud-chip { color:#111827; background:#f3f4f6; border:1px solid #e5e7eb; border-radius:999px; padding:6px 10px; line-height:1; text-decoration:none; }
+    .cloud-chip:hover { background:#eef2f7; }
+    .cloud-empty { color:#9ca3af; }
+
+    /* 夜间模式适配 */
+    html.dark-mode .post-card { background:#1f2937; border-color:#374151; box-shadow: 0 6px 18px rgba(0,0,0,.18); }
+    html.dark-mode .post-right { border-left-color:#374151; }
+    html.dark-mode .cloud-title { color:#9ca3af; }
+    html.dark-mode .cloud-chip { color:#e5e7eb; border-color:#4b5563; background:#2d3748; }
+    html.dark-mode .cloud-chip:hover { background:#323c4a; }
+    html.dark-mode .cloud-empty { color:#9ca3af; }
+</style>
+
+
 <div class="post post-card">
     <div class="card-grid">
     <!-- 左侧：文章信息卡片 -->
@@ -294,12 +401,12 @@ execle 和 execve
                 <span class="cloud-title">标签</span>
                 
                 
-                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E8%BF%9B%E7%A8%8B/" title="查看标签：进程" onclick="event.stopPropagation();">
-                        进程
-                    </a>
-                
                     <a class="cloud-chip cloud-tag" href="/blog/tags/%E6%8E%A7%E5%88%B6/" title="查看标签：控制" onclick="event.stopPropagation();">
                         控制
+                    </a>
+                
+                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E8%BF%9B%E7%A8%8B/" title="查看标签：进程" onclick="event.stopPropagation();">
+                        进程
                     </a>
                 
             </div>
@@ -407,12 +514,12 @@ wait 和 waitpid 的 status 参数说明
                 <span class="cloud-title">标签</span>
                 
                 
-                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E8%BF%9B%E7%A8%8B/" title="查看标签：进程" onclick="event.stopPropagation();">
-                        进程
-                    </a>
-                
                     <a class="cloud-chip cloud-tag" href="/blog/tags/%E6%8E%A7%E5%88%B6/" title="查看标签：控制" onclick="event.stopPropagation();">
                         控制
+                    </a>
+                
+                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E8%BF%9B%E7%A8%8B/" title="查看标签：进程" onclick="event.stopPropagation();">
+                        进程
                     </a>
                 
             </div>
@@ -521,12 +628,12 @@ strerr 函数
                 <span class="cloud-title">标签</span>
                 
                 
-                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E8%BF%9B%E7%A8%8B/" title="查看标签：进程" onclick="event.stopPropagation();">
-                        进程
-                    </a>
-                
                     <a class="cloud-chip cloud-tag" href="/blog/tags/%E6%8E%A7%E5%88%B6/" title="查看标签：控制" onclick="event.stopPropagation();">
                         控制
+                    </a>
+                
+                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E8%BF%9B%E7%A8%8B/" title="查看标签：进程" onclick="event.stopPropagation();">
+                        进程
                     </a>
                 
             </div>
@@ -975,12 +1082,12 @@ fork
                 <span class="cloud-title">标签</span>
                 
                 
-                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E8%BF%9B%E7%A8%8B/" title="查看标签：进程" onclick="event.stopPropagation();">
-                        进程
-                    </a>
-                
                     <a class="cloud-chip cloud-tag" href="/blog/tags/%E6%A6%82%E5%BF%B5/" title="查看标签：概念" onclick="event.stopPropagation();">
                         概念
+                    </a>
+                
+                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E8%BF%9B%E7%A8%8B/" title="查看标签：进程" onclick="event.stopPropagation();">
+                        进程
                     </a>
                 
             </div>
@@ -1177,127 +1284,6 @@ Linux 重定向详解（结合 echo 和 cat 实践）
 一、重定向基础概念
 二、输出重定向（&gt; 和 &gt;&gt;）
 三、输入重定向（&lt;...</p>
-    </div>
-
-    <!-- 右侧：分类与标签（分两排） -->
-    <div class="post-right">
-        <div class="tag-cloud-cover" aria-label="分类与标签">
-            <div class="cloud-row cloud-row-cats">
-                <span class="cloud-title">分类</span>
-                
-                
-                    <a class="cloud-chip cloud-cat" href="/blog/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" title="查看分类：操作系统" onclick="event.stopPropagation();">
-                        操作系统
-                    </a>
-                
-                    <a class="cloud-chip cloud-cat" href="/blog/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/Linux/" title="查看分类：Linux" onclick="event.stopPropagation();">
-                        Linux
-                    </a>
-                
-            </div>
-            <div class="cloud-row cloud-row-tags">
-                <span class="cloud-title">标签</span>
-                
-                
-                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E5%9F%BA%E7%A1%80/" title="查看标签：基础" onclick="event.stopPropagation();">
-                        基础
-                    </a>
-                
-                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E6%8C%87%E4%BB%A4/" title="查看标签：指令" onclick="event.stopPropagation();">
-                        指令
-                    </a>
-                
-            </div>
-        </div>
-    </div>
-    </div>
-</div>
-
-<style>
-    /* 标签词云封面样式（简约、无图片） */
-    /* 两列布局整体样式 */
-        /* 单一卡片：内部两列，中间分隔线 */
-        .post-card {
-            border: 1px solid #e5e7eb;
-            border-radius: 10px;
-            background: #fff;
-            padding: 0;
-            max-width: 980px;
-            margin: 40px auto;
-            box-shadow: 0 6px 18px rgba(0,0,0,.05);
-        }
-
-        .card-grid {
-            display: grid;
-            grid-template-columns: 320px 1fr; /* 左窄右宽 */
-            align-items: stretch;
-        }
-        @media (max-width: 900px) { .card-grid { grid-template-columns: 1fr; } }
-
-    .post-left,
-    .post-right { padding: 18px 20px; }
-    .post-left { cursor: pointer; transition: transform .2s ease; min-height: 220px; }
-    .post-left:hover { transform: translateY(-2px); }
-    .post-right { min-height: 180px; border-left: 1px solid #e5e7eb; }
-    @media (max-width: 900px) { .post-right { border-left: none; border-top: 1px solid #e5e7eb; } }
-
-        /* 去除重叠，使用分隔线增强左右区块关系 */
-
-    .post-meta { color: #6b7280; font-size: 13px; margin-bottom: 6px; }
-    .post-title a { color: #0f172a; text-decoration: none; }
-    .post-title a:hover { color: #2563eb; }
-    .post-excerpt { color: #374151; margin-top: 8px; }
-
-    /* 右侧词云卡片：两排显示 */
-    .tag-cloud-cover { display: grid; grid-template-columns: 1fr; row-gap: 12px; }
-    .cloud-title { color:#6b7280; font-size: 13px; margin-right: 6px; }
-    .cloud-row { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: center; }
-    .cloud-chip { color:#111827; background:#f3f4f6; border:1px solid #e5e7eb; border-radius:999px; padding:6px 10px; line-height:1; text-decoration:none; }
-    .cloud-chip:hover { background:#eef2f7; }
-    .cloud-empty { color:#9ca3af; }
-
-    /* 夜间模式适配 */
-    html.dark-mode .post-card { background:#1f2937; border-color:#374151; box-shadow: 0 6px 18px rgba(0,0,0,.18); }
-    html.dark-mode .post-right { border-left-color:#374151; }
-    html.dark-mode .cloud-title { color:#9ca3af; }
-    html.dark-mode .cloud-chip { color:#e5e7eb; border-color:#4b5563; background:#2d3748; }
-    html.dark-mode .cloud-chip:hover { background:#323c4a; }
-    html.dark-mode .cloud-empty { color:#9ca3af; }
-</style>
-
-
-<div class="post post-card">
-    <div class="card-grid">
-    <!-- 左侧：文章信息卡片 -->
-    <div class="post-left" onclick="window.location.href='/blog/2025/07/12/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E5%91%BD%E4%BB%A4/Common_commands_basic/'">
-        <div class="post-meta">七月 12, 2025</div>
-        <h3 class="post-title">
-            <a href="/blog/2025/07/12/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E5%91%BD%E4%BB%A4/Common_commands_basic/" title="Linux 最基础的命令" class="posttitle" onclick="event.stopPropagation(); window.location.href&#x3D;this.href; return false;">Linux 最基础的命令</a>
-        </h3>
-        <p class="post-excerpt">
-
-
-ls 指令
-pwd 指令
-cd 指令
-cd -
-cd ~
-
-
-touch
-mkdir
-rmdir 及 rm 指令
-rmdir
-rm
-
-
-cp
-mv
-cat
-
-
-
-Linux 作为一...</p>
     </div>
 
     <!-- 右侧：分类与标签（分两排） -->

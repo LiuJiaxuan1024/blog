@@ -178,7 +178,7 @@
   color: white;
   border-radius: 8px;
   box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-  background: linear-gradient(135deg, #FF6B6B, #FFA07A);
+  background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
 }
 
 .tag-hero h1 {
@@ -211,8 +211,8 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #4ECDC4;
-  box-shadow: 0 0 0 3px white, 0 0 0 6px #FF6B6B;
+  background: #FF6B6B;
+  box-shadow: 0 0 0 3px white, 0 0 0 6px #98D8C8;
 }
 
 .node-content {
@@ -365,22 +365,18 @@ Redis 集群的分片算法–哈希槽分区算法
         <div class="node-dot"></div>
         <div class="node-content">
           <time>2025/09/19</time>
-          <h3><a href="/blog/2025/09/19/Redis/Redis_cache/">Redis 应用--缓存</a></h3>
+          <h3><a href="/blog/2025/09/19/Redis/Redis_dist_lock/">Redis 应用--分布式锁</a></h3>
           <div class="post-excerpt">
 
 
-什么是缓存
-使用 Redis 作为缓存
-缓存更新策略
-定期生成
-实时生成
-缓存（预热、穿透、雪崩、击穿）–重中之重
-
-
-
-
-
-在生产环境中，Redi...</div>
+什么是分布式锁
+分布式锁的实现
+基础实现
+引入校验 ID
+引入过期时间
+引入看门狗(Watchdog)
+引入 Lua 脚本
+引入 RedLock 算...</div>
           
             <div class="post-cats">
               
@@ -399,18 +395,22 @@ Redis 集群的分片算法–哈希槽分区算法
         <div class="node-dot"></div>
         <div class="node-content">
           <time>2025/09/19</time>
-          <h3><a href="/blog/2025/09/19/Redis/Redis_dist_lock/">Redis 应用--分布式锁</a></h3>
+          <h3><a href="/blog/2025/09/19/Redis/Redis_cache/">Redis 应用--缓存</a></h3>
           <div class="post-excerpt">
 
 
-什么是分布式锁
-分布式锁的实现
-基础实现
-引入校验 ID
-引入过期时间
-引入看门狗(Watchdog)
-引入 Lua 脚本
-引入 RedLock 算...</div>
+什么是缓存
+使用 Redis 作为缓存
+缓存更新策略
+定期生成
+实时生成
+缓存（预热、穿透、雪崩、击穿）–重中之重
+
+
+
+
+
+在生产环境中，Redi...</div>
           
             <div class="post-cats">
               
@@ -962,24 +962,24 @@ Redis 命令行中的两个核心（最基础）的命令
           教程 (1)
         </a>
       
-        <a href="/blog/tags/cpp/" class="related-tag" 
+        <a href="/blog/tags/Docker/" class="related-tag" 
            style="--tag-size: 40px">
-          C++ (19)
+          Docker (10)
         </a>
       
-        <a href="/blog/tags/%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4/" class="related-tag" 
-           style="--tag-size: 22px">
-          命名空间 (1)
+        <a href="/blog/tags/%E5%AE%B9%E5%99%A8/" class="related-tag" 
+           style="--tag-size: 30px">
+          容器 (5)
         </a>
       
-        <a href="/blog/tags/%E7%BC%BA%E7%9C%81%E5%8F%82%E6%95%B0/" class="related-tag" 
+        <a href="/blog/tags/%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/" class="related-tag" 
            style="--tag-size: 22px">
-          缺省参数 (1)
+          技术架构 (1)
         </a>
       
-        <a href="/blog/tags/%E5%87%BD%E6%95%B0%E9%87%8D%E8%BD%BD/" class="related-tag" 
-           style="--tag-size: 22px">
-          函数重载 (1)
+        <a href="/blog/tags/Dockerfile/" class="related-tag" 
+           style="--tag-size: 24px">
+          Dockerfile (2)
         </a>
       
     </div>
