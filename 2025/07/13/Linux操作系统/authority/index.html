@@ -264,7 +264,7 @@ rwx 对于目录文件的含义
         </div>
         <div class="recommendations">
             <h2>相关推荐</h2>
-            <ul><li><a href="/blog/2025/07/15/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E8%BF%9B%E7%A8%8B/process_add1/">Linux 进程地址空间第一讲</a></li><li><a href="/blog/2025/07/14/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/environment_argc_argv/">Linux 命令行参数和环境变量</a></li><li><a href="/blog/2025/07/12/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E5%91%BD%E4%BB%A4/Common_commands_basic/">Linux 最基础的命令</a></li><li><a href="/blog/2025/07/13/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E5%91%BD%E4%BB%A4/Common_commands_adv/">Linux 其他基础命令</a></li></ul>
+            <ul><li><a href="/blog/2025/07/14/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/environment_argc_argv/">Linux 命令行参数和环境变量</a></li><li><a href="/blog/2025/07/13/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E5%91%BD%E4%BB%A4/Common_commands_adv/">Linux 其他基础命令</a></li><li><a href="/blog/2025/07/12/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E5%91%BD%E4%BB%A4/Common_commands_basic/">Linux 最基础的命令</a></li><li><a href="/blog/2025/07/15/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E8%BF%9B%E7%A8%8B/process_add1/">Linux 进程地址空间第一讲</a></li></ul>
         </div>
         <div class='main' style="
     background: transparent;
@@ -864,6 +864,8 @@ drwxrwxr-x <span class="token number">2</span> ljx ljx <span class="token number
         .recommendations ul {
             margin: 0;
             padding: 0;
+            /* 右侧留出少量空间，防止滚动条/容器边缘遮挡项边框 */
+            padding-right: 4px;
             list-style: none;
             counter-reset: rec;
         }
@@ -879,6 +881,10 @@ drwxrwxr-x <span class="token number">2</span> ljx ljx <span class="token number
             font-size: 14px;
             background: transparent;
             border: 1px solid #000;
+            /* 与标题左边齐平，收紧左右边距 */
+            margin: 0;
+            box-sizing: border-box;
+            width: 100%;
         }
 
         .recommendations li+li {

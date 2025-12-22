@@ -423,6 +423,8 @@ $ hexo server<span aria-hidden="true" class="line-numbers-rows"><span></span><sp
         .recommendations ul {
             margin: 0;
             padding: 0;
+            /* 右侧留出少量空间，防止滚动条/容器边缘遮挡项边框 */
+            padding-right: 4px;
             list-style: none;
             counter-reset: rec;
         }
@@ -438,6 +440,10 @@ $ hexo server<span aria-hidden="true" class="line-numbers-rows"><span></span><sp
             font-size: 14px;
             background: transparent;
             border: 1px solid #000;
+            /* 与标题左边齐平，收紧左右边距 */
+            margin: 0;
+            box-sizing: border-box;
+            width: 100%;
         }
 
         .recommendations li+li {

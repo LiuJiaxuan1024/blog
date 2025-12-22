@@ -252,7 +252,7 @@ C++ 语言中的 static
         </div>
         <div class="recommendations">
             <h2>相关推荐</h2>
-            <ul><li><a href="/blog/2025/12/10/C++/C++_base/">C++ 入门核心知识点总结</a></li><li><a href="/blog/2025/12/15/C++/main/">main 函数开始前的那些事儿</a></li><li><a href="/blog/2025/08/15/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_set/">Redis C++ 客户端使用指南-Set 篇</a></li><li><a href="/blog/2025/08/15/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_list/">Redis C++ 客户端使用指南-List 篇</a></li><li><a href="/blog/2025/12/08/C++/log_system/">同步异步日志系统设计与实现</a></li><li><a href="/blog/2025/10/06/C++/constexpr/">现代 C++ 之 constexpr 编程</a></li></ul>
+            <ul><li><a href="/blog/2025/12/02/C++/virtual_memory/">现代 C++ 中的虚拟内存分布</a></li><li><a href="/blog/2025/10/07/C++/stl_iterator_traits/">深入探索 C++ STL 容器中的迭代器萃取机制</a></li><li><a href="/blog/2025/08/15/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_set/">Redis C++ 客户端使用指南-Set 篇</a></li><li><a href="/blog/2025/09/30/C++/async/">C++ 异步编程</a></li><li><a href="/blog/2025/12/08/C++/log_system/">同步异步日志系统设计与实现</a></li><li><a href="/blog/2025/10/07/C++/template/">C++ 中的模版元编程</a></li></ul>
         </div>
         <div class='main' style="
     background: transparent;
@@ -637,6 +637,8 @@ C++ 语言中的 static
         .recommendations ul {
             margin: 0;
             padding: 0;
+            /* 右侧留出少量空间，防止滚动条/容器边缘遮挡项边框 */
+            padding-right: 4px;
             list-style: none;
             counter-reset: rec;
         }
@@ -652,6 +654,10 @@ C++ 语言中的 static
             font-size: 14px;
             background: transparent;
             border: 1px solid #000;
+            /* 与标题左边齐平，收紧左右边距 */
+            margin: 0;
+            box-sizing: border-box;
+            width: 100%;
         }
 
         .recommendations li+li {

@@ -261,7 +261,7 @@ Redis++（C++）ZSet（有序集合）类型,"/>
         </div>
         <div class="recommendations">
             <h2>相关推荐</h2>
-            <ul><li><a href="/blog/2025/07/10/Redis/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/Zset/">Redis 常见数据类型-Zset 类型</a></li><li><a href="/blog/2025/07/08/Redis/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/Hash/">Redis 常见数据类型-Hash 类型</a></li><li><a href="/blog/2025/12/11/C++/C++_class/">C++ 类与对象知识点总结</a></li><li><a href="/blog/2025/08/20/Redis/redis_trans/">Redis 事务</a></li><li><a href="/blog/2025/08/20/Redis/redis_slave/">Redis 主从复制</a></li><li><a href="/blog/2025/10/07/C++/stl_iterator_traits/">深入探索 C++ STL 容器中的迭代器萃取机制</a></li></ul>
+            <ul><li><a href="/blog/2025/12/14/C++/special_class/">C++ 特殊类设计</a></li><li><a href="/blog/2025/12/07/C++/highconcur/">高并发内存池项目（简化版tcmalloc）</a></li><li><a href="/blog/2025/07/10/Redis/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/Zset/">Redis 常见数据类型-Zset 类型</a></li><li><a href="/blog/2025/12/11/C++/C++_class/">C++ 类与对象知识点总结</a></li><li><a href="/blog/2025/09/19/Redis/Redis_cache/">Redis 应用--缓存</a></li><li><a href="/blog/2025/08/16/Redis/C++%E5%AE%A2%E6%88%B7%E7%AB%AF/redis_cpp_hash/">Redis C++ 客户端使用指南-Hash 篇</a></li></ul>
         </div>
         <div class='main' style="
     background: transparent;
@@ -651,6 +651,8 @@ value4 not found <span class="token keyword">in</span> ZSET<span aria-hidden="tr
         .recommendations ul {
             margin: 0;
             padding: 0;
+            /* 右侧留出少量空间，防止滚动条/容器边缘遮挡项边框 */
+            padding-right: 4px;
             list-style: none;
             counter-reset: rec;
         }
@@ -666,6 +668,10 @@ value4 not found <span class="token keyword">in</span> ZSET<span aria-hidden="tr
             font-size: 14px;
             background: transparent;
             border: 1px solid #000;
+            /* 与标题左边齐平，收紧左右边距 */
+            margin: 0;
+            box-sizing: border-box;
+            width: 100%;
         }
 
         .recommendations li+li {
