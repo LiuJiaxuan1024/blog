@@ -1034,16 +1034,16 @@ Red...</p>
                 <span class="cloud-title">标签</span>
                 
                 
-                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E6%80%A7%E8%83%BD/" title="查看标签：性能" onclick="event.stopPropagation();">
-                        性能
-                    </a>
-                
                     <a class="cloud-chip cloud-tag" href="/blog/tags/Quartus2/" title="查看标签：Quartus2" onclick="event.stopPropagation();">
                         Quartus2
                     </a>
                 
                     <a class="cloud-chip cloud-tag" href="/blog/tags/CPU/" title="查看标签：CPU" onclick="event.stopPropagation();">
                         CPU
+                    </a>
+                
+                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E6%80%A7%E8%83%BD/" title="查看标签：性能" onclick="event.stopPropagation();">
+                        性能
                     </a>
                 
                     <a class="cloud-chip cloud-tag" href="/blog/tags/8bit/" title="查看标签：8bit" onclick="event.stopPropagation();">
@@ -1159,10 +1159,6 @@ Red...</p>
                 <span class="cloud-title">标签</span>
                 
                 
-                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E6%80%A7%E8%83%BD/" title="查看标签：性能" onclick="event.stopPropagation();">
-                        性能
-                    </a>
-                
                     <a class="cloud-chip cloud-tag" href="/blog/tags/Quartus2/" title="查看标签：Quartus2" onclick="event.stopPropagation();">
                         Quartus2
                     </a>
@@ -1171,8 +1167,125 @@ Red...</p>
                         CPU
                     </a>
                 
+                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E6%80%A7%E8%83%BD/" title="查看标签：性能" onclick="event.stopPropagation();">
+                        性能
+                    </a>
+                
                     <a class="cloud-chip cloud-tag" href="/blog/tags/8bit/" title="查看标签：8bit" onclick="event.stopPropagation();">
                         8bit
+                    </a>
+                
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
+
+<style>
+    /* 标签词云封面样式（简约、无图片） */
+    /* 两列布局整体样式 */
+        /* 单一卡片：内部两列，中间分隔线 */
+        .post-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background: #fff;
+            padding: 0;
+            max-width: 980px;
+            margin: 40px auto;
+            box-shadow: 0 6px 18px rgba(0,0,0,.05);
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: 320px 1fr; /* 左窄右宽 */
+            align-items: stretch;
+        }
+        @media (max-width: 900px) { .card-grid { grid-template-columns: 1fr; } }
+
+    .post-left,
+    .post-right { padding: 18px 20px; }
+    .post-left { cursor: pointer; transition: transform .2s ease; min-height: 220px; }
+    .post-left:hover { transform: translateY(-2px); }
+    .post-right { min-height: 180px; border-left: 1px solid #e5e7eb; }
+    @media (max-width: 900px) { .post-right { border-left: none; border-top: 1px solid #e5e7eb; } }
+
+        /* 去除重叠，使用分隔线增强左右区块关系 */
+
+    .post-meta { color: #6b7280; font-size: 13px; margin-bottom: 6px; }
+    .post-title a { color: #0f172a; text-decoration: none; }
+    .post-title a:hover { color: #2563eb; }
+    .post-excerpt { color: #374151; margin-top: 8px; }
+
+    /* 右侧词云卡片：两排显示 */
+    .tag-cloud-cover { display: grid; grid-template-columns: 1fr; row-gap: 12px; }
+    .cloud-title { color:#6b7280; font-size: 13px; margin-right: 6px; }
+    .cloud-row { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: center; }
+    .cloud-chip { color:#111827; background:#f3f4f6; border:1px solid #e5e7eb; border-radius:999px; padding:6px 10px; line-height:1; text-decoration:none; }
+    .cloud-chip:hover { background:#eef2f7; }
+    .cloud-empty { color:#9ca3af; }
+
+    /* 夜间模式适配 */
+    html.dark-mode .post-card { background:#1f2937; border-color:#374151; box-shadow: 0 6px 18px rgba(0,0,0,.18); }
+    html.dark-mode .post-right { border-left-color:#374151; }
+    html.dark-mode .cloud-title { color:#9ca3af; }
+    html.dark-mode .cloud-chip { color:#e5e7eb; border-color:#4b5563; background:#2d3748; }
+    html.dark-mode .cloud-chip:hover { background:#323c4a; }
+    html.dark-mode .cloud-empty { color:#9ca3af; }
+</style>
+
+
+<div class="post post-card">
+    <div class="card-grid">
+    <!-- 左侧：文章信息卡片 -->
+    <div class="post-left" onclick="window.location.href='/blog/2025/06/23/%E7%A1%AC%E4%BB%B6%E8%AF%BE%E8%AE%BE/simulated_vending_machine/'">
+        <div class="post-meta">六月 23, 2025</div>
+        <h3 class="post-title">
+            <a href="/blog/2025/06/23/%E7%A1%AC%E4%BB%B6%E8%AF%BE%E8%AE%BE/simulated_vending_machine/" title="模拟自动售货机（加法器）" class="posttitle" onclick="event.stopPropagation(); window.location.href&#x3D;this.href; return false;">模拟自动售货机（加法器）</a>
+        </h3>
+        <p class="post-excerpt">
+
+
+题目内容
+硬件设计
+inscoin 输入对应加数 B 映射表
+
+
+
+
+
+题目内容模拟自动售货机（加法器）输入信号：投币信号inscoin[1:0]、商品价格信号d[3:0]、时钟信...</p>
+    </div>
+
+    <!-- 右侧：分类与标签（分两排） -->
+    <div class="post-right">
+        <div class="tag-cloud-cover" aria-label="分类与标签">
+            <div class="cloud-row cloud-row-cats">
+                <span class="cloud-title">分类</span>
+                
+                
+                    <a class="cloud-chip cloud-cat" href="/blog/categories/%E6%8A%80%E6%9C%AF/" title="查看分类：技术" onclick="event.stopPropagation();">
+                        技术
+                    </a>
+                
+                    <a class="cloud-chip cloud-cat" href="/blog/categories/%E6%8A%80%E6%9C%AF/%E7%A1%AC%E4%BB%B6%E8%AE%BE%E8%AE%A1/" title="查看分类：硬件设计" onclick="event.stopPropagation();">
+                        硬件设计
+                    </a>
+                
+            </div>
+            <div class="cloud-row cloud-row-tags">
+                <span class="cloud-title">标签</span>
+                
+                
+                    <a class="cloud-chip cloud-tag" href="/blog/tags/Quartus2/" title="查看标签：Quartus2" onclick="event.stopPropagation();">
+                        Quartus2
+                    </a>
+                
+                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E6%80%A7%E8%83%BD/" title="查看标签：性能" onclick="event.stopPropagation();">
+                        性能
+                    </a>
+                
+                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E5%8A%A0%E6%B3%95%E5%99%A8/" title="查看标签：加法器" onclick="event.stopPropagation();">
+                        加法器
                     </a>
                 
             </div>
@@ -1277,12 +1390,12 @@ CPU中简单的4位ALU（...</p>
                 <span class="cloud-title">标签</span>
                 
                 
-                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E6%80%A7%E8%83%BD/" title="查看标签：性能" onclick="event.stopPropagation();">
-                        性能
-                    </a>
-                
                     <a class="cloud-chip cloud-tag" href="/blog/tags/Quartus2/" title="查看标签：Quartus2" onclick="event.stopPropagation();">
                         Quartus2
+                    </a>
+                
+                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E6%80%A7%E8%83%BD/" title="查看标签：性能" onclick="event.stopPropagation();">
+                        性能
                     </a>
                 
                     <a class="cloud-chip cloud-tag" href="/blog/tags/ALU/" title="查看标签：ALU" onclick="event.stopPropagation();">
@@ -1291,119 +1404,6 @@ CPU中简单的4位ALU（...</p>
                 
                     <a class="cloud-chip cloud-tag" href="/blog/tags/4bit/" title="查看标签：4bit" onclick="event.stopPropagation();">
                         4bit
-                    </a>
-                
-            </div>
-        </div>
-    </div>
-    </div>
-</div>
-
-<style>
-    /* 标签词云封面样式（简约、无图片） */
-    /* 两列布局整体样式 */
-        /* 单一卡片：内部两列，中间分隔线 */
-        .post-card {
-            border: 1px solid #e5e7eb;
-            border-radius: 10px;
-            background: #fff;
-            padding: 0;
-            max-width: 980px;
-            margin: 40px auto;
-            box-shadow: 0 6px 18px rgba(0,0,0,.05);
-        }
-
-        .card-grid {
-            display: grid;
-            grid-template-columns: 320px 1fr; /* 左窄右宽 */
-            align-items: stretch;
-        }
-        @media (max-width: 900px) { .card-grid { grid-template-columns: 1fr; } }
-
-    .post-left,
-    .post-right { padding: 18px 20px; }
-    .post-left { cursor: pointer; transition: transform .2s ease; min-height: 220px; }
-    .post-left:hover { transform: translateY(-2px); }
-    .post-right { min-height: 180px; border-left: 1px solid #e5e7eb; }
-    @media (max-width: 900px) { .post-right { border-left: none; border-top: 1px solid #e5e7eb; } }
-
-        /* 去除重叠，使用分隔线增强左右区块关系 */
-
-    .post-meta { color: #6b7280; font-size: 13px; margin-bottom: 6px; }
-    .post-title a { color: #0f172a; text-decoration: none; }
-    .post-title a:hover { color: #2563eb; }
-    .post-excerpt { color: #374151; margin-top: 8px; }
-
-    /* 右侧词云卡片：两排显示 */
-    .tag-cloud-cover { display: grid; grid-template-columns: 1fr; row-gap: 12px; }
-    .cloud-title { color:#6b7280; font-size: 13px; margin-right: 6px; }
-    .cloud-row { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: center; }
-    .cloud-chip { color:#111827; background:#f3f4f6; border:1px solid #e5e7eb; border-radius:999px; padding:6px 10px; line-height:1; text-decoration:none; }
-    .cloud-chip:hover { background:#eef2f7; }
-    .cloud-empty { color:#9ca3af; }
-
-    /* 夜间模式适配 */
-    html.dark-mode .post-card { background:#1f2937; border-color:#374151; box-shadow: 0 6px 18px rgba(0,0,0,.18); }
-    html.dark-mode .post-right { border-left-color:#374151; }
-    html.dark-mode .cloud-title { color:#9ca3af; }
-    html.dark-mode .cloud-chip { color:#e5e7eb; border-color:#4b5563; background:#2d3748; }
-    html.dark-mode .cloud-chip:hover { background:#323c4a; }
-    html.dark-mode .cloud-empty { color:#9ca3af; }
-</style>
-
-
-<div class="post post-card">
-    <div class="card-grid">
-    <!-- 左侧：文章信息卡片 -->
-    <div class="post-left" onclick="window.location.href='/blog/2025/06/23/%E7%A1%AC%E4%BB%B6%E8%AF%BE%E8%AE%BE/simulated_vending_machine/'">
-        <div class="post-meta">六月 23, 2025</div>
-        <h3 class="post-title">
-            <a href="/blog/2025/06/23/%E7%A1%AC%E4%BB%B6%E8%AF%BE%E8%AE%BE/simulated_vending_machine/" title="模拟自动售货机（加法器）" class="posttitle" onclick="event.stopPropagation(); window.location.href&#x3D;this.href; return false;">模拟自动售货机（加法器）</a>
-        </h3>
-        <p class="post-excerpt">
-
-
-题目内容
-硬件设计
-inscoin 输入对应加数 B 映射表
-
-
-
-
-
-题目内容模拟自动售货机（加法器）输入信号：投币信号inscoin[1:0]、商品价格信号d[3:0]、时钟信...</p>
-    </div>
-
-    <!-- 右侧：分类与标签（分两排） -->
-    <div class="post-right">
-        <div class="tag-cloud-cover" aria-label="分类与标签">
-            <div class="cloud-row cloud-row-cats">
-                <span class="cloud-title">分类</span>
-                
-                
-                    <a class="cloud-chip cloud-cat" href="/blog/categories/%E6%8A%80%E6%9C%AF/" title="查看分类：技术" onclick="event.stopPropagation();">
-                        技术
-                    </a>
-                
-                    <a class="cloud-chip cloud-cat" href="/blog/categories/%E6%8A%80%E6%9C%AF/%E7%A1%AC%E4%BB%B6%E8%AE%BE%E8%AE%A1/" title="查看分类：硬件设计" onclick="event.stopPropagation();">
-                        硬件设计
-                    </a>
-                
-            </div>
-            <div class="cloud-row cloud-row-tags">
-                <span class="cloud-title">标签</span>
-                
-                
-                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E6%80%A7%E8%83%BD/" title="查看标签：性能" onclick="event.stopPropagation();">
-                        性能
-                    </a>
-                
-                    <a class="cloud-chip cloud-tag" href="/blog/tags/Quartus2/" title="查看标签：Quartus2" onclick="event.stopPropagation();">
-                        Quartus2
-                    </a>
-                
-                    <a class="cloud-chip cloud-tag" href="/blog/tags/%E5%8A%A0%E6%B3%95%E5%99%A8/" title="查看标签：加法器" onclick="event.stopPropagation();">
-                        加法器
                     </a>
                 
             </div>
